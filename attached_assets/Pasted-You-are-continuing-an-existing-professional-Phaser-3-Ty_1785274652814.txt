@@ -1,0 +1,199 @@
+You are continuing an existing professional Phaser 3 + TypeScript game project.
+
+IMPORTANT
+
+DO NOT rebuild the project.
+
+DO NOT recreate existing systems.
+
+DO NOT modify completed architecture unless absolutely necessary.
+
+This repository already contains:
+
+✅ Milestone 1 - Engine Foundation
+- Phaser 3
+- Vite
+- TypeScript
+- Boot/Game scenes
+- Physics
+- Camera
+- Debug Overlay
+
+✅ Milestone 2 - Tilemap Engine
+- TilemapLoader
+- MapManager
+- Level system
+- Tiled JSON maps
+- Spawn points
+- Collision layers
+
+✅ Milestone 3 - Professional Player Controller
+- Variable jump
+- Coyote time
+- Jump buffer
+- Air control
+- Better gravity
+- Player state machine
+- Config-driven movement
+
+✅ Milestone 4 - Entity System
+- Entity base class
+- Collectible base class
+- Crystal collectible
+- EntityManager
+- Event system
+- Tiled entity spawning
+
+WORK COMPLETED TODAY
+
+The repository already contains partially implemented files:
+
+CameraManager.ts
+CameraEffects.ts
+ParallaxLayer.ts
+
+DO NOT delete or replace these files.
+
+Review them first.
+
+Continue from the existing implementation.
+
+---------------------------------------------------------
+
+OBJECTIVE
+
+Complete Milestone 5:
+
+Professional Camera System
+
+---------------------------------------------------------
+
+Implement only the missing functionality.
+
+Features required:
+
+1.
+Camera dead zone
+
+2.
+Smooth look-ahead based on player direction
+
+3.
+Landing camera bounce
+(using the existing Player landing event)
+
+4.
+Reusable screen shake API
+
+CameraEffects.shake()
+
+5.
+Dynamic zoom API
+
+zoomTo(scale,duration)
+
+6.
+Automatic camera bounds from the loaded tilemap
+
+7.
+Parallax background system
+
+Multiple layers
+
+Configurable scroll factors
+
+Procedural placeholders are acceptable
+
+8.
+Pixel-perfect rendering
+
+Prevent sprite jitter
+
+9.
+Camera transitions
+
+fadeIn()
+
+fadeOut()
+
+panTo()
+
+---------------------------------------------------------
+
+Debug
+
+F5 toggles camera debug.
+
+Display:
+
+Camera bounds
+
+Dead zone
+
+Look-ahead offset
+
+Zoom
+
+Shake state
+
+---------------------------------------------------------
+
+Performance
+
+Maintain 60 FPS.
+
+No unnecessary allocations inside update().
+
+---------------------------------------------------------
+
+Documentation
+
+Create:
+
+docs/CameraSystem.md
+
+Explain:
+
+Camera architecture
+
+Dead zone
+
+Look-ahead
+
+Parallax
+
+Effects
+
+Future usage
+
+---------------------------------------------------------
+
+IMPORTANT
+
+Before writing any code:
+
+Read the existing CameraManager.ts
+
+Read CameraEffects.ts
+
+Read ParallaxLayer.ts
+
+Reuse them.
+
+Do NOT duplicate functionality.
+
+Maintain the current architecture.
+
+When complete:
+
+Run typecheck.
+
+Run the game.
+
+Verify there are zero TypeScript errors.
+
+Verify no console errors.
+
+Verify the player controller still behaves exactly as before.
+
+Only then finish Milestone 5.
