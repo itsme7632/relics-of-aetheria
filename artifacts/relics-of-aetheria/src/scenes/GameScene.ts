@@ -64,8 +64,8 @@ export class GameScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.mapManager.destroy());
   }
 
-  update(): void {
-    this.player.update();
+  update(_time: number, delta: number): void {
+    this.player.update(delta);
 
     if (Phaser.Input.Keyboard.JustDown(this.debugKey)) {
       this.toggleCollisionDebug();
@@ -75,6 +75,7 @@ export class GameScene extends Phaser.Scene {
       this.game.loop.actualFps,
       this.player.x,
       this.player.y,
+      this.player.debugInfo,
     );
   }
 

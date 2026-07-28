@@ -1,12 +1,17 @@
 import Phaser from 'phaser';
+import type { PlayerDebugInfo } from '../entities/Player';
 
 /**
  * DebugOverlay
  *
  * A fixed-position HUD text object that displays:
  *   - Current FPS
- *   - Player world X coordinate
- *   - Player world Y coordinate
+ *   - Player world X / Y coordinates
+ *   - Player state machine state
+ *   - Grounded flag
+ *   - Velocity X / Y
+ *   - Coyote timer (ms remaining)
+ *   - Jump buffer timer (ms remaining)
  *
  * Pinned to the top-left of the viewport (scroll factor 0).
  */
@@ -26,11 +31,29 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
     this.setDepth(1000);
   }
 
-  update(fps: number, playerX: number, playerY: number): void {
-    this.setText([
-      `FPS  ${Math.round(fps)}`,
-      `X    ${Math.round(playerX)}`,
-      `Y    ${Math.round(playerY)}`,
-    ]);
+  update(
+    fps: number,
+    playerX: number,
+    playerY: number,
+    debug?: PlayerDebugInfo,
+  ): void {
+    const lines: string[] = [
+      `FPS    ${Math.round(fps)}`,
+      `X      ${Math.round(playerX)}`,
+      `Y      ${Math.round(playerY)}`,
+    ];
+
+    if (debug) {
+      lines.push(
+        `State  ${debug.state}`,
+        `Gnd    ${debug.grounded ? 'yes' : 'no'}`,
+        `VelX   ${debug.velocityX.toFixed(1)}`,
+        `VelY   ${debug.velocityY.toFixed(1)}`,
+        `Coyote ${Math.ceil(debug.coyoteTimer)}ms`,
+        `JmpBuf ${Math.ceil(debug.jumpBufferTimer)}ms`,
+      );
+    }
+
+    this.setText(lines);
   }
 }
