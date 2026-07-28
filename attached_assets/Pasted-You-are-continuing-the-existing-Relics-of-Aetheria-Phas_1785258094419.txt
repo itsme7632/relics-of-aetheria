@@ -1,0 +1,131 @@
+You are continuing the existing "Relics of Aetheria" Phaser 3 project.
+
+Do NOT rebuild the project.
+
+Do NOT modify the existing engine architecture unless necessary.
+
+Your task is to implement Milestone 2: Tilemap Engine.
+
+====================================================
+
+OBJECTIVE
+
+Build a reusable Tiled map system that will support every level in the game.
+
+Do not implement enemies, collectibles, menus, puzzles, or story.
+
+Only implement map loading.
+
+====================================================
+
+TECHNOLOGY
+
+Use Phaser 3 Tilemaps.
+
+Support TMX maps exported from Tiled.
+
+Support external TSX tilesets.
+
+Use Arcade Physics.
+
+====================================================
+
+CREATE
+
+A TilemapLoader class.
+
+A MapManager class.
+
+A reusable Level class.
+
+Do not hardcode map paths inside GameScene.
+
+====================================================
+
+MAP STRUCTURE
+
+Support these tile layers:
+
+Background
+
+Ground
+
+Platforms
+
+Collision
+
+Decoration_Back
+
+Decoration_Front
+
+Support these object layers:
+
+PlayerSpawn
+
+LevelExit
+
+Checkpoint
+
+====================================================
+
+GAME SCENE
+
+Replace the current flat floor with a TMX level.
+
+Player should spawn from the PlayerSpawn object.
+
+Collision should use the Collision layer only.
+
+Camera bounds must automatically match the map size.
+
+====================================================
+
+DEBUG
+
+Add a toggle key (F3) that displays collision tiles.
+
+Print the loaded map name to the console.
+
+====================================================
+
+CODE QUALITY
+
+Keep the engine modular.
+
+Do not hardcode level names.
+
+Loading another TMX file should require changing only a configuration value.
+
+====================================================
+
+DOCUMENTATION
+
+Update README.
+
+Create docs/TilemapEngine.md
+
+Explain:
+
+Folder layout
+
+Layer naming
+
+Object naming
+
+How to create a new level in Tiled
+
+====================================================
+
+SUCCESS
+
+The player loads into a real TMX level.
+
+Collision works.
+
+Camera bounds work.
+
+Changing maps requires no engine code changes.
+
+No TypeScript errors.
+
+No console errors.

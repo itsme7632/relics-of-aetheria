@@ -2,7 +2,7 @@
 
 A commercial-quality Android adventure game built with **Phaser 3**, **TypeScript**, **Vite**, and **Capacitor**.
 
-This repository is the long-term project foundation. The first milestone establishes a clean, extensible structure — no gameplay systems yet, just a solid base to build on.
+This repository is the long-term project foundation. Each milestone adds one focused system on top of the last.
 
 ---
 
@@ -12,7 +12,7 @@ This repository is the long-term project foundation. The first milestone establi
 
 - Node.js 20+
 - pnpm (workspace package manager)
-- Android Studio (for Android builds)
+- Android Studio (for Android builds only)
 
 ### Install
 
@@ -26,7 +26,7 @@ pnpm install
 pnpm --filter @workspace/relics-of-aetheria run dev
 ```
 
-Open the preview URL. You should see the Phaser canvas immediately.
+Open the preview URL. The Phaser canvas appears immediately.
 
 ### Type-check
 
@@ -34,15 +34,10 @@ Open the preview URL. You should see the Phaser canvas immediately.
 pnpm --filter @workspace/relics-of-aetheria run typecheck
 ```
 
-### Lint
+### Lint / Format
 
 ```bash
 pnpm --filter @workspace/relics-of-aetheria run lint
-```
-
-### Format
-
-```bash
 pnpm --filter @workspace/relics-of-aetheria run format
 ```
 
@@ -54,23 +49,15 @@ pnpm --filter @workspace/relics-of-aetheria run format
 
 ```bash
 pnpm --filter @workspace/relics-of-aetheria run build
+# Output: artifacts/relics-of-aetheria/dist/public/
 ```
-
-Output goes to `artifacts/relics-of-aetheria/dist/public/`.
 
 ### Android (Capacitor)
 
 ```bash
-# 1. Build the web bundle
 pnpm --filter @workspace/relics-of-aetheria run build
-
-# 2. Add the Android platform (first time only)
-npx cap add android
-
-# 3. Sync web assets into the native project
+npx cap add android          # first time only
 pnpm --filter @workspace/relics-of-aetheria run cap:sync
-
-# 4. Open in Android Studio
 pnpm --filter @workspace/relics-of-aetheria run cap:android
 ```
 
@@ -83,6 +70,7 @@ pnpm --filter @workspace/relics-of-aetheria run cap:android
 | Move left | `←` or `A` |
 | Move right | `→` or `D` |
 | Jump | `↑`, `W`, or `Space` |
+| Toggle collision debug | `F3` |
 
 ---
 
@@ -91,81 +79,79 @@ pnpm --filter @workspace/relics-of-aetheria run cap:android
 ```
 artifacts/relics-of-aetheria/
 ├── src/
-│   ├── main.ts              # Entry point — boots Phaser
+│   ├── main.ts                   # Entry point — boots Phaser
 │   ├── core/
-│   │   └── GameConfig.ts    # Phaser config + world constants
+│   │   └── GameConfig.ts         # Phaser config
+│   ├── data/
+│   │   └── levels.ts             # Level registry — only file to edit to add a level
 │   ├── scenes/
-│   │   ├── BootScene.ts     # Asset loading → hands off to GameScene
-│   │   └── GameScene.ts     # Main gameplay scene
+│   │   ├── BootScene.ts          # Asset loading → GameScene
+│   │   └── GameScene.ts          # Main gameplay scene
 │   ├── entities/
-│   │   └── Player.ts        # Physics-enabled player rectangle
-│   ├── ui/
-│   │   └── DebugOverlay.ts  # FPS / X / Y HUD
-│   ├── systems/             # Future: combat, AI, physics helpers
-│   ├── managers/            # Future: audio, scene, save-state managers
-│   ├── utils/               # Future: math, pooling, tween helpers
-│   └── data/                # Future: item tables, config JSON
+│   │   └── Player.ts             # Physics rectangle (arrow keys + WASD)
+│   ├── systems/
+│   │   ├── Level.ts              # Loaded tilemap + collision layer + spawn objects
+│   │   └── TilemapLoader.ts      # Builds a Level from a LevelConfig
+│   ├── managers/
+│   │   └── MapManager.ts         # Public API: loadLevel(key) → Level
+│   └── ui/
+│       └── DebugOverlay.ts       # FPS / X / Y HUD
 ├── assets/
-│   ├── sprites/             # Spritesheets and character art
-│   ├── audio/               # Music and SFX
-│   ├── maps/                # Tiled TMX map files
-│   ├── tilesets/            # Tileset images referenced by maps
-│   └── fonts/               # Bitmap fonts
-├── docs/                    # Design docs and milestone notes
-├── capacitor.config.ts      # Capacitor / Android configuration
-├── eslint.config.js         # ESLint 9 flat config
-├── .prettierrc              # Prettier formatting rules
-└── vite.config.ts           # Vite build configuration
+│   ├── maps/
+│   │   └── level1.json           # Tiled JSON map (80×22 tiles)
+│   ├── tilesets/                 # Tileset images (placeholder generated at runtime)
+│   ├── sprites/                  # Future: character spritesheets
+│   ├── audio/                    # Future: music and SFX
+│   └── fonts/                    # Future: bitmap fonts
+├── docs/
+│   └── TilemapEngine.md          # Tilemap system documentation
+├── capacitor.config.json         # Capacitor / Android configuration
+├── eslint.config.js              # ESLint 9 flat config
+├── .prettierrc                   # Prettier formatting rules
+└── vite.config.ts                # Vite build configuration
 ```
 
 ---
 
-## What's Running
+## Switching Levels
 
-| Feature | Status |
-|---------|--------|
-| Phaser 3 canvas | ✅ |
-| Arcade physics + gravity | ✅ |
-| Static floor | ✅ |
-| Movable player rectangle | ✅ |
-| Arrow key + WASD input | ✅ |
-| Jump | ✅ |
-| Smooth camera follow | ✅ |
-| Camera world bounds | ✅ |
-| Generated tile grid | ✅ |
-| Debug overlay (FPS, X, Y) | ✅ |
-| TypeScript strict mode | ✅ |
-| ESLint + Prettier | ✅ |
-| Capacitor config | ✅ |
+Change one value in `src/data/levels.ts`:
+
+```ts
+export const STARTING_LEVEL = 'level2';   // was 'level1'
+```
+
+No engine code changes needed. See `docs/TilemapEngine.md` for full tilemap documentation.
 
 ---
 
-## Future Milestones
+## Milestone Status
 
-### Milestone 2 — Tilemap & World
-- Load Tiled TMX maps via `this.make.tilemap`
-- Replace placeholder rectangle with animated sprite
-- Multiple platforms and static obstacles
+| # | Milestone | Status |
+|---|-----------|--------|
+| 1 | Project foundation (Phaser + TS + Vite + Capacitor + ESLint + Prettier) | ✅ |
+| 2 | Tilemap engine (TilemapLoader, MapManager, Level, TMX layer support, F3 debug) | ✅ |
+| 3 | Animated player sprite (walk/idle/jump animations from spritesheet) | — |
+| 4 | Audio manager (BGM + SFX, pause/resume, scene-aware) | — |
+| 5 | Enemies & combat | — |
+| 6 | UI & HUD (health bar, inventory, pause menu) | — |
+| 7 | Android polish (touch controls, icons, splash) | — |
 
-### Milestone 3 — Game Systems
-- Camera zones and trigger areas
-- Scene manager with pause / resume
-- Audio manager (BGM + SFX)
+---
 
-### Milestone 4 — Enemies & Combat
-- Enemy base class with simple patrol AI
-- Melee attack system
-- Health and damage system
+## What's Running (Milestone 2)
 
-### Milestone 5 — UI & HUD
-- Health bar, inventory slots
-- Pause menu
-- Scene transitions
-
-### Milestone 6 — Android
-- Capacitor touch controls overlay
-- Performance profiling on device
-- App icon and splash screen
+| Feature | Detail |
+|---------|--------|
+| TMX level loading | Tiled JSON export via `this.load.tilemapTiledJSON` |
+| Tile layers | Background, Ground, Platforms, Collision, Decoration_Back, Decoration_Front |
+| Object layers | PlayerSpawn, LevelExit, Checkpoint |
+| Collision | Arcade Physics on the `Collision` layer only |
+| Camera bounds | Derived from map dimensions (`level.widthInPixels × heightInPixels`) |
+| Player spawn | Read from `PlayerSpawn` object in the map |
+| F3 debug toggle | Orange outlines on all colliding tiles |
+| Map hot-swap | Change `STARTING_LEVEL` in `src/data/levels.ts` — zero engine edits |
+| Zero TS errors | Strict mode clean |
 
 ---
 
@@ -174,8 +160,8 @@ artifacts/relics-of-aetheria/
 | Tool | Version | Role |
 |------|---------|------|
 | Phaser 3 | ^3.88 | Game engine |
-| TypeScript | ~5.9 | Type safety |
+| TypeScript | ~5.9 | Strict type safety |
 | Vite | ^6 | Dev server + bundler |
-| Capacitor | ^6 | Android packaging |
+| Capacitor | ^6 (config only) | Android packaging |
 | ESLint 9 | ^9 | Linting |
 | Prettier | ^3 | Formatting |

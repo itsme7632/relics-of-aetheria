@@ -1,105 +1,103 @@
 import Phaser from 'phaser';
 import { Player } from '../entities/Player';
 import { DebugOverlay } from '../ui/DebugOverlay';
-import { WORLD_WIDTH, WORLD_HEIGHT, TILE_SIZE } from '../core/GameConfig';
+import { MapManager } from '../managers/MapManager';
+import { Level } from '../systems/Level';
+import { STARTING_LEVEL } from '../data/levels';
 
 /**
  * GameScene
  *
- * The main gameplay scene. Currently displays:
- *   - A dark background with a generated grid
- *   - A static floor platform
- *   - A physics-enabled rectangle representing the player
- *   - A debug overlay showing FPS and player coordinates
- *
- * Camera follows the player with smooth lerp and is bounded to the world.
- * Public methods `setZoom` and `shakeCamera` are stubbed for future use.
+ * Loads a TMX level via MapManager and wires up:
+ *   - Player spawned at the map-defined PlayerSpawn object
+ *   - Arcade Physics collision against the Collision tile layer only
+ *   - Camera bounds derived from the map dimensions
+ *   - Debug overlay (FPS / X / Y) + F3 toggle for collision tile overlay
  */
 export class GameScene extends Phaser.Scene {
   private player!: Player;
-  private floor!: Phaser.Physics.Arcade.StaticGroup;
   private debugOverlay!: DebugOverlay;
+  private mapManager!: MapManager;
+  private level!: Level;
+  private debugKey!: Phaser.Input.Keyboard.Key;
+  private collisionDebugActive = false;
+  private levelKey = STARTING_LEVEL;
 
   constructor() {
     super({ key: 'GameScene' });
   }
 
+  /** Receives the level key passed by BootScene (or any scene transition). */
+  init(data: { levelKey?: string }): void {
+    this.levelKey = data.levelKey ?? STARTING_LEVEL;
+    this.collisionDebugActive = false;
+  }
+
   create(): void {
     this.cameras.main.setBackgroundColor('#0d0d1a');
 
-    this.createGrid();
-    this.createFloor();
+    // ── Load map ────────────────────────────────────────────────────────────
+    this.mapManager = new MapManager(this);
+    this.level = this.mapManager.loadLevel(this.levelKey);
 
-    this.player = new Player(this, 200, WORLD_HEIGHT - 120);
+    // ── Player ──────────────────────────────────────────────────────────────
+    const { x, y } = this.level.objects.playerSpawn;
+    this.player = new Player(this, x, y);
 
-    this.physics.add.collider(this.player, this.floor);
+    // Collide only with the Collision layer
+    this.physics.add.collider(this.player, this.level.collisionLayer);
 
-    this.setupCamera();
+    // ── Camera ──────────────────────────────────────────────────────────────
+    this.cameras.main.setBounds(
+      0, 0,
+      this.level.widthInPixels,
+      this.level.heightInPixels,
+    );
+    this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
 
+    // ── HUD & input ─────────────────────────────────────────────────────────
     this.debugOverlay = new DebugOverlay(this);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    this.debugKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.F3);
+
+    // Clean up MapManager when the scene shuts down (e.g. on restart)
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.mapManager.destroy());
   }
 
   update(): void {
     this.player.update();
+
+    if (Phaser.Input.Keyboard.JustDown(this.debugKey)) {
+      this.toggleCollisionDebug();
+    }
+
     this.debugOverlay.update(
       this.game.loop.actualFps,
       this.player.x,
-      this.player.y
+      this.player.y,
     );
   }
 
-  // ─── Camera ──────────────────────────────────────────────────────────────
+  // ─── Camera helpers (future milestones) ──────────────────────────────────
 
-  private setupCamera(): void {
-    const cam = this.cameras.main;
-    cam.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-    // Smooth follow via lerp (0 = instant, 1 = stiff)
-    cam.startFollow(this.player, true, 0.08, 0.08);
-  }
-
-  /** Future milestone: smoothly zoom the camera. */
+  /** Smoothly zoom to a target zoom level. */
   setZoom(zoom: number, duration = 300): void {
     this.cameras.main.zoomTo(zoom, duration);
   }
 
-  /** Future milestone: shake the camera on impact or explosion. */
+  /** Shake the camera (e.g. on landing impact or explosion). */
   shakeCamera(duration = 250, intensity = 0.012): void {
     this.cameras.main.shake(duration, intensity);
   }
 
-  // ─── World geometry ───────────────────────────────────────────────────────
+  // ─── Debug ───────────────────────────────────────────────────────────────
 
-  private createGrid(): void {
-    const g = this.add.graphics();
-    g.lineStyle(1, 0x1e2050, 0.7);
-
-    for (let x = 0; x <= WORLD_WIDTH; x += TILE_SIZE) {
-      g.lineBetween(x, 0, x, WORLD_HEIGHT);
+  private toggleCollisionDebug(): void {
+    this.collisionDebugActive = !this.collisionDebugActive;
+    if (this.collisionDebugActive) {
+      this.level.showCollisionDebug(this);
+    } else {
+      this.level.hideCollisionDebug();
     }
-    for (let y = 0; y <= WORLD_HEIGHT; y += TILE_SIZE) {
-      g.lineBetween(0, y, WORLD_WIDTH, y);
-    }
-  }
-
-  private createFloor(): void {
-    this.floor = this.physics.add.staticGroup();
-
-    const floorHeight = 40;
-    const floorY = WORLD_HEIGHT - floorHeight / 2;
-
-    const floorRect = this.add.rectangle(
-      WORLD_WIDTH / 2,
-      floorY,
-      WORLD_WIDTH,
-      floorHeight,
-      0x2a2a50
-    );
-
-    this.floor.add(floorRect);
-
-    // Decorative top edge
-    const edgeGraphics = this.add.graphics();
-    edgeGraphics.lineStyle(2, 0x5a5aaa, 1);
-    edgeGraphics.lineBetween(0, WORLD_HEIGHT - floorHeight, WORLD_WIDTH, WORLD_HEIGHT - floorHeight);
   }
 }
