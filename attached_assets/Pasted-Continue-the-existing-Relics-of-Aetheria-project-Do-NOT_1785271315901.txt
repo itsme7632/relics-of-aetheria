@@ -1,0 +1,193 @@
+Continue the existing "Relics of Aetheria" project.
+
+Do NOT rebuild the project.
+
+Do NOT modify the player controller, tilemap engine, or movement systems except where necessary for entity interaction.
+
+Implement Milestone 4: Reusable Entity System.
+
+====================================================
+
+OBJECTIVE
+
+Create a production-ready entity framework that supports all future interactive objects.
+
+Do NOT implement enemies.
+
+Do NOT implement puzzles.
+
+Do NOT implement UI.
+
+Do NOT implement inventory.
+
+Only implement the entity architecture and one working collectible (Crystal).
+
+====================================================
+
+ARCHITECTURE
+
+Create:
+
+src/entities/
+
+Entity.ts
+
+collectible/
+
+Collectible.ts
+
+Crystal.ts
+
+src/managers/
+
+EntityManager.ts
+
+src/events/
+
+GameEvents.ts
+
+====================================================
+
+ENTITY BASE
+
+Entity should provide:
+
+Unique ID
+
+Position
+
+Spawn()
+
+Destroy()
+
+Update()
+
+Enable()
+
+Disable()
+
+Event hooks
+
+====================================================
+
+ENTITY MANAGER
+
+Responsibilities:
+
+Register entity types
+
+Spawn from Tiled object layers
+
+Destroy entities
+
+Find entities by ID
+
+Find entities by type
+
+Update active entities
+
+Do NOT let GameScene instantiate entities directly.
+
+====================================================
+
+TILED SUPPORT
+
+Read the existing Objects layer.
+
+Automatically spawn Crystal objects where an object named "Crystal" exists.
+
+Adding another Crystal in Tiled must require NO code changes.
+
+====================================================
+
+CRYSTAL
+
+Requirements:
+
+Hover animation
+
+Slow rotation
+
+Player overlap detection
+
+Collect animation (fade + scale)
+
+Destroy after collection
+
+Fire a CrystalCollected event
+
+Ready for sound hooks
+
+Ready for save hooks
+
+====================================================
+
+EVENT SYSTEM
+
+Create GameEvents constants.
+
+Dispatch CrystalCollected when a crystal is picked up.
+
+Do not directly modify UI or save data.
+
+Use events only.
+
+====================================================
+
+DEBUG
+
+F4 toggles entity debug mode.
+
+Display:
+
+Entity count
+
+Active entities
+
+Collected crystals
+
+====================================================
+
+PERFORMANCE
+
+Support hundreds of entities.
+
+Maintain 60 FPS.
+
+====================================================
+
+DOCUMENTATION
+
+Create docs/EntitySystem.md
+
+Explain:
+
+Entity lifecycle
+
+How to create new entity types
+
+How to register entities
+
+How Tiled spawns entities
+
+====================================================
+
+SUCCESS
+
+The player loads the map.
+
+Crystals spawn automatically from Tiled.
+
+Walking into a crystal collects it.
+
+Crystal animates and disappears.
+
+A CrystalCollected event is dispatched.
+
+Console logs collection count.
+
+No TypeScript errors.
+
+No console errors.
+
+Everything is modular and reusable.
