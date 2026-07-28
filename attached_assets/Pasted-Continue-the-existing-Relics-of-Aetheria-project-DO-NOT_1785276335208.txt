@@ -1,0 +1,226 @@
+Continue the existing "Relics of Aetheria" project.
+
+DO NOT rebuild completed systems.
+
+Completed milestones:
+
+✅ M1 Engine Foundation
+✅ M2 Tilemap Engine
+✅ M3 Professional Player Controller
+✅ M4 Entity System
+✅ M5 Camera & World Feel
+✅ M6 World Builder & Level Pipeline
+
+Implement Milestone 7: Gameplay Interaction Framework.
+
+====================================================
+
+OBJECTIVE
+
+Create reusable gameplay interactions so a level can be completed from start to finish.
+
+Do NOT implement enemies.
+
+Do NOT implement combat.
+
+Do NOT implement inventory.
+
+Do NOT implement save/load persistence yet.
+
+====================================================
+
+CREATE
+
+src/entities/interactable/
+
+Interactable.ts
+
+Checkpoint.ts
+
+Door.ts
+
+LevelExit.ts
+
+Sign.ts
+
+src/managers/
+
+InteractionManager.ts
+
+src/events/
+
+InteractionEvents.ts
+
+====================================================
+
+INTERACTABLE BASE
+
+Provide:
+
+Unique ID
+
+Enabled state
+
+Interaction radius
+
+Interact()
+
+Activate()
+
+Deactivate()
+
+Visual debug support
+
+Event hooks
+
+====================================================
+
+CHECKPOINT
+
+Player overlap activates checkpoint.
+
+Placeholder visual is acceptable.
+
+Emit:
+
+CHECKPOINT_ACTIVATED
+
+Store active checkpoint in memory.
+
+====================================================
+
+LEVEL EXIT
+
+Player overlap enables interaction.
+
+Display a console message:
+
+"Press E to exit"
+
+Pressing E:
+
+Emit LEVEL_COMPLETE
+
+If nextLevel exists in LevelManifest:
+
+Load it automatically.
+
+Otherwise:
+
+Display a simple "Level Complete" placeholder overlay.
+
+====================================================
+
+DOOR
+
+Architecture only.
+
+Support:
+
+Open()
+
+Close()
+
+Lock()
+
+Unlock()
+
+Open state
+
+Closed state
+
+No gameplay usage required.
+
+====================================================
+
+SIGN
+
+Simple interactable.
+
+Press E.
+
+Log its message to the console.
+
+This validates the interaction framework for future NPC dialogue.
+
+====================================================
+
+TILED
+
+Automatically spawn:
+
+Checkpoint
+
+Door
+
+Exit
+
+Sign
+
+from the Objects layer.
+
+No engine code changes required when adding more objects.
+
+====================================================
+
+DEBUG
+
+F6 toggles interaction debug.
+
+Display:
+
+Focused interactable
+
+Interaction radius
+
+Checkpoint state
+
+====================================================
+
+PERFORMANCE
+
+Maintain 60 FPS.
+
+No unnecessary allocations.
+
+====================================================
+
+DOCUMENTATION
+
+Create:
+
+docs/InteractionFramework.md
+
+Explain:
+
+Architecture
+
+Registration
+
+Lifecycle
+
+Adding new interactables
+
+Tiled workflow
+
+====================================================
+
+SUCCESS
+
+Player can:
+
+Collect crystals
+
+Activate checkpoint
+
+Reach exit
+
+Press E
+
+Complete level
+
+Automatically transition to the next level when configured.
+
+Zero TypeScript errors.
+
+Zero console errors.

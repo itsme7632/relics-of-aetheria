@@ -3,7 +3,13 @@ import { Player } from '../entities/Player';
 import { DebugOverlay } from '../ui/DebugOverlay';
 import { EntityManager } from '../managers/EntityManager';
 import { CameraManager } from '../managers/CameraManager';
+import { InteractionManager } from '../managers/InteractionManager';
 import { Crystal } from '../entities/collectible/Crystal';
+import { Checkpoint } from '../entities/interactable/Checkpoint';
+import { LevelExit } from '../entities/interactable/LevelExit';
+import { Door } from '../entities/interactable/Door';
+import { Sign } from '../entities/interactable/Sign';
+import { InteractionEvents } from '../events/InteractionEvents';
 import { Level } from '../systems/Level';
 import { WorldManager } from '../world/WorldManager';
 import { buildParallaxLayers, ParallaxLayer } from '../systems/ParallaxLayer';
@@ -11,16 +17,19 @@ import { buildParallaxLayers, ParallaxLayer } from '../systems/ParallaxLayer';
 /**
  * GameScene
  *
- * Loads a level through WorldManager (manifest → validation → Level) and wires up:
- *   - Player spawned at the map-defined PlayerSpawn object
- *   - Arcade Physics collision against the Collision tile layer only
- *   - CameraManager (dead zone, look-ahead, landing bounce, parallax, effects)
- *   - Parallax background layers (3 procedural layers)
- *   - Debug overlay (FPS / X / Y) + F3 collision / F4 entity / F5 camera debug
+ * Wires together all milestones:
+ *   M1-2  Engine + Tilemap
+ *   M3    Player controller
+ *   M4    Entity system (Crystal collectibles)
+ *   M5    Camera + parallax
+ *   M6    WorldManager (manifest → validation → Level)
+ *   M7    InteractionManager (Checkpoint, LevelExit, Door, Sign)
  *
- * To change the starting level: edit STARTING_LEVEL_ID in LevelManifest.ts.
- * To transition levels at runtime: use WorldManager.getNextEntry() and restart
- * the scene with the new levelId.
+ * Debug keys:
+ *   F3 — collision tile overlay
+ *   F4 — entity counts
+ *   F5 — camera debug (dead zone, look-ahead)
+ *   F6 — interaction debug (radii, focus, checkpoint)
  */
 export class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -28,17 +37,25 @@ export class GameScene extends Phaser.Scene {
   private worldManager!: WorldManager;
   private entityManager!: EntityManager;
   private cameraManager!: CameraManager;
+  private interactionManager!: InteractionManager;
   private level!: Level;
   private parallaxLayers: ParallaxLayer[] = [];
 
-  // ── Debug keys ────────────────────────────────────────────────────────────
+  // ── Level-complete overlay (shown when no next level exists) ──────────────
+  private levelCompleteText: Phaser.GameObjects.Text | null = null;
+
+  // ── Input keys ────────────────────────────────────────────────────────────
   private debugKey!: Phaser.Input.Keyboard.Key;
   private entityDebugKey!: Phaser.Input.Keyboard.Key;
   private cameraDebugKey!: Phaser.Input.Keyboard.Key;
+  private interactionDebugKey!: Phaser.Input.Keyboard.Key;
+  private eKey!: Phaser.Input.Keyboard.Key;
 
-  private collisionDebugActive = false;
-  private entityDebugActive    = false;
-  private cameraDebugActive    = false;
+  // ── Debug state ───────────────────────────────────────────────────────────
+  private collisionDebugActive    = false;
+  private entityDebugActive       = false;
+  private cameraDebugActive       = false;
+  private interactionDebugActive  = false;
 
   private levelId = WorldManager.startingLevelId;
 
@@ -46,61 +63,103 @@ export class GameScene extends Phaser.Scene {
     super({ key: 'GameScene' });
   }
 
-  /** Receives the level id passed by BootScene (or any scene transition). */
   init(data: { levelId?: string }): void {
-    this.levelId              = data.levelId ?? WorldManager.startingLevelId;
-    this.collisionDebugActive = false;
-    this.entityDebugActive    = false;
-    this.cameraDebugActive    = false;
+    this.levelId                 = data.levelId ?? WorldManager.startingLevelId;
+    this.collisionDebugActive    = false;
+    this.entityDebugActive       = false;
+    this.cameraDebugActive       = false;
+    this.interactionDebugActive  = false;
   }
 
   create(): void {
     this.cameras.main.setBackgroundColor('#0d0d1a');
 
-    // ── World Manager (manifest → validation → Level) ────────────────────────
+    // ── World Manager ────────────────────────────────────────────────────────
     this.worldManager = new WorldManager(this);
     this.level = this.worldManager.loadLevel(this.levelId, {
-      knownEntityTypes: ['Crystal'],
+      knownEntityTypes: ['Crystal', 'Door', 'Sign'],
     });
 
-    // ── Parallax background layers (behind all tile layers) ─────────────────
+    // ── Parallax background layers ───────────────────────────────────────────
     this.parallaxLayers = buildParallaxLayers(
       this,
       this.level.widthInPixels,
       this.level.heightInPixels,
     );
 
-    // ── Entity system ────────────────────────────────────────────────────────
+    // ── Entity system (collectibles) ─────────────────────────────────────────
     this.entityManager = new EntityManager(this);
     this.entityManager.registerType('Crystal', (scene) => new Crystal(scene));
     this.entityManager.spawnFromMap(this.level.map);
 
-    // ── Player ──────────────────────────────────────────────────────────────
+    // ── Interaction system ───────────────────────────────────────────────────
+    this.interactionManager = new InteractionManager(this);
+
+    // Register E-press types by Tiled object name (Objects layer)
+    this.interactionManager.registerType(
+      'Door',
+      (scene, _x, _y, data) => new Door(scene, data.width ?? 32, data.height ?? 64),
+    );
+    this.interactionManager.registerType(
+      'Sign',
+      (scene, _x, _y, data) => {
+        const msgProp = (data.properties as Array<{ name: string; value: unknown }> | undefined)
+          ?.find((p) => p.name === 'message');
+        const message = typeof msgProp?.value === 'string'
+          ? msgProp.value
+          : 'An ancient inscription...';
+        return new Sign(scene, message, data.width ?? 24, data.height ?? 32);
+      },
+    );
+
+    // Spawn Door/Sign from Objects layer
+    this.interactionManager.spawnFromLayer(this.level.map, 'Objects');
+
+    // Spawn Checkpoints from dedicated layer (auto-activate)
+    this.interactionManager.spawnLayerAsType(
+      this.level.map,
+      'Checkpoint',
+      (scene, _x, _y, data) => new Checkpoint(scene, data.width ?? 32, data.height ?? 64),
+    );
+
+    // Spawn LevelExits from dedicated layer (E-press)
+    this.interactionManager.spawnLayerAsType(
+      this.level.map,
+      'LevelExit',
+      (scene, _x, _y, data) => new LevelExit(scene, data.width ?? 32, data.height ?? 64),
+    );
+
+    // ── Player ───────────────────────────────────────────────────────────────
     const { x, y } = this.level.objects.playerSpawn;
     this.player = new Player(this, x, y);
 
-    // Collide only with the Collision layer
     this.physics.add.collider(this.player, this.level.collisionLayer);
-
-    // Wire collectible overlaps now that both player and entities exist
     this.entityManager.initOverlaps(this.player);
+    this.interactionManager.initOverlaps(this.player);
 
     // ── Camera Manager ───────────────────────────────────────────────────────
     this.cameraManager = new CameraManager(this, this.player, this.level);
     this.cameraManager.effects.fadeIn(400);
 
-    // ── HUD & input ─────────────────────────────────────────────────────────
+    // ── Level complete listener ──────────────────────────────────────────────
+    this.events.on(InteractionEvents.LEVEL_COMPLETE, this._onLevelComplete, this);
+
+    // ── HUD & input ──────────────────────────────────────────────────────────
     this.debugOverlay = new DebugOverlay(this);
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const kb = this.input.keyboard!;
-    this.debugKey       = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F3);
-    this.entityDebugKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F4);
-    this.cameraDebugKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F5);
+    this.debugKey             = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F3);
+    this.entityDebugKey       = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F4);
+    this.cameraDebugKey       = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F5);
+    this.interactionDebugKey  = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F6);
+    this.eKey                 = kb.addKey(Phaser.Input.Keyboard.KeyCodes.E);
 
-    // Clean up on scene shutdown (e.g. restart or level transition)
+    // ── Shutdown cleanup ─────────────────────────────────────────────────────
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.events.off(InteractionEvents.LEVEL_COMPLETE, this._onLevelComplete, this);
       this.worldManager.destroy();
       this.entityManager.destroyAll();
+      this.interactionManager.destroyAll();
       this.cameraManager.destroy();
       for (const layer of this.parallaxLayers) layer.destroy();
       this.parallaxLayers = [];
@@ -112,6 +171,12 @@ export class GameScene extends Phaser.Scene {
     this.entityManager.update(delta);
     this.cameraManager.update(delta);
 
+    const eJustDown = Phaser.Input.Keyboard.JustDown(this.eKey);
+    this.interactionManager.update(
+      { x: this.player.x, y: this.player.y },
+      eJustDown,
+    );
+
     // ── Debug key toggles ─────────────────────────────────────────────────
     if (Phaser.Input.Keyboard.JustDown(this.debugKey)) {
       this.toggleCollisionDebug();
@@ -122,6 +187,9 @@ export class GameScene extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.cameraDebugKey)) {
       this.toggleCameraDebug();
     }
+    if (Phaser.Input.Keyboard.JustDown(this.interactionDebugKey)) {
+      this.toggleInteractionDebug();
+    }
 
     // ── HUD update ────────────────────────────────────────────────────────
     this.debugOverlay.update(
@@ -129,40 +197,68 @@ export class GameScene extends Phaser.Scene {
       this.player.x,
       this.player.y,
       this.player.debugInfo,
-      this.entityDebugActive ? this.entityManager.debugInfo  : undefined,
-      this.cameraDebugActive ? this.cameraManager.debugInfo  : undefined,
+      this.entityDebugActive      ? this.entityManager.debugInfo      : undefined,
+      this.cameraDebugActive      ? this.cameraManager.debugInfo      : undefined,
+      this.interactionDebugActive ? this.interactionManager.debugInfo : undefined,
     );
   }
 
-  // ── Camera API (public for use by game systems) ──────────────────────────
+  // ── Camera API ────────────────────────────────────────────────────────────
 
-  /** Smoothly zoom to a target zoom level. */
   setZoom(zoom: number, duration = 300): void {
     this.cameraManager.effects.zoomTo(zoom, duration);
   }
 
-  /** Shake the camera (e.g. on landing impact or explosion). */
   shakeCamera(duration = 250, intensity = 0.012): void {
     this.cameraManager.effects.shake(intensity, duration);
   }
 
-  // ── Level transition (future) ─────────────────────────────────────────────
+  // ── Level transition ──────────────────────────────────────────────────────
 
-  /**
-   * Transition to the next level defined in the manifest.
-   * Fades out, then restarts the scene with the new levelId.
-   * No-op if the current level has no successor.
-   */
   transitionToNextLevel(): void {
     const next = this.worldManager.getNextEntry();
     if (!next) return;
-
     this.cameraManager.effects.fadeOut(500, 0x000000, () => {
       this.scene.restart({ levelId: next.id });
     });
   }
 
-  // ── Debug ─────────────────────────────────────────────────────────────────
+  // ── Private ───────────────────────────────────────────────────────────────
+
+  private _onLevelComplete(): void {
+    const next = this.worldManager.getNextEntry();
+    if (next) {
+      this.transitionToNextLevel();
+    } else {
+      this._showLevelCompleteOverlay();
+    }
+  }
+
+  private _showLevelCompleteOverlay(): void {
+    if (this.levelCompleteText) return; // guard against multiple calls
+
+    const cam = this.cameras.main;
+    this.levelCompleteText = this.add.text(
+      cam.width  / 2,
+      cam.height / 2,
+      'LEVEL COMPLETE',
+      {
+        fontSize:   '52px',
+        fontFamily: '"Courier New", Courier, monospace',
+        color:      '#ffff44',
+        stroke:     '#000000',
+        strokeThickness: 6,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        padding: { x: 24, y: 14 },
+      },
+    );
+    this.levelCompleteText
+      .setScrollFactor(0)
+      .setDepth(1001)
+      .setOrigin(0.5);
+
+    console.log('[GameScene] Level complete! No next level configured.');
+  }
 
   private toggleCollisionDebug(): void {
     this.collisionDebugActive = !this.collisionDebugActive;
@@ -179,6 +275,15 @@ export class GameScene extends Phaser.Scene {
       this.cameraManager.showDebug();
     } else {
       this.cameraManager.hideDebug();
+    }
+  }
+
+  private toggleInteractionDebug(): void {
+    this.interactionDebugActive = !this.interactionDebugActive;
+    if (this.interactionDebugActive) {
+      this.interactionManager.showDebug();
+    } else {
+      this.interactionManager.hideDebug();
     }
   }
 }

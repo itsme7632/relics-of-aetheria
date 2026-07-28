@@ -2,19 +2,19 @@ import Phaser from 'phaser';
 import type { PlayerDebugInfo } from '../entities/Player';
 import type { EntityDebugInfo } from '../managers/EntityManager';
 import type { CameraDebugInfo } from '../managers/CameraManager';
+import type { InteractionDebugInfo } from '../managers/InteractionManager';
 
 /**
  * DebugOverlay
  *
- * A fixed-position HUD text object that displays:
- *   - Current FPS
- *   - Player world X / Y coordinates
- *   - Player state machine state (when enabled)
- *   - Grounded flag, velocity, coyote timer, jump buffer
- *   - Entity counts (F4 toggle)
- *   - Camera state: scroll, zoom, look-ahead, dead zone (F5 toggle)
+ * Fixed-position HUD text that displays game state for each active debug mode:
+ *   Always   — FPS, player X/Y
+ *   (always) — Player state, velocity, coyote, jump buffer
+ *   F4       — Entity counts
+ *   F5       — Camera scroll, zoom, look-ahead, dead zone
+ *   F6       — Interaction focus, checkpoint, interactable count
  *
- * Pinned to the top-left of the viewport (scroll factor 0).
+ * Pinned to the top-left of the viewport (scrollFactor 0).
  */
 export class DebugOverlay extends Phaser.GameObjects.Text {
   constructor(scene: Phaser.Scene) {
@@ -27,7 +27,6 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
     });
 
     scene.add.existing(this);
-    // Fix to camera — always visible regardless of scroll position
     this.setScrollFactor(0);
     this.setDepth(1000);
   }
@@ -39,6 +38,7 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
     debug?: PlayerDebugInfo,
     entityDebug?: EntityDebugInfo,
     cameraDebug?: CameraDebugInfo,
+    interactionDebug?: InteractionDebugInfo,
   ): void {
     const lines: string[] = [
       `FPS    ${Math.round(fps)}`,
@@ -75,6 +75,17 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
         `LookX  ${cameraDebug.lookAheadX}`,
         `DZoneW ${cameraDebug.deadZoneW}`,
         `DZoneH ${cameraDebug.deadZoneH}`,
+      );
+    }
+
+    if (interactionDebug) {
+      const cp = interactionDebug.activeCheckpointPos;
+      lines.push(
+        `─────────────────`,
+        `IActvs ${interactionDebug.interactableCount}`,
+        `Focus  ${interactionDebug.focusedType ?? 'none'}`,
+        `CkptX  ${cp ? cp.x : '—'}`,
+        `CkptY  ${cp ? cp.y : '—'}`,
       );
     }
 
