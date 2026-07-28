@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { PlayerDebugInfo } from '../entities/Player';
+import type { EntityDebugInfo } from '../managers/EntityManager';
 
 /**
  * DebugOverlay
@@ -36,6 +37,7 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
     playerX: number,
     playerY: number,
     debug?: PlayerDebugInfo,
+    entityDebug?: EntityDebugInfo,
   ): void {
     const lines: string[] = [
       `FPS    ${Math.round(fps)}`,
@@ -51,6 +53,15 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
         `VelY   ${debug.velocityY.toFixed(1)}`,
         `Coyote ${Math.ceil(debug.coyoteTimer)}ms`,
         `JmpBuf ${Math.ceil(debug.jumpBufferTimer)}ms`,
+      );
+    }
+
+    if (entityDebug) {
+      lines.push(
+        `─────────────────`,
+        `Entities ${entityDebug.entityCount}`,
+        `Active   ${entityDebug.activeCount}`,
+        `Crystals ${entityDebug.collectedCrystals}`,
       );
     }
 

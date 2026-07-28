@@ -2,6 +2,8 @@ import Phaser from 'phaser';
 import { Player } from '../entities/Player';
 import { DebugOverlay } from '../ui/DebugOverlay';
 import { MapManager } from '../managers/MapManager';
+import { EntityManager } from '../managers/EntityManager';
+import { Crystal } from '../entities/collectible/Crystal';
 import { Level } from '../systems/Level';
 import { STARTING_LEVEL } from '../data/levels';
 
@@ -18,9 +20,12 @@ export class GameScene extends Phaser.Scene {
   private player!: Player;
   private debugOverlay!: DebugOverlay;
   private mapManager!: MapManager;
+  private entityManager!: EntityManager;
   private level!: Level;
   private debugKey!: Phaser.Input.Keyboard.Key;
+  private entityDebugKey!: Phaser.Input.Keyboard.Key;
   private collisionDebugActive = false;
+  private entityDebugActive = false;
   private levelKey = STARTING_LEVEL;
 
   constructor() {
@@ -40,12 +45,20 @@ export class GameScene extends Phaser.Scene {
     this.mapManager = new MapManager(this);
     this.level = this.mapManager.loadLevel(this.levelKey);
 
+    // ── Entity system ────────────────────────────────────────────────────────
+    this.entityManager = new EntityManager(this);
+    this.entityManager.registerType('Crystal', (scene, x, y) => new Crystal(scene, x, y));
+    this.entityManager.spawnFromMap(this.level.map);
+
     // ── Player ──────────────────────────────────────────────────────────────
     const { x, y } = this.level.objects.playerSpawn;
     this.player = new Player(this, x, y);
 
     // Collide only with the Collision layer
     this.physics.add.collider(this.player, this.level.collisionLayer);
+
+    // Wire collectible overlaps now that both player and entities exist
+    this.entityManager.initOverlaps(this.player);
 
     // ── Camera ──────────────────────────────────────────────────────────────
     this.cameras.main.setBounds(
@@ -58,17 +71,27 @@ export class GameScene extends Phaser.Scene {
     // ── HUD & input ─────────────────────────────────────────────────────────
     this.debugOverlay = new DebugOverlay(this);
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    this.debugKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.F3);
+    const kb = this.input.keyboard!;
+    this.debugKey       = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F3);
+    this.entityDebugKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F4);
 
-    // Clean up MapManager when the scene shuts down (e.g. on restart)
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.mapManager.destroy());
+    // Clean up on scene shutdown (e.g. restart)
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.mapManager.destroy();
+      this.entityManager.destroyAll();
+    });
   }
 
   update(_time: number, delta: number): void {
     this.player.update(delta);
+    this.entityManager.update(delta);
 
     if (Phaser.Input.Keyboard.JustDown(this.debugKey)) {
       this.toggleCollisionDebug();
+    }
+
+    if (Phaser.Input.Keyboard.JustDown(this.entityDebugKey)) {
+      this.entityDebugActive = !this.entityDebugActive;
     }
 
     this.debugOverlay.update(
@@ -76,6 +99,7 @@ export class GameScene extends Phaser.Scene {
       this.player.x,
       this.player.y,
       this.player.debugInfo,
+      this.entityDebugActive ? this.entityManager.debugInfo : undefined,
     );
   }
 

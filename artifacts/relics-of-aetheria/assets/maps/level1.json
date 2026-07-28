@@ -10701,6 +10701,62 @@
           "height": 64
         }
       ]
+    },
+    {
+      "id": 10,
+      "name": "Objects",
+      "opacity": 1,
+      "type": "objectgroup",
+      "visible": true,
+      "x": 0,
+      "y": 0,
+      "objects": [
+        {
+          "id": 10,
+          "name": "Crystal",
+          "type": "",
+          "x": 320,
+          "y": 544,
+          "width": 0,
+          "height": 0
+        },
+        {
+          "id": 11,
+          "name": "Crystal",
+          "type": "",
+          "x": 768,
+          "y": 368,
+          "width": 0,
+          "height": 0
+        },
+        {
+          "id": 12,
+          "name": "Crystal",
+          "type": "",
+          "x": 1216,
+          "y": 496,
+          "width": 0,
+          "height": 0
+        },
+        {
+          "id": 13,
+          "name": "Crystal",
+          "type": "",
+          "x": 1680,
+          "y": 368,
+          "width": 0,
+          "height": 0
+        },
+        {
+          "id": 14,
+          "name": "Crystal",
+          "type": "",
+          "x": 2240,
+          "y": 544,
+          "width": 0,
+          "height": 0
+        }
+      ]
     }
   ],
   "nextlayerid": 10,
