@@ -1,36 +1,43 @@
-# [Project name]
+# Relics of Aetheria
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A commercial-quality Android adventure game built on Phaser 3 + TypeScript + Vite + Capacitor.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm --filter @workspace/relics-of-aetheria run dev` — run the game (browser preview)
+- `pnpm --filter @workspace/relics-of-aetheria run typecheck` — type-check the game source
+- `pnpm --filter @workspace/relics-of-aetheria run lint` — ESLint
+- `pnpm --filter @workspace/relics-of-aetheria run format` — Prettier
+- `pnpm --filter @workspace/relics-of-aetheria run build` — Vite production bundle → `dist/public/`
+- `pnpm --filter @workspace/api-server run dev` — run the shared API server (port 8080)
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Game engine: Phaser 3 (^3.88)
+- Language: TypeScript 5.9, strict mode
+- Bundler: Vite
+- Android packaging: Capacitor 6 (config in `artifacts/relics-of-aetheria/capacitor.config.json`)
+- Linting: ESLint 9 (flat config: `eslint.config.js`)
+- Formatting: Prettier 3
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- Game entry: `artifacts/relics-of-aetheria/src/main.ts`
+- Phaser config + world constants: `artifacts/relics-of-aetheria/src/core/GameConfig.ts`
+- Scenes: `artifacts/relics-of-aetheria/src/scenes/`
+- Entities: `artifacts/relics-of-aetheria/src/entities/`
+- UI (HUD): `artifacts/relics-of-aetheria/src/ui/`
+- Capacitor config: `artifacts/relics-of-aetheria/capacitor.config.json`
+- Game assets: `artifacts/relics-of-aetheria/assets/`
+- Detailed README: `artifacts/relics-of-aetheria/README.md`
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
-
-## Product
-
-_Describe the high-level user-facing capabilities of this app once they exist._
+- React/Tailwind/Radix fully stripped — pure Phaser canvas, zero HTML UI
+- `Player` extends `Phaser.GameObjects.Rectangle` with `declare body` override for strict TS
+- `DebugOverlay` uses `setScrollFactor(0)` to pin to camera regardless of scroll
+- `GameScene.setZoom()` and `GameScene.shakeCamera()` are stubbed for future milestones
+- Capacitor config uses JSON (not TS) to avoid `@capacitor/cli` subdep firewall block
 
 ## User preferences
 
@@ -38,8 +45,5 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
-
-## Pointers
-
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- Do not add `@capacitor/cli` or `@capacitor/android` as workspace deps — they pull in `tar@6.2.1` which is blocked by the pnpm package firewall. Install them globally when doing Android builds.
+- Vite plugins `@replit/vite-plugin-runtime-error-modal` and `@replit/vite-plugin-cartographer` require React internally — do not add them to this artifact.

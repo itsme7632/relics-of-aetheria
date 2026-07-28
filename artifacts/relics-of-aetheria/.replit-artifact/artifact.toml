@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Relics of Aetheria"
+version = "1.0.0"
+id = "artifacts/relics-of-aetheria"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25353
+
+[services.development]
+run = "pnpm --filter @workspace/relics-of-aetheria run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/relics-of-aetheria", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/relics-of-aetheria/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25353"
+BASE_PATH = "/"

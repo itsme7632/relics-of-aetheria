@@ -1,0 +1,224 @@
+You are the lead software engineer for an original commercial-quality Android adventure game called "Relics of Aetheria".
+
+Your responsibility is NOT to build the entire game.
+
+Your responsibility is to create a clean, production-ready project foundation that will be expanded over many milestones.
+
+==================================================
+
+PROJECT GOAL
+
+Create a professional Phaser 3 + TypeScript project that serves as the long-term foundation for an Android game.
+
+Keep the implementation intentionally small.
+
+Quality is more important than quantity.
+
+==================================================
+
+TECH STACK
+
+Use:
+
+- Phaser 3
+- TypeScript
+- Vite
+- Capacitor (Android)
+- Tiled (TMX support will be added later)
+- ESLint
+- Prettier
+
+Use npm.
+
+==================================================
+
+DO NOT BUILD
+
+Do NOT build menus.
+
+Do NOT build settings.
+
+Do NOT build achievements.
+
+Do NOT build UI screens.
+
+Do NOT build enemies.
+
+Do NOT build collectibles.
+
+Do NOT build levels.
+
+Do NOT build gameplay systems.
+
+Do NOT build placeholder website interfaces.
+
+==================================================
+
+BUILD ONLY
+
+1. Create the project.
+
+2. Configure Vite.
+
+3. Configure Phaser.
+
+4. Configure TypeScript.
+
+5. Configure ESLint.
+
+6. Configure Prettier.
+
+7. Configure Capacitor.
+
+8. Create this folder structure:
+
+src/
+    core/
+    scenes/
+    entities/
+    systems/
+    managers/
+    ui/
+    utils/
+    data/
+
+assets/
+    sprites/
+    audio/
+    maps/
+    tilesets/
+    fonts/
+
+docs/
+
+==================================================
+
+SCENES
+
+Create only two scenes.
+
+BootScene
+
+GameScene
+
+BootScene loads minimal assets and immediately starts GameScene.
+
+==================================================
+
+GAME SCENE
+
+Display ONLY:
+
+• dark background
+
+• generated grid
+
+• one physics-enabled rectangle representing the player
+
+• one static floor
+
+Use Phaser Arcade Physics.
+
+==================================================
+
+PLAYER
+
+Implement only:
+
+Left
+
+Right
+
+Jump
+
+Arrow keys
+
+WASD
+
+Smooth camera follow.
+
+Nothing else.
+
+==================================================
+
+CAMERA
+
+Implement:
+
+Follow
+
+World bounds
+
+Future zoom support
+
+Future shake support
+
+==================================================
+
+DEBUG
+
+Create a small debug overlay showing:
+
+FPS
+
+Player X
+
+Player Y
+
+==================================================
+
+CODE QUALITY
+
+Use small reusable classes.
+
+Strict TypeScript.
+
+No giant files.
+
+No duplicated code.
+
+No unnecessary abstractions.
+
+Keep everything easy to understand.
+
+==================================================
+
+README
+
+Generate a README explaining:
+
+How to install
+
+How to run
+
+How to build
+
+Project structure
+
+Future milestones
+
+==================================================
+
+SUCCESS CRITERIA
+
+Running the project should immediately show:
+
+A Phaser canvas
+
+A simple floor
+
+A movable rectangle
+
+Gravity
+
+Jumping
+
+Smooth camera follow
+
+Zero TypeScript errors
+
+Zero console errors
+
+No HTML interface.
+
+Everything must render inside the Phaser canvas.

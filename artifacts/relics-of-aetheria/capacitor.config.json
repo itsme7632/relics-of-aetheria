@@ -1,0 +1,11 @@
+{
+  "appId": "com.relicsofaetheria.game",
+  "appName": "Relics of Aetheria",
+  "webDir": "dist/public",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}

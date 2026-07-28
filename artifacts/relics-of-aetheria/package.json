@@ -1,0 +1,25 @@
+{
+  "name": "@workspace/relics-of-aetheria",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --config vite.config.ts --host 0.0.0.0",
+    "build": "vite build --config vite.config.ts",
+    "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src/",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "cap:sync": "cap sync",
+    "cap:android": "cap open android"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "@types/node": "catalog:",
+    "eslint": "^9.0.0",
+    "phaser": "^3.88.0",
+    "prettier": "^3.0.0",
+    "vite": "catalog:"
+  }
+}
