@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { PlayerDebugInfo } from '../entities/Player';
 import type { EntityDebugInfo } from '../managers/EntityManager';
+import type { CameraDebugInfo } from '../managers/CameraManager';
 
 /**
  * DebugOverlay
@@ -8,11 +9,10 @@ import type { EntityDebugInfo } from '../managers/EntityManager';
  * A fixed-position HUD text object that displays:
  *   - Current FPS
  *   - Player world X / Y coordinates
- *   - Player state machine state
- *   - Grounded flag
- *   - Velocity X / Y
- *   - Coyote timer (ms remaining)
- *   - Jump buffer timer (ms remaining)
+ *   - Player state machine state (when enabled)
+ *   - Grounded flag, velocity, coyote timer, jump buffer
+ *   - Entity counts (F4 toggle)
+ *   - Camera state: scroll, zoom, look-ahead, dead zone (F5 toggle)
  *
  * Pinned to the top-left of the viewport (scroll factor 0).
  */
@@ -38,6 +38,7 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
     playerY: number,
     debug?: PlayerDebugInfo,
     entityDebug?: EntityDebugInfo,
+    cameraDebug?: CameraDebugInfo,
   ): void {
     const lines: string[] = [
       `FPS    ${Math.round(fps)}`,
@@ -62,6 +63,18 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
         `Entities ${entityDebug.entityCount}`,
         `Active   ${entityDebug.activeCount}`,
         `Crystals ${entityDebug.collectedCrystals}`,
+      );
+    }
+
+    if (cameraDebug) {
+      lines.push(
+        `─────────────────`,
+        `CamX   ${cameraDebug.scrollX}`,
+        `CamY   ${cameraDebug.scrollY}`,
+        `Zoom   ${cameraDebug.zoom.toFixed(2)}`,
+        `LookX  ${cameraDebug.lookAheadX}`,
+        `DZoneW ${cameraDebug.deadZoneW}`,
+        `DZoneH ${cameraDebug.deadZoneH}`,
       );
     }
 
