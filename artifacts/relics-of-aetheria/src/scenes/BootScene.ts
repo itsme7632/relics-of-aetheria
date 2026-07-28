@@ -1,14 +1,18 @@
 import Phaser from 'phaser';
-import { LEVELS, STARTING_LEVEL } from '../data/levels';
+import { WorldManager } from '../world/WorldManager';
 
 /**
  * BootScene
  *
- * Loads all registered map JSON files and generates the placeholder tileset
- * texture before handing off to GameScene.
+ * Preloads all assets registered in the level manifest and generates the
+ * placeholder tileset texture before handing off to GameScene.
  *
- * Future milestones: add this.load.image / this.load.audio calls here, then
- * show a progress bar using this.load.on('progress', ...).
+ * Asset registration is now centralised in WorldManager — BootScene no longer
+ * imports level data directly.  To add new levels, edit LevelManifest.ts;
+ * BootScene picks them up automatically.
+ *
+ * Future milestones: show a progress bar using this.load.on('progress', ...)
+ * and call WorldManager.preloadTilesets(this) when real art assets are added.
  */
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -16,20 +20,19 @@ export class BootScene extends Phaser.Scene {
   }
 
   preload(): void {
-    // Load every map registered in src/data/levels.ts
-    for (const config of Object.values(LEVELS)) {
-      this.load.tilemapTiledJSON(config.key, config.mapPath);
-    }
-    // Future milestone: load real tileset image instead of the generated one
-    // this.load.image('tiles', 'assets/tilesets/tileset.png');
+    // Register every map JSON file declared in LevelManifest
+    WorldManager.preloadAll(this);
+
+    // Future: WorldManager.preloadTilesets(this);
+    // Future: this.load.audio(...) per manifest entry
   }
 
   create(): void {
-    // Generate a procedural placeholder tileset so the map can render
+    // Generate a procedural placeholder tileset so maps can render
     // without real art assets. Replace with a real PNG in a later milestone.
     this.generateTilesetTexture();
 
-    this.scene.start('GameScene', { levelKey: STARTING_LEVEL });
+    this.scene.start('GameScene', { levelId: WorldManager.startingLevelId });
   }
 
   /**

@@ -1,28 +1,31 @@
 import Phaser from 'phaser';
 import { Player } from '../entities/Player';
 import { DebugOverlay } from '../ui/DebugOverlay';
-import { MapManager } from '../managers/MapManager';
 import { EntityManager } from '../managers/EntityManager';
 import { CameraManager } from '../managers/CameraManager';
 import { Crystal } from '../entities/collectible/Crystal';
 import { Level } from '../systems/Level';
-import { STARTING_LEVEL } from '../data/levels';
+import { WorldManager } from '../world/WorldManager';
 import { buildParallaxLayers, ParallaxLayer } from '../systems/ParallaxLayer';
 
 /**
  * GameScene
  *
- * Loads a TMX level via MapManager and wires up:
+ * Loads a level through WorldManager (manifest → validation → Level) and wires up:
  *   - Player spawned at the map-defined PlayerSpawn object
  *   - Arcade Physics collision against the Collision tile layer only
  *   - CameraManager (dead zone, look-ahead, landing bounce, parallax, effects)
  *   - Parallax background layers (3 procedural layers)
  *   - Debug overlay (FPS / X / Y) + F3 collision / F4 entity / F5 camera debug
+ *
+ * To change the starting level: edit STARTING_LEVEL_ID in LevelManifest.ts.
+ * To transition levels at runtime: use WorldManager.getNextEntry() and restart
+ * the scene with the new levelId.
  */
 export class GameScene extends Phaser.Scene {
   private player!: Player;
   private debugOverlay!: DebugOverlay;
-  private mapManager!: MapManager;
+  private worldManager!: WorldManager;
   private entityManager!: EntityManager;
   private cameraManager!: CameraManager;
   private level!: Level;
@@ -37,15 +40,15 @@ export class GameScene extends Phaser.Scene {
   private entityDebugActive    = false;
   private cameraDebugActive    = false;
 
-  private levelKey = STARTING_LEVEL;
+  private levelId = WorldManager.startingLevelId;
 
   constructor() {
     super({ key: 'GameScene' });
   }
 
-  /** Receives the level key passed by BootScene (or any scene transition). */
-  init(data: { levelKey?: string }): void {
-    this.levelKey            = data.levelKey ?? STARTING_LEVEL;
+  /** Receives the level id passed by BootScene (or any scene transition). */
+  init(data: { levelId?: string }): void {
+    this.levelId              = data.levelId ?? WorldManager.startingLevelId;
     this.collisionDebugActive = false;
     this.entityDebugActive    = false;
     this.cameraDebugActive    = false;
@@ -54,12 +57,13 @@ export class GameScene extends Phaser.Scene {
   create(): void {
     this.cameras.main.setBackgroundColor('#0d0d1a');
 
-    // ── Load map ────────────────────────────────────────────────────────────
-    this.mapManager = new MapManager(this);
-    this.level = this.mapManager.loadLevel(this.levelKey);
+    // ── World Manager (manifest → validation → Level) ────────────────────────
+    this.worldManager = new WorldManager(this);
+    this.level = this.worldManager.loadLevel(this.levelId, {
+      knownEntityTypes: ['Crystal'],
+    });
 
     // ── Parallax background layers (behind all tile layers) ─────────────────
-    // Must be created before the tilemap layers so they sit behind them.
     this.parallaxLayers = buildParallaxLayers(
       this,
       this.level.widthInPixels,
@@ -81,12 +85,8 @@ export class GameScene extends Phaser.Scene {
     // Wire collectible overlaps now that both player and entities exist
     this.entityManager.initOverlaps(this.player);
 
-    // ── Camera Manager (replaces bare cameras.main calls) ───────────────────
-    // CameraManager: sets bounds, startFollow, dead zone, pixel-perfect,
-    // and listens to the player 'land' event for landing bounce.
+    // ── Camera Manager ───────────────────────────────────────────────────────
     this.cameraManager = new CameraManager(this, this.player, this.level);
-
-    // Fade in on scene start
     this.cameraManager.effects.fadeIn(400);
 
     // ── HUD & input ─────────────────────────────────────────────────────────
@@ -97,9 +97,9 @@ export class GameScene extends Phaser.Scene {
     this.entityDebugKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F4);
     this.cameraDebugKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F5);
 
-    // Clean up on scene shutdown (e.g. restart)
+    // Clean up on scene shutdown (e.g. restart or level transition)
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      this.mapManager.destroy();
+      this.worldManager.destroy();
       this.entityManager.destroyAll();
       this.cameraManager.destroy();
       for (const layer of this.parallaxLayers) layer.destroy();
@@ -110,35 +110,31 @@ export class GameScene extends Phaser.Scene {
   update(_time: number, delta: number): void {
     this.player.update(delta);
     this.entityManager.update(delta);
-
-    // CameraManager must update every frame for look-ahead and debug overlay
     this.cameraManager.update(delta);
 
-    // ── Debug key toggles ────────────────────────────────────────────────────
+    // ── Debug key toggles ─────────────────────────────────────────────────
     if (Phaser.Input.Keyboard.JustDown(this.debugKey)) {
       this.toggleCollisionDebug();
     }
-
     if (Phaser.Input.Keyboard.JustDown(this.entityDebugKey)) {
       this.entityDebugActive = !this.entityDebugActive;
     }
-
     if (Phaser.Input.Keyboard.JustDown(this.cameraDebugKey)) {
       this.toggleCameraDebug();
     }
 
-    // ── HUD update ───────────────────────────────────────────────────────────
+    // ── HUD update ────────────────────────────────────────────────────────
     this.debugOverlay.update(
       this.game.loop.actualFps,
       this.player.x,
       this.player.y,
       this.player.debugInfo,
-      this.entityDebugActive   ? this.entityManager.debugInfo    : undefined,
-      this.cameraDebugActive   ? this.cameraManager.debugInfo    : undefined,
+      this.entityDebugActive ? this.entityManager.debugInfo  : undefined,
+      this.cameraDebugActive ? this.cameraManager.debugInfo  : undefined,
     );
   }
 
-  // ── Camera API (public for use by game systems) ───────────────────────────
+  // ── Camera API (public for use by game systems) ──────────────────────────
 
   /** Smoothly zoom to a target zoom level. */
   setZoom(zoom: number, duration = 300): void {
@@ -148,6 +144,22 @@ export class GameScene extends Phaser.Scene {
   /** Shake the camera (e.g. on landing impact or explosion). */
   shakeCamera(duration = 250, intensity = 0.012): void {
     this.cameraManager.effects.shake(intensity, duration);
+  }
+
+  // ── Level transition (future) ─────────────────────────────────────────────
+
+  /**
+   * Transition to the next level defined in the manifest.
+   * Fades out, then restarts the scene with the new levelId.
+   * No-op if the current level has no successor.
+   */
+  transitionToNextLevel(): void {
+    const next = this.worldManager.getNextEntry();
+    if (!next) return;
+
+    this.cameraManager.effects.fadeOut(500, 0x000000, () => {
+      this.scene.restart({ levelId: next.id });
+    });
   }
 
   // ── Debug ─────────────────────────────────────────────────────────────────

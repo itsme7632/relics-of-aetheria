@@ -1,0 +1,137 @@
+Continue the existing Relics of Aetheria project.
+
+DO NOT rebuild existing systems.
+
+Completed milestones:
+
+✅ M1 Engine Foundation
+✅ M2 Tilemap Engine
+✅ M3 Professional Player Controller
+✅ M4 Entity System
+✅ M5 Camera & World Feel
+
+Implement Milestone 6: World Builder & Level Production Pipeline.
+
+OBJECTIVE
+
+Create the production pipeline for building all future levels.
+
+Do NOT add enemies.
+
+Do NOT add combat.
+
+Do NOT add puzzles.
+
+Do NOT add UI.
+
+Focus on the level authoring workflow.
+
+====================================================
+
+CREATE
+
+src/world/
+
+WorldManager.ts
+
+LevelManifest.ts
+
+MapValidator.ts
+
+assets/worlds/
+
+world01_jungle/
+
+maps/
+
+tilesets/
+
+objects/
+
+====================================================
+
+MAP VALIDATION
+
+Validate on load:
+
+- Exactly one PlayerSpawn
+- Required tile layers exist
+- Required object layer exists
+- Unknown object names generate warnings
+- Missing collision layer generates an error
+
+Validation should log readable messages without crashing the game.
+
+====================================================
+
+LEVEL MANIFEST
+
+Store:
+
+Level ID
+
+Display Name
+
+World
+
+Map File
+
+Music
+
+Background Theme
+
+Next Level
+
+Completion Requirements
+
+GameScene should load levels through the manifest rather than hardcoded filenames.
+
+====================================================
+
+WORLD MANAGER
+
+Responsibilities:
+
+Load level metadata
+
+Load maps
+
+Support future world transitions
+
+Support future save system
+
+====================================================
+
+DOCUMENTATION
+
+Create:
+
+docs/LevelPipeline.md
+
+Include:
+
+Folder conventions
+
+Layer naming
+
+Object naming
+
+Manifest format
+
+Validation rules
+
+How to create a new level
+
+====================================================
+
+SUCCESS
+
+The existing level loads through the new pipeline.
+
+Validation reports success.
+
+No TypeScript errors.
+
+No console errors.
+
+Changing to a new level requires only adding it to the manifest.
