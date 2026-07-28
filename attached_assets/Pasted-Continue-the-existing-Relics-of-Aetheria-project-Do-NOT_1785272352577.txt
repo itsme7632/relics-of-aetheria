@@ -1,0 +1,151 @@
+Continue the existing "Relics of Aetheria" project.
+
+Do NOT rebuild the project.
+
+Do NOT modify the tilemap, player controller, or entity systems except where required for camera integration.
+
+Implement Milestone 5: Camera & World Feel.
+
+====================================================
+
+OBJECTIVE
+
+Replace the basic camera follow with a reusable CameraManager that provides professional platformer camera behavior.
+
+====================================================
+
+CREATE
+
+src/managers/
+
+CameraManager.ts
+
+CameraEffects.ts
+
+====================================================
+
+FEATURES
+
+Implement:
+
+1. Dead Zone
+
+Camera should not move for tiny player movement.
+
+2. Look Ahead
+
+Shift camera slightly in the player's movement direction.
+
+Smooth interpolation only.
+
+3. Landing Bounce
+
+Small downward bounce after heavy landings.
+
+Use landing event already emitted by Player.
+
+4. Screen Shake API
+
+Create reusable:
+
+shake(intensity,duration)
+
+Do not use it automatically except for landing test.
+
+5. Dynamic Zoom API
+
+Support:
+
+zoomTo(scale,duration)
+
+No gameplay usage yet.
+
+6. Camera Bounds
+
+Automatically derive from loaded tilemap.
+
+7. Parallax Support
+
+Create ParallaxLayer class.
+
+Allow multiple layers.
+
+Support configurable scroll factors.
+
+Generate simple procedural background layers for now.
+
+8. Pixel Perfect Rendering
+
+Prevent jitter.
+
+9. Camera Transition API
+
+Support:
+
+fadeIn
+
+fadeOut
+
+panTo
+
+====================================================
+
+DEBUG
+
+F5 toggles camera debug.
+
+Display:
+
+Dead zone
+
+Camera bounds
+
+Zoom
+
+Look-ahead offset
+
+====================================================
+
+PERFORMANCE
+
+Maintain 60 FPS.
+
+No allocations every frame.
+
+====================================================
+
+DOCUMENTATION
+
+Create:
+
+docs/CameraSystem.md
+
+Explain:
+
+Dead zone
+
+Look-ahead
+
+Parallax
+
+Adding new background layers
+
+Camera effects
+
+====================================================
+
+SUCCESS
+
+Camera feels smooth.
+
+Look-ahead works.
+
+Landing bounce works.
+
+Parallax layers render.
+
+No TypeScript errors.
+
+No console errors.
+
+Everything remains modular.
