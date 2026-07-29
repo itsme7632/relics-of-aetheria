@@ -9,7 +9,7 @@ import type { KaiDebugInfo } from '../entities/player/Kai';
 /**
  * Shape used by the F7 asset/animation debug panel.
  * Built by GameScene._buildAssetDebugInfo() from AssetCatalog, AssetValidator,
- * and AnimationFactory stats.
+ * AnimationFactory stats, and the M14 environment systems.
  */
 export interface AssetDebugInfo {
   /** Number of assets confirmed present in the Phaser cache. */
@@ -36,6 +36,26 @@ export interface AssetDebugInfo {
   memoryEstimateMB: number | null;
   /** Per-category totals and loaded counts. */
   categoryStats: Partial<Record<string, { total: number; loaded: number; failed: number }>>;
+
+  // M14 — Environment system stats
+  /** Names of tilesets loaded in the current map. */
+  loadedTilesets: string[];
+  /** Number of animated tile types registered for the active preset. */
+  animatedTileCount: number;
+  /** Names of registered animated tile animations. */
+  animationNames: string[];
+  /** Number of non-empty tiles in Decoration_Back + Decoration_Front layers. */
+  decorationCount: number;
+  /** Names of decoration types in the active preset. */
+  decorationTypes: string[];
+  /** Number of parallax background layers active. */
+  parallaxLayerCount: number;
+  /** Active background theme identifier. */
+  backgroundTheme: string;
+  /** Active decoration preset identifier. */
+  decorationPreset: string;
+  /** Active animated tile preset identifier. */
+  animatedTilePreset: string;
 }
 
 /**
@@ -46,7 +66,9 @@ export interface AssetDebugInfo {
  *   F4       — Entity counts
  *   F5       — Camera scroll, zoom, look-ahead, dead zone
  *   F6       — Interaction focus, checkpoint, interactable count
- *   F7       — Asset pipeline: loaded, missing, registered animations
+ *   F7       — Asset pipeline + M14 environment systems
+ *   F8       — Touch / virtual control state
+ *   F9       — Kai character state and animation data
  *
  * Pinned to the top-left of the viewport (scrollFactor 0).
  */
@@ -160,11 +182,39 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
       if (cats.length > 0) {
         lines.push(`─────────────────`);
         for (const [cat, s] of cats) {
-          const short = cat.slice(0, 4);
+          const short  = cat.slice(0, 4);
           const status = s.failed > 0 ? `⚠` : s.loaded === s.total ? `✓` : `·`;
           lines.push(`${status} ${short.padEnd(5)} ${s.loaded}/${s.total}`);
         }
       }
+
+      // ── M14: Environment systems ────────────────────────────────────────
+      lines.push(
+        `─────────────────`,
+        `[Env M14]`,
+      );
+
+      // Tilesets
+      const tsStr = assetDebug.loadedTilesets.length > 0
+        ? assetDebug.loadedTilesets.join(', ')
+        : '—';
+      lines.push(`Tileset ${tsStr}`);
+
+      // Parallax layers
+      lines.push(`BgTheme ${assetDebug.backgroundTheme}`);
+      lines.push(`BgLyrs  ${assetDebug.parallaxLayerCount}`);
+
+      // Animated tiles
+      lines.push(`AnimTls ${assetDebug.animatedTileCount > 0
+        ? `${assetDebug.animatedTileCount} (${assetDebug.animationNames.slice(0, 2).join(', ')}${assetDebug.animationNames.length > 2 ? '…' : ''})`
+        : `0 (${assetDebug.animatedTilePreset})`}`);
+
+      // Decoration
+      lines.push(`DecoSet ${assetDebug.decorationPreset}`);
+      lines.push(`DecoTls ${assetDebug.decorationCount}${
+        assetDebug.decorationTypes.length > 0
+          ? ` (${assetDebug.decorationTypes.slice(0, 2).join(', ')}${assetDebug.decorationTypes.length > 2 ? '…' : ''})`
+          : ''}`);
     }
 
     if (touchDebug) {
@@ -180,10 +230,10 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
     }
 
     if (kaiDebug) {
-      const frameStr   = kaiDebug.frameIndex >= 0 ? String(kaiDebug.frameIndex) : '—';
-      const fpsStr     = kaiDebug.animFps > 0     ? `${kaiDebug.animFps}fps`    : '—';
-      const sizeStr    = `${kaiDebug.spriteWidth}×${kaiDebug.spriteHeight}`;
-      const animOkStr  = kaiDebug.animLoaded       ? '✓ yes'                    : '· no (pending)';
+      const frameStr  = kaiDebug.frameIndex >= 0 ? String(kaiDebug.frameIndex) : '—';
+      const fpsStr    = kaiDebug.animFps > 0     ? `${kaiDebug.animFps}fps`    : '—';
+      const sizeStr   = `${kaiDebug.spriteWidth}×${kaiDebug.spriteHeight}`;
+      const animOkStr = kaiDebug.animLoaded       ? '✓ yes'                    : '· no (pending)';
       lines.push(
         `─────────────────`,
         `[Kai F9]`,

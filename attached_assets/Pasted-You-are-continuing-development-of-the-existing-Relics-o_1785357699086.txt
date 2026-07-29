@@ -1,0 +1,247 @@
+You are continuing development of the existing Relics of Aetheria project.
+
+IMPORTANT
+
+Read the ENTIRE repository before making any changes.
+
+M1–M13 are COMPLETE.
+
+The engine architecture is considered production-ready.
+
+DO NOT redesign any engine systems.
+
+DO NOT rewrite completed gameplay.
+
+DO NOT add unnecessary abstractions.
+
+From this milestone onward we are building GAME CONTENT.
+
+------------------------------------------------------------
+
+CURRENT MILESTONE
+
+M14
+
+Emerald Jungle Production Pack
+
+------------------------------------------------------------
+
+OBJECTIVE
+
+Transform World 1 from prototype placeholders into the first production-quality environment.
+
+Gameplay must remain unchanged.
+
+Only presentation, content support and environment assets should improve.
+
+------------------------------------------------------------
+
+ENVIRONMENT SUPPORT
+
+Prepare the engine to support production jungle assets.
+
+Support:
+
+Ground tiles
+
+Temple blocks
+
+Stone walls
+
+Cracked ruins
+
+Grass
+
+Moss
+
+Roots
+
+Bushes
+
+Trees
+
+Vines
+
+Wooden bridges
+
+Water
+
+Waterfalls
+
+Background layers
+
+Decorative props
+
+Checkpoint visuals
+
+Exit gate visuals
+
+Crystal shrine
+
+------------------------------------------------------------
+
+PARALLAX
+
+Implement support for multiple background layers.
+
+Support:
+
+Far jungle
+
+Mid jungle
+
+Foreground vegetation
+
+Cloud/fog layer
+
+Configurable scroll factors.
+
+------------------------------------------------------------
+
+WORLD DECORATION
+
+Create a decoration layer system.
+
+Decorations must never affect collision.
+
+Support:
+
+Plants
+
+Flowers
+
+Roots
+
+Broken statues
+
+Skulls
+
+Rocks
+
+Temple carvings
+
+Fallen pillars
+
+------------------------------------------------------------
+
+ANIMATED TILES
+
+Prepare support for:
+
+Flowing water
+
+Waterfalls
+
+Torch flames
+
+Crystal shimmer
+
+Moving leaves
+
+The system must be data-driven.
+
+------------------------------------------------------------
+
+LEVEL PIPELINE
+
+Allow maps to define:
+
+Background music
+
+Ambient sound
+
+Background preset
+
+Weather preset
+
+Decoration preset
+
+Future worlds must be able to reuse the same system.
+
+------------------------------------------------------------
+
+DEBUG
+
+Expand F7 asset debug.
+
+Show:
+
+Loaded tilesets
+
+Animated tile count
+
+Background layers
+
+Decoration count
+
+Parallax layers
+
+------------------------------------------------------------
+
+DOCUMENTATION
+
+Update:
+
+docs/WorldPipeline.md
+
+Include:
+
+World folder layout
+
+Environment pipeline
+
+Decoration system
+
+Animated tile workflow
+
+Background workflow
+
+------------------------------------------------------------
+
+VERIFICATION
+
+Run:
+
+TypeScript typecheck
+
+Build
+
+Runtime verification
+
+Confirm:
+
+0 TypeScript errors
+
+0 new console errors
+
+Desktop controls unchanged
+
+Android controls unchanged
+
+60 FPS maintained
+
+Gameplay identical
+
+Production environment support ready
+
+------------------------------------------------------------
+
+DELIVER
+
+1. What already existed.
+
+2. What was added.
+
+3. Modified files.
+
+4. New files.
+
+5. Verification checklist.
+
+6. Recommendations before M15.
+
+IMPORTANT
+
+DO NOT begin M15.
+
+Finish M14 only.

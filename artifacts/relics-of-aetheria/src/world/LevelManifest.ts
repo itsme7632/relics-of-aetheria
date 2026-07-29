@@ -6,13 +6,18 @@
  * no engine code needs to change.
  *
  * Key concepts:
- *   id              — unique string key used to reference this level everywhere
- *   world           — logical group (maps to an assets/worlds/<world>/ folder)
- *   mapFile         — path to the Tiled JSON export, relative to web root
- *   tilesetName     — tileset name declared inside the Tiled .tmj file
- *   tilesetKey      — Phaser texture cache key — use AssetKeys constants
- *   backgroundTheme — which parallax set to build ('default' | future themes)
- *   nextLevel       — id of the level that follows this one, or undefined
+ *   id                  — unique string key used to reference this level everywhere
+ *   world               — logical group (maps to an assets/worlds/<world>/ folder)
+ *   mapFile             — path to the Tiled JSON export, relative to web root
+ *   tilesetName         — tileset name declared inside the Tiled .tmj file
+ *   tilesetKey          — Phaser texture cache key — use AssetKeys constants
+ *   backgroundTheme     — which parallax set to build (BackgroundTheme)
+ *   decorationPreset    — which decoration types populate the world (DecorationPreset)
+ *   weatherPreset       — atmosphere / weather effect (WeatherPreset)
+ *   animatedTilePreset  — which tile animations are active (AnimatedTilePreset)
+ *   music               — optional Phaser audio key for background music
+ *   ambientSound        — optional Phaser audio key for looping ambient sound
+ *   nextLevel           — id of the level that follows this one, or undefined
  */
 
 import { AssetKeys } from '../assets/AssetKeys';
@@ -41,12 +46,33 @@ export interface LevelManifestEntry {
   tilesetKey: string;
   /** Phaser audio key for background music (loaded by BootScene when present). */
   music?: string;
+  /** Phaser audio key for a looping ambient sound layer (wind, birds, water, etc.). */
+  ambientSound?: string;
   /**
    * Parallax background theme identifier.
-   * 'default' = star-field + mountain silhouettes (current procedural layers).
-   * Future themes can be added to buildParallaxLayers().
+   * See BackgroundTheme in WorldEnvironment.ts for valid values.
+   * 'default' = star-field + mountain silhouettes (procedural placeholder).
+   * 'jungle_day' = multi-layer jungle canopy with cloud/fog.
    */
   backgroundTheme: string;
+  /**
+   * Decoration preset identifier.
+   * See DecorationPreset in WorldEnvironment.ts for valid values.
+   * Controls which decorative prop types are expected in Decoration_Back/Front layers.
+   * Decorations never affect collision.
+   */
+  decorationPreset?: string;
+  /**
+   * Weather / atmosphere preset identifier.
+   * See WeatherPreset in WorldEnvironment.ts for valid values.
+   */
+  weatherPreset?: string;
+  /**
+   * Animated tile preset identifier.
+   * See AnimatedTilePreset in WorldEnvironment.ts for valid values.
+   * Registers Phaser tile animations for water, flames, crystals, leaves.
+   */
+  animatedTilePreset?: string;
   /** id of the next level, or undefined if this is the final level. */
   nextLevel?: string;
   /** Optional completion gate. No requirements = exit always active. */
@@ -61,14 +87,17 @@ export interface LevelManifestEntry {
  */
 export const LEVEL_MANIFEST: LevelManifestEntry[] = [
   {
-    id:              'world01_level01',
-    displayName:     'Jungle Ruins — Entry',
-    world:           'world01_jungle',
-    mapFile:         'assets/maps/level1.json',
-    tilesetName:     'tileset',
-    tilesetKey:      AssetKeys.TILESET_WORLD01,
-    backgroundTheme: 'default',
-    nextLevel:       undefined,        // extend when level 2 is added
+    id:                 'world01_level01',
+    displayName:        'Jungle Ruins — Entry',
+    world:              'world01_jungle',
+    mapFile:            'assets/maps/level1.json',
+    tilesetName:        'tileset',
+    tilesetKey:         AssetKeys.TILESET_WORLD01,
+    backgroundTheme:    'jungle_day',
+    decorationPreset:   'jungle_ruins',
+    weatherPreset:      'none',
+    animatedTilePreset: 'none',
+    nextLevel:          undefined,        // extend when level 2 is added
     completionRequirements: {
       reachExit: true,
     },
@@ -76,14 +105,17 @@ export const LEVEL_MANIFEST: LevelManifestEntry[] = [
 
   // ── How to add a new level ────────────────────────────────────────────────
   // {
-  //   id:              'world01_level02',
-  //   displayName:     'Jungle Ruins — Deep',
-  //   world:           'world01_jungle',
-  //   mapFile:         'assets/worlds/world01_jungle/maps/level02.json',
-  //   tilesetName:     'tileset',
-  //   tilesetKey:      'tiles',
-  //   backgroundTheme: 'default',
-  //   nextLevel:       undefined,
+  //   id:                 'world01_level02',
+  //   displayName:        'Jungle Ruins — Deep',
+  //   world:              'world01_jungle',
+  //   mapFile:            'assets/worlds/world01_jungle/maps/level02.json',
+  //   tilesetName:        'tileset',
+  //   tilesetKey:         AssetKeys.TILESET_WORLD01,
+  //   backgroundTheme:    'jungle_day',
+  //   decorationPreset:   'jungle_deep',
+  //   weatherPreset:      'mist',
+  //   animatedTilePreset: 'jungle_water',
+  //   nextLevel:          undefined,
   //   completionRequirements: { crystalsRequired: 3, reachExit: true },
   // },
 ];

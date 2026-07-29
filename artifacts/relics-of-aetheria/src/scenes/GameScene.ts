@@ -14,6 +14,9 @@ import { InteractionEvents } from '../events/InteractionEvents';
 import { Level } from '../systems/Level';
 import { WorldManager } from '../world/WorldManager';
 import { buildParallaxLayers, ParallaxLayer } from '../systems/ParallaxLayer';
+import { AnimatedTileSystem } from '../systems/AnimatedTileSystem';
+import { DecorationSystem } from '../systems/DecorationSystem';
+import { buildEnvironmentConfig } from '../world/WorldEnvironment';
 import { AssetValidator } from '../assets/AssetValidator';
 import { AnimationFactory } from '../animation/AnimationFactory';
 import { AssetCatalog } from '../assets/AssetCatalog';
@@ -31,13 +34,14 @@ import { AssetCatalog } from '../assets/AssetCatalog';
  *   M8    Asset pipeline + Animation foundation
  *   M9    Mobile controls (TouchManager → TouchInputState)
  *   M10   Kai Character System (sprite renderer + animation controller)
+ *   M14   Environment systems (parallax themes, animated tiles, decoration presets)
  *
  * Debug keys:
  *   F3 — collision tile overlay
  *   F4 — entity counts
  *   F5 — camera debug (dead zone, look-ahead)
  *   F6 — interaction debug (radii, focus, checkpoint)
- *   F7 — asset pipeline debug (loaded assets, missing, registered animations)
+ *   F7 — asset pipeline + M14 environment debug
  *   F8 — touch/input debug (touch count, joystick vector, button states)
  *   F9 — Kai character debug (anim key, facing, velocity, state)
  */
@@ -51,6 +55,10 @@ export class GameScene extends Phaser.Scene {
   private touchManager!: TouchManager;
   private level!: Level;
   private parallaxLayers: ParallaxLayer[] = [];
+
+  // ── M14 — Environment systems ─────────────────────────────────────────────
+  private animatedTileSystem!: AnimatedTileSystem;
+  private decorationSystem!: DecorationSystem;
 
   // ── Level-complete overlay (shown when no next level exists) ──────────────
   private levelCompleteText: Phaser.GameObjects.Text | null = null;
@@ -99,12 +107,28 @@ export class GameScene extends Phaser.Scene {
       knownEntityTypes: ['Crystal', 'Door', 'Sign'],
     });
 
-    // ── Parallax background layers ───────────────────────────────────────────
+    // ── M14: Build typed environment config from manifest entry ──────────────
+    const envConfig = buildEnvironmentConfig(this.worldManager.getCurrentEntry());
+
+    // ── Parallax background layers (theme-driven) ────────────────────────────
     this.parallaxLayers = buildParallaxLayers(
       this,
       this.level.widthInPixels,
       this.level.heightInPixels,
+      envConfig.backgroundTheme,
     );
+
+    // ── M14: Animated tile system ────────────────────────────────────────────
+    this.animatedTileSystem = new AnimatedTileSystem();
+    this.animatedTileSystem.apply(
+      this.level.map,
+      this.worldManager.getCurrentEntry()?.tilesetName ?? 'tileset',
+      envConfig.animatedTilePreset,
+    );
+
+    // ── M14: Decoration system ────────────────────────────────────────────────
+    this.decorationSystem = new DecorationSystem();
+    this.decorationSystem.applyPreset(envConfig.decorationPreset, this.level.map);
 
     // ── Entity system (collectibles) ─────────────────────────────────────────
     this.entityManager = new EntityManager(this);
@@ -342,7 +366,14 @@ export class GameScene extends Phaser.Scene {
     const valReport    = AssetValidator.report;
     const animStats    = AnimationFactory.stats;
     const catalogStats = AssetCatalog.instance.stats;
+    const entry        = this.worldManager.getCurrentEntry();
+    const envConfig    = buildEnvironmentConfig(entry);
+
+    // Collect loaded tileset names from the current map
+    const loadedTilesets = this.level.map.tilesets.map((ts) => ts.name);
+
     return {
+      // ── Existing (M8/M12) fields ────────────────────────────────────────
       loadedCount:         valReport.loadedKeys.length,
       missingRequired:     valReport.missingRequired,
       missingOptional:     valReport.missingOptional.length,
@@ -350,11 +381,21 @@ export class GameScene extends Phaser.Scene {
       registeredAnims:     animStats.registeredKeys.length,
       pendingAnims:        animStats.pendingKeys.length,
       pendingAnimKeys:     animStats.pendingKeys,
-      // M12 catalog stats
       totalCatalogAssets:  catalogStats.total,
       failedCatalogAssets: catalogStats.failed,
       memoryEstimateMB:    catalogStats.memoryEstimateMB,
       categoryStats:       catalogStats.byCategory,
+
+      // ── M14 environment fields ──────────────────────────────────────────
+      loadedTilesets,
+      animatedTileCount:  this.animatedTileSystem.animatedTileCount,
+      animationNames:     this.animatedTileSystem.animationNames,
+      decorationCount:    this.decorationSystem.decorationCount,
+      decorationTypes:    this.decorationSystem.typeNames,
+      parallaxLayerCount: this.parallaxLayers.length,
+      backgroundTheme:    envConfig.backgroundTheme,
+      decorationPreset:   envConfig.decorationPreset,
+      animatedTilePreset: envConfig.animatedTilePreset,
     };
   }
 }
