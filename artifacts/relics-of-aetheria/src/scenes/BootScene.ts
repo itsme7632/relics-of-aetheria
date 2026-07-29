@@ -1,18 +1,28 @@
 import Phaser from 'phaser';
 import { WorldManager } from '../world/WorldManager';
+import { AssetLoader } from '../assets/AssetLoader';
+import { AssetValidator } from '../assets/AssetValidator';
+import { AnimationFactory } from '../animation/AnimationFactory';
+import { AssetKeys } from '../assets/AssetKeys';
 
 /**
  * BootScene
  *
- * Preloads all assets registered in the level manifest and generates the
- * placeholder tileset texture before handing off to GameScene.
+ * Preloads all assets and generates placeholder textures before handing
+ * off to GameScene.
  *
- * Asset registration is now centralised in WorldManager — BootScene no longer
- * imports level data directly.  To add new levels, edit LevelManifest.ts;
- * BootScene picks them up automatically.
+ * Load order:
+ *   1. WorldManager.preloadAll  — registers all Tiled map JSON files
+ *   2. AssetLoader.loadAll      — registers all art/audio/font assets
+ *      (all entries currently optional; no crashes if files are absent)
  *
- * Future milestones: show a progress bar using this.load.on('progress', ...)
- * and call WorldManager.preloadTilesets(this) when real art assets are added.
+ * Create order:
+ *   1. generateTilesetTexture   — procedural placeholder tileset
+ *   2. AssetValidator.validate  — checks cache, reports missing assets
+ *   3. AnimationFactory.registerAll — registers anims whose textures exist
+ *   4. scene.start('GameScene') — begin gameplay
+ *
+ * Future: add a progress bar using this.load.on('progress', ...) here.
  */
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -23,21 +33,37 @@ export class BootScene extends Phaser.Scene {
     // Register every map JSON file declared in LevelManifest
     WorldManager.preloadAll(this);
 
-    // Future: WorldManager.preloadTilesets(this);
-    // Future: this.load.audio(...) per manifest entry
+    // Register all art, audio, and font assets from the central manifest.
+    // Files that don't exist yet are silently tolerated (optional: true).
+    AssetLoader.loadAll(this);
   }
 
   create(): void {
-    // Generate a procedural placeholder tileset so maps can render
-    // without real art assets. Replace with a real PNG in a later milestone.
+    // Generate the procedural placeholder tileset so maps render without
+    // real art.  Replace this call with a real PNG load once artwork arrives.
     this.generateTilesetTexture();
+
+    // Validate what actually loaded; logs warnings for missing required assets.
+    AssetValidator.validate(this);
+
+    // Register animations for any textures that are already in the cache.
+    // Animations whose textures are absent are queued as "pending artwork".
+    AnimationFactory.registerAll(this);
 
     this.scene.start('GameScene', { levelId: WorldManager.startingLevelId });
   }
 
+  // ── Private ──────────────────────────────────────────────────────────────────
+
   /**
-   * Creates the 'tiles' texture (256×32, 8 tiles of 32×32) programmatically.
-   * GID 1 = ground/solid, GID 2 = platform, GIDs 3-8 = reserved.
+   * Creates the tileset texture procedurally (256×32, 8 tiles of 32×32).
+   *
+   * The texture key comes from AssetKeys.TILESET_WORLD01 ('tiles') which
+   * must match the tilesetKey field in LevelManifest for world01 levels.
+   *
+   * GID 1 = ground/solid tile   (dark navy with top highlight)
+   * GID 2 = platform tile       (lighter with thin top edge)
+   * GIDs 3-8 = reserved         (near-black filler)
    */
   private generateTilesetTexture(): void {
     const TILE = 32;
@@ -62,7 +88,7 @@ export class BootScene extends Phaser.Scene {
       g.fillRect(i * TILE, 0, TILE, TILE);
     }
 
-    g.generateTexture('tiles', TILE * COLS, TILE);
+    g.generateTexture(AssetKeys.TILESET_WORLD01, TILE * COLS, TILE);
     g.destroy();
   }
 }

@@ -1,0 +1,310 @@
+Continue the existing "Relics of Aetheria" project.
+
+IMPORTANT
+
+Do NOT rebuild the project.
+
+Do NOT modify completed systems unless required for the asset pipeline.
+
+Current completed milestones:
+
+✅ M1 Engine Foundation
+✅ M2 Tilemap Engine
+✅ M3 Professional Player Controller
+✅ M4 Entity System
+✅ M5 Camera & World Feel
+✅ M6 World Builder & Level Pipeline
+✅ M7 Gameplay Interaction Framework
+
+------------------------------------------------------------
+
+OBJECTIVE
+
+Implement a production-ready Asset Pipeline and Animation Foundation.
+
+This milestone prepares the engine for real artwork.
+
+Do NOT replace placeholder graphics yet.
+
+Do NOT create Kai's artwork.
+
+Do NOT modify gameplay.
+
+------------------------------------------------------------
+
+PROJECT STANDARDS
+
+Lock these standards into the project:
+
+Tile Size:
+32x32 pixels
+
+Player Sprite:
+32x48 pixels
+
+Target Resolution:
+1280x720
+
+Supported Asset Types:
+
+Images
+
+Spritesheets
+
+Tilemaps
+
+Audio
+
+Bitmap Fonts
+
+UI Images
+
+------------------------------------------------------------
+
+CREATE
+
+src/assets/
+
+AssetKeys.ts
+
+AssetManifest.ts
+
+AssetLoader.ts
+
+AssetValidator.ts
+
+src/animation/
+
+AnimationKeys.ts
+
+AnimationRegistry.ts
+
+AnimationFactory.ts
+
+------------------------------------------------------------
+
+ASSET KEYS
+
+No hardcoded asset strings.
+
+Everything must use AssetKeys constants.
+
+Example:
+
+AssetKeys.PLAYER
+
+AssetKeys.CRYSTAL
+
+AssetKeys.WORLD01_TILESET
+
+etc.
+
+------------------------------------------------------------
+
+ASSET MANIFEST
+
+Create one central manifest.
+
+Support:
+
+image
+
+spritesheet
+
+atlas (future)
+
+tilemap
+
+audio
+
+font
+
+Each asset should define:
+
+key
+
+type
+
+path
+
+frameWidth (optional)
+
+frameHeight (optional)
+
+------------------------------------------------------------
+
+ASSET LOADER
+
+BootScene should load assets from the AssetManifest.
+
+Game code should never directly call:
+
+this.load.image()
+
+this.load.spritesheet()
+
+except inside AssetLoader.
+
+------------------------------------------------------------
+
+ASSET VALIDATION
+
+During boot:
+
+Detect duplicate asset keys.
+
+Warn about missing files.
+
+Warn about invalid spritesheet frame sizes.
+
+Print readable console messages.
+
+Do not crash the game.
+
+------------------------------------------------------------
+
+ANIMATION SYSTEM
+
+Create:
+
+AnimationKeys
+
+AnimationRegistry
+
+AnimationFactory
+
+AnimationFactory should register animations from configuration rather than hardcoded scene code.
+
+------------------------------------------------------------
+
+PLAYER ANIMATION PLACEHOLDERS
+
+Prepare animation names only.
+
+Do NOT require artwork.
+
+Create placeholders for:
+
+Idle
+
+Run
+
+Jump
+
+Fall
+
+Land
+
+Climb
+
+Push
+
+Hurt
+
+Celebrate
+
+These should register cleanly even if placeholder graphics are used.
+
+------------------------------------------------------------
+
+FOLDER STRUCTURE
+
+Standardize:
+
+assets/
+
+sprites/
+
+kai/
+
+enemies/
+
+effects/
+
+objects/
+
+tilesets/
+
+world01/
+
+world02/
+
+audio/
+
+music/
+
+sfx/
+
+ui/
+
+fonts/
+
+------------------------------------------------------------
+
+DEBUG
+
+Add F7
+
+Display:
+
+Loaded assets
+
+Missing assets
+
+Registered animations
+
+------------------------------------------------------------
+
+DOCUMENTATION
+
+Create:
+
+docs/AssetPipeline.md
+
+Include:
+
+Folder conventions
+
+Naming conventions
+
+Asset standards
+
+Sprite sheet standards
+
+Animation naming
+
+How to add new assets
+
+How to register new animations
+
+------------------------------------------------------------
+
+PERFORMANCE
+
+No duplicate asset loading.
+
+Reuse textures.
+
+Support future texture atlases.
+
+No unnecessary allocations.
+
+Maintain 60 FPS.
+
+------------------------------------------------------------
+
+SUCCESS
+
+Project compiles.
+
+Zero TypeScript errors.
+
+Zero console errors.
+
+Placeholder assets still work.
+
+Assets load only through AssetLoader.
+
+Animations register successfully.
+
+Project is ready to receive real artwork.

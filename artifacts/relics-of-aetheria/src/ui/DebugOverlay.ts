@@ -5,14 +5,35 @@ import type { CameraDebugInfo } from '../managers/CameraManager';
 import type { InteractionDebugInfo } from '../managers/InteractionManager';
 
 /**
+ * Shape used by the F7 asset/animation debug panel.
+ * Built by GameScene._buildAssetDebugInfo() from AssetValidator + AnimationFactory stats.
+ */
+export interface AssetDebugInfo {
+  /** Number of assets confirmed present in the Phaser cache. */
+  loadedCount: number;
+  /** Required asset keys that failed to load. */
+  missingRequired: string[];
+  /** Count of optional assets that are not yet present (expected during dev). */
+  missingOptional: number;
+  /** Spritesheet keys where frame dimensions don't evenly divide the image. */
+  frameSizeWarnings: string[];
+  /** Number of animations successfully registered with scene.anims. */
+  registeredAnims: number;
+  /** Number of animations awaiting artwork before they can be registered. */
+  pendingAnims: number;
+  /** Keys of pending animations (shown in the overlay list). */
+  pendingAnimKeys: string[];
+}
+
+/**
  * DebugOverlay
  *
  * Fixed-position HUD text that displays game state for each active debug mode:
- *   Always   — FPS, player X/Y
- *   (always) — Player state, velocity, coyote, jump buffer
+ *   Always   — FPS, player X/Y, player state
  *   F4       — Entity counts
  *   F5       — Camera scroll, zoom, look-ahead, dead zone
  *   F6       — Interaction focus, checkpoint, interactable count
+ *   F7       — Asset pipeline: loaded, missing, registered animations
  *
  * Pinned to the top-left of the viewport (scrollFactor 0).
  */
@@ -39,6 +60,7 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
     entityDebug?: EntityDebugInfo,
     cameraDebug?: CameraDebugInfo,
     interactionDebug?: InteractionDebugInfo,
+    assetDebug?: AssetDebugInfo,
   ): void {
     const lines: string[] = [
       `FPS    ${Math.round(fps)}`,
@@ -87,6 +109,31 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
         `CkptX  ${cp ? cp.x : '—'}`,
         `CkptY  ${cp ? cp.y : '—'}`,
       );
+    }
+
+    if (assetDebug) {
+      const missingReq = assetDebug.missingRequired.length;
+      lines.push(
+        `─────────────────`,
+        `Loaded  ${assetDebug.loadedCount}`,
+        `MissReq ${missingReq === 0 ? '✓ 0' : `⚠ ${missingReq}`}`,
+        `MissOpt ${assetDebug.missingOptional}`,
+        `FrmWarn ${assetDebug.frameSizeWarnings.length === 0 ? '✓ 0' : `⚠ ${assetDebug.frameSizeWarnings.length}`}`,
+        `─────────────────`,
+        `Anims   ${assetDebug.registeredAnims}`,
+        `Pending ${assetDebug.pendingAnims}`,
+      );
+      if (assetDebug.missingRequired.length > 0) {
+        lines.push(`Miss: ${assetDebug.missingRequired.slice(0, 3).join(', ')}`);
+      }
+      if (assetDebug.pendingAnimKeys.length > 0) {
+        // Show first 3 pending anim keys truncated
+        const preview = assetDebug.pendingAnimKeys
+          .slice(0, 3)
+          .map((k) => k.replace(/^(player_|enemy_|effect_)/, ''))
+          .join(', ');
+        lines.push(`Pend: ${preview}${assetDebug.pendingAnimKeys.length > 3 ? '…' : ''}`);
+      }
     }
 
     this.setText(lines);

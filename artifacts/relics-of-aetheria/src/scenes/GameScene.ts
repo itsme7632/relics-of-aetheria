@@ -13,6 +13,8 @@ import { InteractionEvents } from '../events/InteractionEvents';
 import { Level } from '../systems/Level';
 import { WorldManager } from '../world/WorldManager';
 import { buildParallaxLayers, ParallaxLayer } from '../systems/ParallaxLayer';
+import { AssetValidator } from '../assets/AssetValidator';
+import { AnimationFactory } from '../animation/AnimationFactory';
 
 /**
  * GameScene
@@ -24,12 +26,14 @@ import { buildParallaxLayers, ParallaxLayer } from '../systems/ParallaxLayer';
  *   M5    Camera + parallax
  *   M6    WorldManager (manifest → validation → Level)
  *   M7    InteractionManager (Checkpoint, LevelExit, Door, Sign)
+ *   M8    Asset pipeline + Animation foundation
  *
  * Debug keys:
  *   F3 — collision tile overlay
  *   F4 — entity counts
  *   F5 — camera debug (dead zone, look-ahead)
  *   F6 — interaction debug (radii, focus, checkpoint)
+ *   F7 — asset pipeline debug (loaded assets, missing, registered animations)
  */
 export class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -49,6 +53,7 @@ export class GameScene extends Phaser.Scene {
   private entityDebugKey!: Phaser.Input.Keyboard.Key;
   private cameraDebugKey!: Phaser.Input.Keyboard.Key;
   private interactionDebugKey!: Phaser.Input.Keyboard.Key;
+  private assetDebugKey!: Phaser.Input.Keyboard.Key;
   private eKey!: Phaser.Input.Keyboard.Key;
 
   // ── Debug state ───────────────────────────────────────────────────────────
@@ -56,6 +61,7 @@ export class GameScene extends Phaser.Scene {
   private entityDebugActive       = false;
   private cameraDebugActive       = false;
   private interactionDebugActive  = false;
+  private assetDebugActive        = false;
 
   private levelId = WorldManager.startingLevelId;
 
@@ -69,6 +75,7 @@ export class GameScene extends Phaser.Scene {
     this.entityDebugActive       = false;
     this.cameraDebugActive       = false;
     this.interactionDebugActive  = false;
+    this.assetDebugActive        = false;
   }
 
   create(): void {
@@ -152,6 +159,7 @@ export class GameScene extends Phaser.Scene {
     this.entityDebugKey       = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F4);
     this.cameraDebugKey       = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F5);
     this.interactionDebugKey  = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F6);
+    this.assetDebugKey        = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F7);
     this.eKey                 = kb.addKey(Phaser.Input.Keyboard.KeyCodes.E);
 
     // ── Shutdown cleanup ─────────────────────────────────────────────────────
@@ -190,6 +198,9 @@ export class GameScene extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.interactionDebugKey)) {
       this.toggleInteractionDebug();
     }
+    if (Phaser.Input.Keyboard.JustDown(this.assetDebugKey)) {
+      this.assetDebugActive = !this.assetDebugActive;
+    }
 
     // ── HUD update ────────────────────────────────────────────────────────
     this.debugOverlay.update(
@@ -200,6 +211,7 @@ export class GameScene extends Phaser.Scene {
       this.entityDebugActive      ? this.entityManager.debugInfo      : undefined,
       this.cameraDebugActive      ? this.cameraManager.debugInfo      : undefined,
       this.interactionDebugActive ? this.interactionManager.debugInfo : undefined,
+      this.assetDebugActive       ? this._buildAssetDebugInfo()        : undefined,
     );
   }
 
@@ -285,5 +297,19 @@ export class GameScene extends Phaser.Scene {
     } else {
       this.interactionManager.hideDebug();
     }
+  }
+
+  private _buildAssetDebugInfo() {
+    const valReport = AssetValidator.report;
+    const animStats = AnimationFactory.stats;
+    return {
+      loadedCount:        valReport.loadedKeys.length,
+      missingRequired:    valReport.missingRequired,
+      missingOptional:    valReport.missingOptional.length,
+      frameSizeWarnings:  valReport.frameSizeWarnings,
+      registeredAnims:    animStats.registeredKeys.length,
+      pendingAnims:       animStats.pendingKeys.length,
+      pendingAnimKeys:    animStats.pendingKeys,
+    };
   }
 }

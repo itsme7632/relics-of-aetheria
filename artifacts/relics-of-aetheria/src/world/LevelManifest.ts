@@ -10,10 +10,12 @@
  *   world           — logical group (maps to an assets/worlds/<world>/ folder)
  *   mapFile         — path to the Tiled JSON export, relative to web root
  *   tilesetName     — tileset name declared inside the Tiled .tmj file
- *   tilesetKey      — Phaser texture cache key (must match what BootScene loads)
+ *   tilesetKey      — Phaser texture cache key — use AssetKeys constants
  *   backgroundTheme — which parallax set to build ('default' | future themes)
  *   nextLevel       — id of the level that follows this one, or undefined
  */
+
+import { AssetKeys } from '../assets/AssetKeys';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -64,7 +66,7 @@ export const LEVEL_MANIFEST: LevelManifestEntry[] = [
     world:           'world01_jungle',
     mapFile:         'assets/maps/level1.json',
     tilesetName:     'tileset',
-    tilesetKey:      'tiles',
+    tilesetKey:      AssetKeys.TILESET_WORLD01,
     backgroundTheme: 'default',
     nextLevel:       undefined,        // extend when level 2 is added
     completionRequirements: {
