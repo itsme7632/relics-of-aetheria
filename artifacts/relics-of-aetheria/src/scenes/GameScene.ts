@@ -16,6 +16,7 @@ import { WorldManager } from '../world/WorldManager';
 import { buildParallaxLayers, ParallaxLayer } from '../systems/ParallaxLayer';
 import { AssetValidator } from '../assets/AssetValidator';
 import { AnimationFactory } from '../animation/AnimationFactory';
+import { AssetCatalog } from '../assets/AssetCatalog';
 
 /**
  * GameScene
@@ -338,16 +339,22 @@ export class GameScene extends Phaser.Scene {
   }
 
   private _buildAssetDebugInfo() {
-    const valReport = AssetValidator.report;
-    const animStats = AnimationFactory.stats;
+    const valReport    = AssetValidator.report;
+    const animStats    = AnimationFactory.stats;
+    const catalogStats = AssetCatalog.instance.stats;
     return {
-      loadedCount:        valReport.loadedKeys.length,
-      missingRequired:    valReport.missingRequired,
-      missingOptional:    valReport.missingOptional.length,
-      frameSizeWarnings:  valReport.frameSizeWarnings,
-      registeredAnims:    animStats.registeredKeys.length,
-      pendingAnims:       animStats.pendingKeys.length,
-      pendingAnimKeys:    animStats.pendingKeys,
+      loadedCount:         valReport.loadedKeys.length,
+      missingRequired:     valReport.missingRequired,
+      missingOptional:     valReport.missingOptional.length,
+      frameSizeWarnings:   valReport.frameSizeWarnings,
+      registeredAnims:     animStats.registeredKeys.length,
+      pendingAnims:        animStats.pendingKeys.length,
+      pendingAnimKeys:     animStats.pendingKeys,
+      // M12 catalog stats
+      totalCatalogAssets:  catalogStats.total,
+      failedCatalogAssets: catalogStats.failed,
+      memoryEstimateMB:    catalogStats.memoryEstimateMB,
+      categoryStats:       catalogStats.byCategory,
     };
   }
 }

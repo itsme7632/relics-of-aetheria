@@ -27,6 +27,7 @@ import {
   AtlasEntry,
   FontEntry,
 } from './AssetManifest';
+import { AssetCatalog, AssetCategory } from './AssetCatalog';
 
 // ── Debug state (readable by DebugOverlay via GameScene) ──────────────────────
 
@@ -52,6 +53,17 @@ export class AssetLoader {
   /** Stats snapshot populated after loadAll() completes. */
   static get stats(): Readonly<AssetLoaderStats> {
     return this._stats;
+  }
+
+  /**
+   * Queue only the entries belonging to a specific category.
+   * Useful for staged / lazy loading — load 'ui' immediately, defer 'enemies'
+   * until the first level that needs them.
+   *
+   * Call from BootScene.preload() before Phaser starts loading.
+   */
+  static loadByCategory(scene: Phaser.Scene, category: AssetCategory): void {
+    AssetCatalog.instance.loadByCategory(scene, category);
   }
 
   /**

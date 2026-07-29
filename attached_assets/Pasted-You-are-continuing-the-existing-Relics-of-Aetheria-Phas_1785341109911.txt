@@ -1,0 +1,207 @@
+You are continuing the existing "Relics of Aetheria" Phaser 3 + TypeScript Android game.
+
+IMPORTANT
+
+Read the entire existing project before making changes.
+
+M1–M11 are COMPLETE.
+
+Do not modify completed gameplay systems.
+
+Do not redesign Kai.
+
+Do not generate artwork.
+
+Do not add placeholder assets.
+
+------------------------------------------------------------
+
+CURRENT MILESTONE
+
+M12
+
+Production Asset Pipeline & World Foundation
+
+------------------------------------------------------------
+
+OBJECTIVE
+
+Prepare the engine for production assets across the entire game.
+
+The system must scale cleanly for:
+
+• Characters
+• Enemies
+• Tilesets
+• Backgrounds
+• Objects
+• UI
+• Effects
+• Audio
+
+------------------------------------------------------------
+
+Implement
+
+Create a central AssetCatalog responsible for describing every production asset.
+
+Each asset entry should include:
+
+- key
+- category
+- path
+- type
+- optional metadata
+- validation status
+
+------------------------------------------------------------
+
+Asset Categories
+
+Support at minimum:
+
+Characters
+
+Enemies
+
+Tilesets
+
+Backgrounds
+
+Objects
+
+UI
+
+Particles
+
+Audio
+
+Fonts
+
+------------------------------------------------------------
+
+Folder Structure
+
+Ensure the project supports a clean production layout such as:
+
+assets/
+
+characters/
+
+enemies/
+
+tilesets/
+
+backgrounds/
+
+objects/
+
+ui/
+
+effects/
+
+audio/
+
+fonts/
+
+------------------------------------------------------------
+
+Validation
+
+Create an asset validator that checks:
+
+duplicate keys
+
+missing files
+
+unsupported extensions
+
+duplicate paths
+
+invalid metadata
+
+Produce clear warnings.
+
+------------------------------------------------------------
+
+Loading
+
+Improve the preload pipeline.
+
+Allow grouped loading by category.
+
+Display loading progress through the existing system.
+
+------------------------------------------------------------
+
+Debug
+
+Expand F9.
+
+Show:
+
+Total assets
+
+Loaded assets
+
+Failed assets
+
+Memory estimate (if available)
+
+Asset categories
+
+------------------------------------------------------------
+
+Documentation
+
+Create or update:
+
+docs/AssetPipeline.md
+
+Include:
+
+Folder structure
+
+Naming conventions
+
+Adding new assets
+
+Validation workflow
+
+Production pipeline
+
+------------------------------------------------------------
+
+Verification
+
+Run typecheck.
+
+Run the game.
+
+Verify:
+
+0 TypeScript errors
+
+0 new console errors
+
+Desktop controls still work
+
+Android controls still work
+
+Existing gameplay unchanged
+
+Asset validation executes successfully
+
+------------------------------------------------------------
+
+Deliver
+
+Modified files
+
+New files
+
+Verification checklist
+
+Known limitations
+
+Do NOT begin M13.

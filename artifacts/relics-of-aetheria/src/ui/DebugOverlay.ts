@@ -8,7 +8,8 @@ import type { KaiDebugInfo } from '../entities/player/Kai';
 
 /**
  * Shape used by the F7 asset/animation debug panel.
- * Built by GameScene._buildAssetDebugInfo() from AssetValidator + AnimationFactory stats.
+ * Built by GameScene._buildAssetDebugInfo() from AssetCatalog, AssetValidator,
+ * and AnimationFactory stats.
  */
 export interface AssetDebugInfo {
   /** Number of assets confirmed present in the Phaser cache. */
@@ -25,6 +26,16 @@ export interface AssetDebugInfo {
   pendingAnims: number;
   /** Keys of pending animations (shown in the overlay list). */
   pendingAnimKeys: string[];
+
+  // M12 — AssetCatalog stats
+  /** Total entries in the catalog. */
+  totalCatalogAssets: number;
+  /** Entries with missing_required or frame_error status. */
+  failedCatalogAssets: number;
+  /** JS heap size in MB, or null if performance.memory is unavailable. */
+  memoryEstimateMB: number | null;
+  /** Per-category totals and loaded counts. */
+  categoryStats: Partial<Record<string, { total: number; loaded: number; failed: number }>>;
 }
 
 /**
@@ -117,12 +128,19 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
 
     if (assetDebug) {
       const missingReq = assetDebug.missingRequired.length;
+      const memStr = assetDebug.memoryEstimateMB !== null
+        ? `${assetDebug.memoryEstimateMB}MB` : '—';
+
       lines.push(
         `─────────────────`,
+        `[Assets F7]`,
+        `Total   ${assetDebug.totalCatalogAssets}`,
         `Loaded  ${assetDebug.loadedCount}`,
+        `Failed  ${assetDebug.failedCatalogAssets === 0 ? '✓ 0' : `⚠ ${assetDebug.failedCatalogAssets}`}`,
         `MissReq ${missingReq === 0 ? '✓ 0' : `⚠ ${missingReq}`}`,
         `MissOpt ${assetDebug.missingOptional}`,
         `FrmWarn ${assetDebug.frameSizeWarnings.length === 0 ? '✓ 0' : `⚠ ${assetDebug.frameSizeWarnings.length}`}`,
+        `Mem     ${memStr}`,
         `─────────────────`,
         `Anims   ${assetDebug.registeredAnims}`,
         `Pending ${assetDebug.pendingAnims}`,
@@ -131,12 +149,21 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
         lines.push(`Miss: ${assetDebug.missingRequired.slice(0, 3).join(', ')}`);
       }
       if (assetDebug.pendingAnimKeys.length > 0) {
-        // Show first 3 pending anim keys truncated
         const preview = assetDebug.pendingAnimKeys
           .slice(0, 3)
           .map((k) => k.replace(/^(player_|enemy_|effect_)/, ''))
           .join(', ');
         lines.push(`Pend: ${preview}${assetDebug.pendingAnimKeys.length > 3 ? '…' : ''}`);
+      }
+      // Per-category summary (non-zero totals only)
+      const cats = Object.entries(assetDebug.categoryStats) as [string, { total: number; loaded: number; failed: number }][];
+      if (cats.length > 0) {
+        lines.push(`─────────────────`);
+        for (const [cat, s] of cats) {
+          const short = cat.slice(0, 4);
+          const status = s.failed > 0 ? `⚠` : s.loaded === s.total ? `✓` : `·`;
+          lines.push(`${status} ${short.padEnd(5)} ${s.loaded}/${s.total}`);
+        }
       }
     }
 

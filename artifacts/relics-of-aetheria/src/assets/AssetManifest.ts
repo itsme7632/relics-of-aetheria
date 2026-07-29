@@ -116,34 +116,34 @@ export type AssetEntry =
  */
 export const ASSET_MANIFEST: AssetEntry[] = [
 
-  // ── Player (Kai) ────────────────────────────────────────────────────────────
+  // ── Player (Kai) — assets/characters/ ──────────────────────────────────────
   // 32×48 px frames — horizontal strip, 22 frames total (see AnimationRegistry)
-  // Remove `optional: true` once kai.png is placed in assets/sprites/kai/
+  // Remove `optional: true` once kai.png is placed at the path below.
   {
     key:         PLAYER,
     type:        'spritesheet',
-    path:        'assets/sprites/kai/kai.png',
+    path:        'assets/characters/kai/kai.png',
     frameWidth:  32,
     frameHeight: 48,
     frameCount:  22,
     optional:    true,   // artwork not yet delivered
   },
 
-  // ── Collectibles ─────────────────────────────────────────────────────────────
+  // ── Collectibles — assets/objects/ ───────────────────────────────────────────
   {
     key:         CRYSTAL,
     type:        'spritesheet',
-    path:        'assets/sprites/objects/crystal.png',
+    path:        'assets/objects/crystal.png',
     frameWidth:  32,
     frameHeight: 32,
     optional:    true,
   },
 
-  // ── Enemies ──────────────────────────────────────────────────────────────────
+  // ── Enemies — assets/enemies/ ────────────────────────────────────────────────
   {
     key:         ENEMY_SLIME,
     type:        'spritesheet',
-    path:        'assets/sprites/enemies/slime.png',
+    path:        'assets/enemies/slime.png',
     frameWidth:  32,
     frameHeight: 32,
     optional:    true,
@@ -151,7 +151,7 @@ export const ASSET_MANIFEST: AssetEntry[] = [
   {
     key:         ENEMY_GOBLIN,
     type:        'spritesheet',
-    path:        'assets/sprites/enemies/goblin.png',
+    path:        'assets/enemies/goblin.png',
     frameWidth:  32,
     frameHeight: 48,
     optional:    true,
@@ -159,17 +159,17 @@ export const ASSET_MANIFEST: AssetEntry[] = [
   {
     key:         ENEMY_BAT,
     type:        'spritesheet',
-    path:        'assets/sprites/enemies/bat.png',
+    path:        'assets/enemies/bat.png',
     frameWidth:  32,
     frameHeight: 32,
     optional:    true,
   },
 
-  // ── Effects ───────────────────────────────────────────────────────────────────
+  // ── Effects — assets/effects/ ────────────────────────────────────────────────
   {
     key:         EFFECT_DUST_PUFF,
     type:        'spritesheet',
-    path:        'assets/sprites/effects/dust_puff.png',
+    path:        'assets/effects/dust_puff.png',
     frameWidth:  32,
     frameHeight: 32,
     optional:    true,
@@ -177,7 +177,7 @@ export const ASSET_MANIFEST: AssetEntry[] = [
   {
     key:         EFFECT_SPARKLE,
     type:        'spritesheet',
-    path:        'assets/sprites/effects/sparkle.png',
+    path:        'assets/effects/sparkle.png',
     frameWidth:  32,
     frameHeight: 32,
     optional:    true,
@@ -185,13 +185,13 @@ export const ASSET_MANIFEST: AssetEntry[] = [
   {
     key:         EFFECT_COLLECT_BURST,
     type:        'spritesheet',
-    path:        'assets/sprites/effects/collect_burst.png',
+    path:        'assets/effects/collect_burst.png',
     frameWidth:  32,
     frameHeight: 32,
     optional:    true,
   },
 
-  // ── UI ────────────────────────────────────────────────────────────────────────
+  // ── UI — assets/ui/ ───────────────────────────────────────────────────────────
   {
     key:      UI_HEART,
     type:     'image',
@@ -223,7 +223,7 @@ export const ASSET_MANIFEST: AssetEntry[] = [
     optional: true,
   },
 
-  // ── Audio — background music ──────────────────────────────────────────────────
+  // ── Audio — background music — assets/audio/music/ ───────────────────────────
   {
     key:      AUDIO_BGM_JUNGLE,
     type:     'audio',
@@ -243,7 +243,7 @@ export const ASSET_MANIFEST: AssetEntry[] = [
     optional: true,
   },
 
-  // ── Audio — sound effects ─────────────────────────────────────────────────────
+  // ── Audio — sound effects — assets/audio/sfx/ ───────────────────────────────
   {
     key:      AUDIO_SFX_JUMP,
     type:     'audio',
@@ -287,7 +287,7 @@ export const ASSET_MANIFEST: AssetEntry[] = [
     optional: true,
   },
 
-  // ── Bitmap fonts ──────────────────────────────────────────────────────────────
+  // ── Bitmap fonts — assets/fonts/ ─────────────────────────────────────────────
   {
     key:      FONT_HUD,
     type:     'font',

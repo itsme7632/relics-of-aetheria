@@ -33,7 +33,7 @@ export const KAI_SPRITE_SPEC = {
   /** Phaser texture cache key. */
   textureKey:   AssetKeys.PLAYER,
   /** Path relative to the web root (must match AssetManifest.ts). */
-  path:         'assets/sprites/kai/kai.png',
+  path:         'assets/characters/kai/kai.png',
   /** Width of one animation frame in pixels. */
   frameWidth:   32,
   /** Height of one animation frame in pixels. */
