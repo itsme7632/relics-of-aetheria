@@ -153,6 +153,10 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
     }
 
     if (kaiDebug) {
+      const frameStr  = kaiDebug.frameIndex >= 0 ? String(kaiDebug.frameIndex) : '—';
+      const fpsStr    = kaiDebug.animFps > 0     ? `${kaiDebug.animFps}fps`    : '—';
+      const sizeStr   = `${kaiDebug.spriteWidth}×${kaiDebug.spriteHeight}`;
+      const texStr    = kaiDebug.textureLoaded    ? 'real'                      : 'placeholder';
       lines.push(
         `─────────────────`,
         `[Kai F9]`,
@@ -161,6 +165,10 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
         `Facing ${kaiDebug.facing}`,
         `VelX   ${kaiDebug.velocityX.toFixed(1)}`,
         `VelY   ${kaiDebug.velocityY.toFixed(1)}`,
+        `Frame  ${frameStr}`,
+        `FPS    ${fpsStr}`,
+        `Size   ${sizeStr}`,
+        `Tex    ${texStr}`,
       );
     }
 

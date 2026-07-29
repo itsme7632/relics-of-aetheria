@@ -117,13 +117,15 @@ export type AssetEntry =
 export const ASSET_MANIFEST: AssetEntry[] = [
 
   // ── Player (Kai) ────────────────────────────────────────────────────────────
-  // 32×48 px frames — exact column count depends on delivered spritesheet
+  // 32×48 px frames — horizontal strip, 22 frames total (see AnimationRegistry)
+  // Remove `optional: true` once kai.png is placed in assets/sprites/kai/
   {
     key:         PLAYER,
     type:        'spritesheet',
     path:        'assets/sprites/kai/kai.png',
     frameWidth:  32,
     frameHeight: 48,
+    frameCount:  22,
     optional:    true,   // artwork not yet delivered
   },
 

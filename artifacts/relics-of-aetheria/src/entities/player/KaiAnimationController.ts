@@ -1,21 +1,18 @@
 /**
  * KaiAnimationController
  *
- * Maps PlayerState transitions to Phaser animation keys and drives the sprite.
+ * M10: Maps PlayerState transitions to Phaser animation keys and drives the sprite.
+ * M11: Removed placeholder logic — sprite.play() is always called when the
+ *      animation is registered.  When the spritesheet is absent the call is a
+ *      safe no-op (animation simply doesn't exist in scene.anims yet).
  *
- * Current behaviour (placeholder mode — no spritesheet):
- *   - Tracks state transitions and logs each change to the console.
- *   - Exposes currentAnimKey so DebugOverlay (F9) can display the intended animation.
- *   - sprite.play() calls are written but commented out until real frames exist.
- *
- * Enabling real animations (when spritesheet arrives):
- *   1. Ensure AnimationFactory.registerAll() has registered the player animations.
- *   2. Uncomment the this._sprite.play(key) line in _playAnim().
- *   3. Remove the console.log in _playAnim() (or keep it for dev logging).
+ * When the real Kai spritesheet is added:
+ *   1. AnimationFactory.registerAll() will register the player animations.
+ *   2. sprite.play() calls here start working automatically — no code changes needed.
  *
  * Supported states:
  *   Core (PlayerStateMachine): Idle, Run, Jump, Fall, Land
- *   Future (not in SM yet):    Climb, Push, Hurt, Celebrate
+ *   Extended (not in SM yet):  Climb, Push, Hurt, Celebrate
  *   Unknown states fall back to PLAYER_IDLE.
  */
 
@@ -34,7 +31,7 @@ import {
 } from '../../animation/AnimationKeys';
 
 // ── Extended state enum used for controller-only states ───────────────────────
-// These mirror PlayerState for active SM states, and add future ones.
+
 export type KaiAnimState =
   | PlayerState
   | 'Climb'
@@ -42,7 +39,8 @@ export type KaiAnimState =
   | 'Hurt'
   | 'Celebrate';
 
-// ── State → animation key map ──────────────────────────────────────────────────
+// ── State → animation key map ─────────────────────────────────────────────────
+
 function stateToAnimKey(state: KaiAnimState): string {
   switch (state) {
     case PlayerState.Idle: return PLAYER_IDLE;
@@ -61,8 +59,7 @@ function stateToAnimKey(state: KaiAnimState): string {
 // ─── KaiAnimationController ───────────────────────────────────────────────────
 
 export class KaiAnimationController {
-  private _state:   KaiAnimState = PlayerState.Idle;
-  /** Direct reference to the sprite — used when real animations are enabled. */
+  private _state: KaiAnimState = PlayerState.Idle;
   private readonly _sprite: Phaser.GameObjects.Sprite;
 
   constructor(sprite: Phaser.GameObjects.Sprite) {
@@ -94,7 +91,17 @@ export class KaiAnimationController {
     this._playAnim(prev, state);
   }
 
-  /** The animation key that is currently intended to play. */
+  /**
+   * Preview a specific animation by key, bypassing the state machine.
+   * Useful for debug/tooling. Only plays if the animation is registered.
+   */
+  previewAnimation(key: string): void {
+    if (this._sprite.scene.anims.exists(key)) {
+      this._sprite.play(key, true);
+    }
+  }
+
+  /** The Phaser animation key that corresponds to the current state. */
   get currentAnimKey(): string {
     return stateToAnimKey(this._state);
   }
@@ -110,7 +117,9 @@ export class KaiAnimationController {
     const key = stateToAnimKey(to);
     console.log(`[KaiAnimController] ${from} → ${to}  (key: ${key})`);
 
-    // Uncomment when real spritesheet is registered with AnimationFactory:
-    // this._sprite.play(key, true);   // true = ignore if already playing
+    // Play if registered — safe no-op when spritesheet is not yet loaded.
+    if (this._sprite.scene.anims.exists(key)) {
+      this._sprite.play(key, true);
+    }
   }
 }

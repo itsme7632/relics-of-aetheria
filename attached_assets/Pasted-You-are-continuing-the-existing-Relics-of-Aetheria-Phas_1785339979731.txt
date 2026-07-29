@@ -1,0 +1,209 @@
+You are continuing the existing "Relics of Aetheria" Phaser 3 + TypeScript Android game.
+
+IMPORTANT
+
+Read the entire project before modifying anything.
+
+DO NOT rebuild any completed systems.
+
+DO NOT redesign Kai.
+
+DO NOT generate artwork.
+
+The artwork will be imported later.
+
+------------------------------------------------------------
+
+Completed Milestones
+
+✅ M1 Engine Foundation
+
+✅ M2 Tilemap Engine
+
+✅ M3 Professional Player Controller
+
+✅ M4 Entity System
+
+✅ M5 Camera & World Feel
+
+✅ M6 World Builder & Level Pipeline
+
+✅ M7 Gameplay Interaction Framework
+
+✅ M8 Asset Pipeline & Animation Foundation
+
+✅ M9 Mobile Controls
+
+✅ M10 Kai Character System
+
+------------------------------------------------------------
+
+CURRENT MILESTONE
+
+M11
+
+Production Sprite Integration Framework
+
+------------------------------------------------------------
+
+OBJECTIVE
+
+Prepare the entire engine so the final Kai spritesheet can be dropped into the project with minimal changes.
+
+Do NOT create any art.
+
+Do NOT create placeholder sprites.
+
+------------------------------------------------------------
+
+Implement
+
+PlayerSpriteImporter
+
+AnimationClip definitions
+
+Spritesheet metadata support
+
+Frame validation
+
+Animation preview helpers
+
+------------------------------------------------------------
+
+Asset Pipeline
+
+Prepare the importer to support:
+
+32x48 frames
+
+PNG spritesheets
+
+Transparent backgrounds
+
+Automatic frame counting
+
+Animation validation
+
+------------------------------------------------------------
+
+Animation Clips
+
+Support:
+
+Idle
+
+Run
+
+Jump
+
+Fall
+
+Land
+
+Push
+
+Climb
+
+Celebrate
+
+Hurt
+
+Allow changing frame counts from configuration.
+
+------------------------------------------------------------
+
+KaiAnimationController
+
+Remove any remaining placeholder logic.
+
+Use AnimationRegistry exclusively.
+
+When the real spritesheet is added, no code should need changing.
+
+------------------------------------------------------------
+
+Debug
+
+Improve F9.
+
+Show:
+
+Current animation
+
+Frame index
+
+Animation FPS
+
+Sprite dimensions
+
+Texture loaded
+
+------------------------------------------------------------
+
+Validation
+
+Warn if:
+
+Frame count mismatches
+
+Missing animations
+
+Invalid frame sizes
+
+Duplicate animation names
+
+------------------------------------------------------------
+
+Documentation
+
+Update:
+
+docs/KaiCharacter.md
+
+Include:
+
+Spritesheet specifications
+
+Folder structure
+
+Import workflow
+
+Animation workflow
+
+Future asset replacement
+
+------------------------------------------------------------
+
+Verification
+
+Run typecheck.
+
+Run the game.
+
+Verify:
+
+Zero TypeScript errors
+
+Zero console errors
+
+60 FPS
+
+Desktop controls still work
+
+Android controls still work
+
+Kai system is fully ready for production sprites
+
+------------------------------------------------------------
+
+When finished provide:
+
+Modified files
+
+New files
+
+Verification checklist
+
+Anything still required before importing the final Kai spritesheet
+
+Do NOT begin M12.

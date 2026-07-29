@@ -6,24 +6,21 @@
  * KaiRenderer sprite takes its visual place.  Physics, collision, and input
  * handling are completely unchanged.
  *
+ * M11 additions:
+ *   - KaiDebugInfo extended with frame index, anim FPS, sprite dimensions,
+ *     and texture-loaded status for the improved F9 overlay.
+ *
  * Architecture:
  *   Player  — physics body, movement, state machine, input (unchanged)
  *   ↑ extends
  *   Kai     — hides rectangle, wires KaiRenderer + KaiAnimationController
- *     KaiRenderer           — Phaser Sprite, position sync, flip
- *     KaiAnimationController — state → anim key, drives sprite.play() (future)
+ *     KaiRenderer            — Phaser Sprite, position sync, flip
+ *     KaiAnimationController — state → anim key, drives sprite.play()
  *
  * Usage in GameScene:
  *   const player = new Kai(this, spawnX, spawnY);
  *   // All Player API (update, debugInfo, currentState, body, x, y) still works.
  *   // New: player.kaiDebugInfo for the F9 overlay.
- *
- * F9 debug info:
- *   animKey    — the Phaser animation key currently intended to play
- *   facing     — 'left' | 'right'
- *   velocityX  — px/s horizontal
- *   velocityY  — px/s vertical
- *   state      — current PlayerState
  */
 
 import Phaser from 'phaser';
@@ -32,20 +29,33 @@ import { PlayerState } from '../PlayerStateMachine';
 import type { TouchInputState } from '../../input/TouchInputState';
 import { KaiRenderer } from './KaiRenderer';
 import { KaiAnimationController } from './KaiAnimationController';
+import { PlayerSpriteImporter } from './PlayerSpriteImporter';
 
 // ── KaiDebugInfo ──────────────────────────────────────────────────────────────
 
 export interface KaiDebugInfo {
-  /** Phaser animation key that would play if spritesheet existed. */
+  /** Phaser animation key that maps to the current state. */
   animKey: string;
+  /** Current PlayerStateMachine state. */
+  state: PlayerState;
   /** Which direction the sprite is facing. */
   facing: 'left' | 'right';
   /** Current horizontal velocity (px/s). */
   velocityX: number;
   /** Current vertical velocity (px/s, positive = downward). */
   velocityY: number;
-  /** Current PlayerStateMachine state. */
-  state: PlayerState;
+
+  // M11 — live animation / sprite data
+  /** Current frame index within the playing animation (-1 when not playing). */
+  frameIndex: number;
+  /** Configured frameRate of the current animation (0 when not playing). */
+  animFps: number;
+  /** Display width of the sprite in pixels. */
+  spriteWidth: number;
+  /** Display height of the sprite in pixels. */
+  spriteHeight: number;
+  /** True when the real production spritesheet is loaded; false = placeholder. */
+  textureLoaded: boolean;
 }
 
 // ─── Kai ──────────────────────────────────────────────────────────────────────
@@ -88,14 +98,23 @@ export class Kai extends Player {
 
   // ── Public API ────────────────────────────────────────────────────────────
 
-  /** Debug info for the F9 overlay. Only allocated when F9 is active. */
+  /**
+   * Debug info for the F9 overlay.
+   * Only allocated when F9 is active — not on the hot path.
+   */
   get kaiDebugInfo(): KaiDebugInfo {
+    const sprite = this._renderer.sprite;
     return {
-      animKey:   this._animController.currentAnimKey,
-      facing:    this._renderer.facing === 1 ? 'right' : 'left',
-      velocityX: this.body.velocity.x,
-      velocityY: this.body.velocity.y,
-      state:     this.currentState,
+      animKey:      this._animController.currentAnimKey,
+      state:        this.currentState,
+      facing:       this._renderer.facing === 1 ? 'right' : 'left',
+      velocityX:    this.body.velocity.x,
+      velocityY:    this.body.velocity.y,
+      frameIndex:   sprite.anims.currentFrame?.index ?? -1,
+      animFps:      sprite.anims.currentAnim?.frameRate ?? 0,
+      spriteWidth:  sprite.width,
+      spriteHeight: sprite.height,
+      textureLoaded: PlayerSpriteImporter.isLoaded(this.scene),
     };
   }
 
@@ -105,6 +124,14 @@ export class Kai extends Player {
    */
   forceAnimState(state: 'Climb' | 'Push' | 'Hurt' | 'Celebrate'): void {
     this._animController.forceState(state);
+  }
+
+  /**
+   * Preview a specific animation by key, bypassing the state machine.
+   * Useful for debug/tooling — only plays if the animation is registered.
+   */
+  previewAnimation(key: string): void {
+    this._animController.previewAnimation(key);
   }
 
   // ── Cleanup ───────────────────────────────────────────────────────────────

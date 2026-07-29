@@ -5,6 +5,7 @@ import { AssetValidator } from '../assets/AssetValidator';
 import { AnimationFactory } from '../animation/AnimationFactory';
 import { AssetKeys } from '../assets/AssetKeys';
 import { PlayerSpriteFactory } from '../entities/player/PlayerSpriteFactory';
+import { PlayerSpriteImporter } from '../entities/player/PlayerSpriteImporter';
 
 /**
  * BootScene
@@ -54,6 +55,10 @@ export class BootScene extends Phaser.Scene {
     // Register animations for any textures that are already in the cache.
     // Animations whose textures are absent are queued as "pending artwork".
     AnimationFactory.registerAll(this);
+
+    // Validate the Kai spritesheet if it has been delivered.
+    // Safe no-op when the file is absent — logs success or warnings when present.
+    PlayerSpriteImporter.validate(this);
 
     this.scene.start('GameScene', { levelId: WorldManager.startingLevelId });
   }
