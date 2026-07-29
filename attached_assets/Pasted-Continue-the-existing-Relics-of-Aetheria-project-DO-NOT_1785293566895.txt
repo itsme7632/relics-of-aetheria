@@ -1,0 +1,184 @@
+Continue the existing "Relics of Aetheria" project.
+
+DO NOT rebuild existing systems.
+
+Completed milestones:
+
+✅ M1 Engine Foundation
+✅ M2 Tilemap Engine
+✅ M3 Professional Player Controller
+✅ M4 Entity System
+✅ M5 Camera & World Feel
+✅ M6 World Builder & Level Pipeline
+✅ M7 Gameplay Interaction Framework
+✅ M8 Asset Pipeline & Animation Foundation
+
+Implement Milestone 9: Mobile Controls.
+
+====================================================
+
+OBJECTIVE
+
+Create a production-ready touch control system for Android.
+
+The player must be fully playable on mobile.
+
+Do NOT modify gameplay logic.
+
+The Player should continue using the existing InputManager API.
+
+====================================================
+
+CREATE
+
+src/input/
+
+TouchManager.ts
+
+VirtualJoystick.ts
+
+TouchButton.ts
+
+TouchInputState.ts
+
+====================================================
+
+INPUT SYSTEM
+
+Merge keyboard and touch into one API.
+
+Player should never know where input comes from.
+
+Supported actions:
+
+Move X
+
+Jump
+
+Interact
+
+Future support:
+
+Attack
+
+Pause
+
+Inventory
+
+====================================================
+
+JOYSTICK
+
+Bottom-left.
+
+Smooth movement.
+
+Dead zone.
+
+Clamp radius.
+
+Opacity animation.
+
+Auto center.
+
+Multi-touch safe.
+
+====================================================
+
+BUTTONS
+
+Bottom-right.
+
+Jump
+
+Interact
+
+Animated press effect.
+
+Multi-touch.
+
+====================================================
+
+RESPONSIVE
+
+Support:
+
+Phones
+
+Tablets
+
+Landscape
+
+Different screen sizes
+
+Safe margins
+
+====================================================
+
+AUTO DETECT
+
+Desktop:
+
+Hide touch controls.
+
+Touch devices:
+
+Show controls automatically.
+
+====================================================
+
+DEBUG
+
+F8
+
+Show:
+
+Touch points
+
+Joystick radius
+
+Joystick vector
+
+Button states
+
+====================================================
+
+PERFORMANCE
+
+Maintain 60 FPS.
+
+No allocations every frame.
+
+====================================================
+
+DOCUMENTATION
+
+Create:
+
+docs/MobileControls.md
+
+Explain:
+
+Architecture
+
+Touch input flow
+
+Joystick math
+
+Button mapping
+
+Adding new buttons
+
+====================================================
+
+SUCCESS
+
+The game can be completed on Android using only touch controls.
+
+Desktop controls continue working unchanged.
+
+Zero TypeScript errors.
+
+Zero console errors.
+
+Maintain 60 FPS.

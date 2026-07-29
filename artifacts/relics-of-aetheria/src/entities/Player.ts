@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { PlayerConfig } from './PlayerConfig';
 import { PlayerState, PlayerStateMachine } from './PlayerStateMachine';
+import type { TouchInputState } from '../input/TouchInputState';
 
 /** Shape returned by Player.debugInfo — consumed by DebugOverlay. */
 export interface PlayerDebugInfo {
@@ -26,19 +27,16 @@ export interface PlayerDebugInfo {
  *  - Landing event — emits 'land' (fallingVelocity: number)
  *  - All tunable values live in PlayerConfig; nothing is hard-coded here.
  *
+ * M9 (Mobile Controls):
+ *  - Keyboard and touch input is unified by TouchManager into TouchInputState.
+ *  - Player.update() now accepts a TouchInputState instead of reading
+ *    keyboard events directly.  All gameplay logic is unchanged.
+ *
  * The `declare body` override tells TypeScript the body is an Arcade physics
  * body (not a StaticBody) without emitting a redundant runtime assignment.
  */
 export class Player extends Phaser.GameObjects.Rectangle {
   declare body: Phaser.Physics.Arcade.Body;
-
-  // ── Input ──────────────────────────────────────────────────────────────────
-  private readonly cursors: Phaser.Types.Input.Keyboard.CursorKeys;
-  private readonly wasd: {
-    left:  Phaser.Input.Keyboard.Key;
-    right: Phaser.Input.Keyboard.Key;
-    up:    Phaser.Input.Keyboard.Key;
-  };
 
   // ── State ──────────────────────────────────────────────────────────────────
   private readonly stateMachine = new PlayerStateMachine();
@@ -66,15 +64,6 @@ export class Player extends Phaser.GameObjects.Rectangle {
 
     this.body.setCollideWorldBounds(false);
     this.body.setMaxVelocityX(PlayerConfig.maxSpeedX);
-
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const kb = scene.input.keyboard!;
-    this.cursors = kb.createCursorKeys();
-    this.wasd = {
-      left:  kb.addKey(Phaser.Input.Keyboard.KeyCodes.A),
-      right: kb.addKey(Phaser.Input.Keyboard.KeyCodes.D),
-      up:    kb.addKey(Phaser.Input.Keyboard.KeyCodes.W),
-    };
   }
 
   // ── Public API ─────────────────────────────────────────────────────────────
@@ -99,20 +88,19 @@ export class Player extends Phaser.GameObjects.Rectangle {
   /**
    * Main update — called every frame from GameScene.update().
    * @param delta  Frame time in milliseconds (from Phaser's update callback).
+   * @param input  Unified input state produced by TouchManager this frame.
+   *               Merges keyboard and touch — Player never reads either directly.
    */
-  update(delta: number): void {
-    const body      = this.body;
-    const onGround  = body.blocked.down;
+  update(delta: number, input: TouchInputState): void {
+    const body         = this.body;
+    const onGround     = body.blocked.down;
     const worldGravity = (this.scene as Phaser.Scene).physics.world.gravity.y;
 
-    // ── Read input ──────────────────────────────────────────────────────────
-    const goLeft   = this.cursors.left.isDown  || this.wasd.left.isDown;
-    const goRight  = this.cursors.right.isDown || this.wasd.right.isDown;
-    const jumpDown = this.cursors.up.isDown    || this.cursors.space.isDown || this.wasd.up.isDown;
-    const jumpJust =
-      Phaser.Input.Keyboard.JustDown(this.cursors.up)    ||
-      Phaser.Input.Keyboard.JustDown(this.cursors.space) ||
-      Phaser.Input.Keyboard.JustDown(this.wasd.up);
+    // ── Read unified input (keyboard + touch, merged by TouchManager) ───────
+    const goLeft   = input.moveX < -0.2;
+    const goRight  = input.moveX >  0.2;
+    const jumpDown = input.jumpDown;
+    const jumpJust = input.jumpJust;
 
     // ── Coyote time ─────────────────────────────────────────────────────────
     if (onGround) {
@@ -129,43 +117,35 @@ export class Player extends Phaser.GameObjects.Rectangle {
     }
 
     // ── Jump execution ──────────────────────────────────────────────────────
-    const canJump  = this.coyoteTimer > 0;  // includes the on-ground case via timer reset
+    const canJump   = this.coyoteTimer > 0;
     const wantsJump = this.jumpBufferTimer > 0;
 
     if (wantsJump && canJump) {
       body.setVelocityY(PlayerConfig.jumpVelocity);
       this.jumpHeld        = true;
       this.jumpBufferTimer = 0;
-      this.coyoteTimer     = 0;   // consume coyote window so it can't fire twice
+      this.coyoteTimer     = 0;
     }
 
     // ── Variable jump height ────────────────────────────────────────────────
-    // On release: if still rising faster than the minimum, cut velocity.
     if (this.jumpHeld && !jumpDown) {
       if (body.velocity.y < PlayerConfig.minJumpVelocity) {
         body.setVelocityY(PlayerConfig.minJumpVelocity);
       }
       this.jumpHeld = false;
     }
-    // Also clear jumpHeld once the player touches the ground (edge case: teleport-reset)
     if (onGround) {
       this.jumpHeld = false;
     }
 
     // ── Gravity shaping ─────────────────────────────────────────────────────
-    // body.setGravityY adds to the world gravity, so the formula is:
-    //   effectiveGravity = worldGravity + bodyGravityY
-    // To achieve a target multiplier: bodyGravityY = (mult - 1) * worldGravity
     const rising = body.velocity.y < 0;
 
     if (rising && this.jumpHeld) {
-      // Float upward — apply reduced gravity while holding jump
       body.setGravityY((PlayerConfig.jumpHoldGravityMult - 1) * worldGravity);
     } else if (!onGround && !rising) {
-      // Snappy fall arc
       body.setGravityY((PlayerConfig.fallGravityMult - 1) * worldGravity);
     } else {
-      // Default world gravity
       body.setGravityY(0);
     }
 
@@ -173,7 +153,7 @@ export class Player extends Phaser.GameObjects.Rectangle {
     const accelScale = onGround ? 1 : PlayerConfig.airControl;
     const accel = PlayerConfig.acceleration * accelScale;
     const decel = PlayerConfig.deceleration * accelScale;
-    const dt    = delta / 1000; // seconds
+    const dt    = delta / 1000;
 
     let vx = body.velocity.x;
     if (goLeft || goRight) {
@@ -182,7 +162,6 @@ export class Player extends Phaser.GameObjects.Rectangle {
       const step     = accel * dt;
       vx = Math.abs(diff) <= step ? targetVX : vx + Math.sign(diff) * step;
     } else {
-      // No input — decelerate toward zero
       const step = decel * dt;
       vx = Math.abs(vx) <= step ? 0 : vx - Math.sign(vx) * step;
     }
@@ -190,14 +169,9 @@ export class Player extends Phaser.GameObjects.Rectangle {
     body.setVelocityX(vx);
 
     // ── State machine ───────────────────────────────────────────────────────
-    const justLanded    = !this.wasOnGround && onGround;
+    const justLanded     = !this.wasOnGround && onGround;
     const justLeftGround = this.wasOnGround && !onGround;
     this.wasOnGround     = onGround;
-
-    // Invalidate coyote window when an intentional jump sends us airborne,
-    // but don't invalidate it when we simply walk off an edge (justLeftGround).
-    // (The coyoteTimer was already set to coyoteTime while we were grounded,
-    //  and the jump clears it itself when it fires.)
 
     this.updateState(onGround, justLanded, justLeftGround, body.velocity.y);
   }
@@ -210,20 +184,18 @@ export class Player extends Phaser.GameObjects.Rectangle {
     _justLeftGround: boolean,
     vy: number,
   ): void {
-    const sm      = this.stateMachine;
-    const absVX   = Math.abs(this.body.velocity.x);
-    const moving  = absVX > PlayerConfig.runThreshold;
+    const sm     = this.stateMachine;
+    const absVX  = Math.abs(this.body.velocity.x);
+    const moving = absVX > PlayerConfig.runThreshold;
 
     if (justLanded) {
-      // Always transition through Land; fire event if falling fast enough
       if (sm.transition(PlayerState.Land)) {
-        const impactVelocity = vy; // vy at the moment of contact (positive = downward)
+        const impactVelocity = vy;
         if (impactVelocity >= PlayerConfig.landVelocityThreshold) {
           this.emit('land', impactVelocity);
         }
       }
     } else if (sm.is(PlayerState.Land)) {
-      // Land is a single-frame transient state — resolve to Idle or Run
       sm.transition(moving ? PlayerState.Run : PlayerState.Idle);
     } else if (!onGround) {
       sm.transition(vy < 0 ? PlayerState.Jump : PlayerState.Fall);
