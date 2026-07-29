@@ -56,6 +56,12 @@ export interface KaiDebugInfo {
   spriteHeight: number;
   /** True when the real production spritesheet is loaded; false = placeholder. */
   textureLoaded: boolean;
+
+  // M13 — expanded debug fields
+  /** Actual Phaser texture key in use ('player' or 'kai_placeholder'). */
+  textureKey: string;
+  /** True when the current animation key is registered with scene.anims. */
+  animLoaded: boolean;
 }
 
 // ─── Kai ──────────────────────────────────────────────────────────────────────
@@ -103,9 +109,10 @@ export class Kai extends Player {
    * Only allocated when F9 is active — not on the hot path.
    */
   get kaiDebugInfo(): KaiDebugInfo {
-    const sprite = this._renderer.sprite;
+    const sprite   = this._renderer.sprite;
+    const animKey  = this._animController.currentAnimKey;
     return {
-      animKey:      this._animController.currentAnimKey,
+      animKey,
       state:        this.currentState,
       facing:       this._renderer.facing === 1 ? 'right' : 'left',
       velocityX:    this.body.velocity.x,
@@ -115,6 +122,9 @@ export class Kai extends Player {
       spriteWidth:  sprite.width,
       spriteHeight: sprite.height,
       textureLoaded: PlayerSpriteImporter.isLoaded(this.scene),
+      // M13 expanded fields
+      textureKey:  sprite.texture.key,
+      animLoaded:  this.scene.anims.exists(animKey),
     };
   }
 

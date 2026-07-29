@@ -1,0 +1,171 @@
+You are continuing the existing Relics of Aetheria project.
+
+IMPORTANT
+
+Read the entire repository before making any changes.
+
+M1–M12 are COMPLETE.
+
+Do not redesign Kai.
+
+Do not modify completed gameplay systems.
+
+Do not create or edit artwork.
+
+The final production sprite sheet will be supplied externally.
+
+------------------------------------------------------------
+
+CURRENT MILESTONE
+
+M13
+
+Kai Production Sprite Integration
+
+------------------------------------------------------------
+
+OBJECTIVE
+
+Integrate the production Kai sprite sheet into the existing engine.
+
+The engine architecture must remain unchanged.
+
+------------------------------------------------------------
+
+Tasks
+
+Replace the placeholder renderer with the production sprite.
+
+Load kai.png from:
+
+assets/characters/kai/
+
+Register all animations using the existing AnimationRegistry.
+
+Support:
+
+Idle
+
+Run
+
+Jump
+
+Fall
+
+Land
+
+Push
+
+Climb
+
+Celebrate
+
+Hurt
+
+Animation timing must be configurable.
+
+------------------------------------------------------------
+
+Cleanup
+
+Remove placeholder-only code where no longer needed.
+
+Retain fallback behaviour if kai.png is missing.
+
+------------------------------------------------------------
+
+Validation
+
+Verify:
+
+Animation transitions
+
+Frame alignment
+
+Origin
+
+Hitbox alignment
+
+Camera behaviour
+
+Desktop controls
+
+Android controls
+
+------------------------------------------------------------
+
+Debug
+
+Expand the existing Kai debug panel to display:
+
+Current animation
+
+Current frame
+
+Animation speed
+
+Texture key
+
+Animation loaded
+
+------------------------------------------------------------
+
+Documentation
+
+Update:
+
+docs/KaiCharacter.md
+
+Document:
+
+Spritesheet location
+
+Expected layout
+
+Frame dimensions
+
+Animation names
+
+Replacement workflow
+
+------------------------------------------------------------
+
+Verification
+
+Run:
+
+TypeScript typecheck
+
+Build
+
+Runtime verification
+
+Confirm:
+
+0 TypeScript errors
+
+0 new console errors
+
+60 FPS
+
+Desktop controls working
+
+Android controls working
+
+Kai animations functioning correctly
+
+------------------------------------------------------------
+
+Deliver:
+
+Modified files
+
+New files
+
+Verification checklist
+
+Any remaining work before M14
+
+IMPORTANT
+
+Do not begin M14.

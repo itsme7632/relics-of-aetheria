@@ -6,20 +6,22 @@
  * body, velocity, state machine); this class only handles what the camera sees.
  *
  * Responsibilities:
- *   - Sprite creation (using the procedural placeholder texture)
+ *   - Sprite creation (production texture when loaded, placeholder otherwise)
  *   - Position sync: setPosition(player.x, player.y) each frame
  *   - Facing: setFlipX based on horizontal velocity
  *   - Depth: renders above tile layers, below UI
  *
- * Why Sprite instead of Image:
- *   Sprite extends Image and adds frame / animation support.  When real
- *   spritesheet frames arrive, KaiAnimationController calls sprite.play()
- *   directly on this object — no refactoring needed.
+ * M13 — Production sprite integration:
+ *   KaiRenderer now automatically selects the correct backing texture at
+ *   construction time:
+ *     • AssetKeys.PLAYER ('player')    — when kai.png is present in the cache
+ *     • KAI_PLACEHOLDER_KEY            — procedural fallback when art is absent
  *
- * Replacing with real art:
- *   1. Remove KAI_PLACEHOLDER_KEY usage below.
- *   2. Pass the real spritesheet key (e.g. AssetKeys.PLAYER_SHEET).
- *   3. Enable animation calls in KaiAnimationController.
+ *   No other code needs to change when kai.png is delivered:
+ *     1. Drop kai.png into assets/characters/kai/
+ *     2. Remove `optional: true` from the PLAYER entry in AssetManifest.ts
+ *     3. Boot — KaiRenderer picks AssetKeys.PLAYER automatically, and
+ *        KaiAnimationController.play() starts animating immediately.
  *
  * Performance: update() calls setPosition() and conditionally setFlipX() —
  * both are O(1) transform mutations.  No allocations.
@@ -28,6 +30,8 @@
 import Phaser from 'phaser';
 import { PlayerConfig } from '../PlayerConfig';
 import { KAI_PLACEHOLDER_KEY } from './PlayerSpriteFactory';
+import { PlayerSpriteImporter } from './PlayerSpriteImporter';
+import { AssetKeys } from '../../assets/AssetKeys';
 
 // Depth above tile layers (≤100) but below UI (1000+) and touch controls (2000+)
 const SPRITE_DEPTH = 5;
@@ -35,17 +39,25 @@ const SPRITE_DEPTH = 5;
 // ─── KaiRenderer ──────────────────────────────────────────────────────────────
 
 export class KaiRenderer {
-  /** The Phaser sprite — expose for KaiAnimationController.play() calls. */
+  /** The Phaser sprite — exposed for KaiAnimationController.play() calls. */
   readonly sprite: Phaser.GameObjects.Sprite;
 
   /** 1 = facing right (default), -1 = facing left. */
   private _facing: 1 | -1 = 1;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
-    this.sprite = scene.add.sprite(x, y, KAI_PLACEHOLDER_KEY);
+    // M13: auto-select texture.
+    // When the real spritesheet is in the cache (kai.png has been loaded),
+    // use AssetKeys.PLAYER so that KaiAnimationController can drive its frames.
+    // Otherwise fall back to the procedural placeholder — gameplay is unaffected.
+    const textureKey: string = PlayerSpriteImporter.isLoaded(scene)
+      ? AssetKeys.PLAYER
+      : KAI_PLACEHOLDER_KEY;
+
+    this.sprite = scene.add.sprite(x, y, textureKey);
     this.sprite.setOrigin(0.5, 0.5);   // centre matches physics body centre
     this.sprite.setDepth(SPRITE_DEPTH);
-    // Sprite is pixel-perfect at 32×48 — no scaling needed for the placeholder
+    // Sprite is pixel-perfect at 32×48 — no scaling needed
   }
 
   // ── Public API ────────────────────────────────────────────────────────────

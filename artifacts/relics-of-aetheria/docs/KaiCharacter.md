@@ -1,4 +1,4 @@
-# Kai Character System — M10 / M11 Documentation
+# Kai Character System — M10 / M11 / M13 Documentation
 
 ## Architecture
 
@@ -14,6 +14,7 @@ Player (src/entities/Player.ts)
     │
     ├── KaiRenderer (src/entities/player/KaiRenderer.ts)
     │     Phaser.GameObjects.Sprite following the physics body.
+    │     M13: auto-selects production texture or placeholder at boot.
     │     Handles position sync and horizontal flip.
     │
     └── KaiAnimationController (src/entities/player/KaiAnimationController.ts)
@@ -27,6 +28,14 @@ Player (src/entities/Player.ts)
 - `PlayerSpriteImporter` — spec constants, frame validation, animation clip listing
 - `KaiDebugInfo` expanded with live animation data for the improved F9 overlay
 
+**M13 additions:**
+
+- `KaiRenderer` auto-selects `AssetKeys.PLAYER` when `kai.png` is loaded, falls back
+  to `KAI_PLACEHOLDER_KEY` otherwise — no manual code changes needed on art delivery
+- `KaiDebugInfo` expanded with `textureKey` (actual texture key string) and
+  `animLoaded` (whether the current animation is registered with `scene.anims`)
+- F9 overlay updated to display all new fields
+
 ---
 
 ## Files
@@ -34,10 +43,10 @@ Player (src/entities/Player.ts)
 | File | Role |
 |------|------|
 | `src/entities/player/Kai.ts` | Extends Player; wires renderer + controller |
-| `src/entities/player/KaiRenderer.ts` | Sprite lifecycle, position, flip |
+| `src/entities/player/KaiRenderer.ts` | Sprite lifecycle, texture selection, position, flip |
 | `src/entities/player/KaiAnimationController.ts` | State → anim key, sprite.play() |
-| `src/entities/player/PlayerSpriteFactory.ts` | Procedural 32×48 placeholder texture (removed when real art arrives) |
-| `src/entities/player/PlayerSpriteImporter.ts` | **M11** Spritesheet spec, validation, frame counts |
+| `src/entities/player/PlayerSpriteFactory.ts` | Procedural 32×48 placeholder texture (permanent fallback) |
+| `src/entities/player/PlayerSpriteImporter.ts` | Spritesheet spec, validation, frame counts |
 | `src/entities/Player.ts` | **Not modified** — all physics logic intact |
 
 ---
@@ -50,7 +59,7 @@ Change them there once; validation, F9 debug, and the pipeline all update automa
 | Property | Value |
 |---|---|
 | Texture key | `player` (`AssetKeys.PLAYER`) |
-| File path | `assets/sprites/kai/kai.png` |
+| File path | `assets/characters/kai/kai.png` |
 | Frame width | 32 px |
 | Frame height | 48 px |
 | Total frames | 22 |
@@ -62,7 +71,7 @@ Change them there once; validation, F9 debug, and the pipeline all update automa
 ```
 artifacts/relics-of-aetheria/
 └── assets/
-    └── sprites/
+    └── characters/
         └── kai/
             └── kai.png       ← drop the real spritesheet here
 ```
@@ -71,8 +80,9 @@ artifacts/relics-of-aetheria/
 
 ## Animation Clips
 
-All frame ranges are defined in `src/animation/AnimationRegistry.ts`.
-Adjust `frameStart` / `frameEnd` / `frameRate` there when the final art differs.
+All frame ranges and timing are defined in `src/animation/AnimationRegistry.ts`.
+Adjust `frameStart`, `frameEnd`, and `frameRate` there when the final art differs.
+No other file needs to change — `AnimationFactory.registerAll()` picks up every entry automatically.
 
 | Animation key | Frames | FPS | Repeat | State |
 |---|---|---|---|---|
@@ -88,17 +98,37 @@ Adjust `frameStart` / `frameEnd` / `frameRate` there when the final art differs.
 
 \* Extended states not yet in PlayerStateMachine. Triggered via `Kai.forceAnimState()`.
 
+### Adjusting animation timing
+
+Edit the `frameRate` field for any clip in `src/animation/AnimationRegistry.ts`:
+
+```ts
+{
+  key:        AnimationKeys.PLAYER_RUN,
+  textureKey: AssetKeys.PLAYER,
+  frameStart: 4,
+  frameEnd:   9,
+  frameRate:  12,   // ← change this value; restart to apply
+  repeat:     -1,
+},
+```
+
+No other file needs to change — timing is fully data-driven.
+
 ---
 
-## Import Workflow
+## Import Workflow (M13)
 
 ### Step 1 — Add the file
 
 Place `kai.png` at:
 
 ```
-artifacts/relics-of-aetheria/assets/sprites/kai/kai.png
+artifacts/relics-of-aetheria/assets/characters/kai/kai.png
 ```
+
+The directory already exists (created in M12). The file must be a PNG spritesheet,
+32 px wide × 48 px tall per frame, horizontal strip, 22 frames total.
 
 ### Step 2 — Mark the asset as required
 
@@ -108,7 +138,7 @@ In `src/assets/AssetManifest.ts`, remove `optional: true` from the `PLAYER` entr
 {
   key:         PLAYER,
   type:        'spritesheet',
-  path:        'assets/sprites/kai/kai.png',
+  path:        'assets/characters/kai/kai.png',
   frameWidth:  32,
   frameHeight: 48,
   frameCount:  22,
@@ -116,41 +146,49 @@ In `src/assets/AssetManifest.ts`, remove `optional: true` from the `PLAYER` entr
 },
 ```
 
-### Step 3 — Remove the placeholder texture
+### Step 3 — Boot
 
-In `src/scenes/BootScene.ts`, remove:
+That's it. No other code changes are needed:
 
-```ts
-PlayerSpriteFactory.createPlaceholderTexture(this);
-```
+- `AssetLoader.loadAll()` queues `AssetKeys.PLAYER` automatically.
+- `AnimationFactory.registerAll()` finds the texture and registers all 9 Kai animations.
+- `KaiRenderer` checks `PlayerSpriteImporter.isLoaded(scene)` at construction time
+  and selects `AssetKeys.PLAYER` instead of `KAI_PLACEHOLDER_KEY`.
+- `KaiAnimationController` calls `sprite.play()` — animations start immediately.
 
-### Step 4 — Update KaiRenderer to use the real texture
+### Step 4 — Verify
 
-In `src/entities/player/KaiRenderer.ts`, change the constructor:
+Press **F9** in-game and confirm:
 
-```ts
-// Before:
-this.sprite = scene.add.sprite(x, y, KAI_PLACEHOLDER_KEY);
-// After:
-this.sprite = scene.add.sprite(x, y, AssetKeys.PLAYER);
-```
-
-### Step 5 — Verify
-
-Run the game. `KaiAnimationController` already calls `sprite.play()` — it will
-start working the moment `AnimationFactory.registerAll()` finds the texture in cache.
-
-Press **F9** to confirm: the `Tex` field shows `real`, `Frame` shows a live frame
-index, and `FPS` shows the configured frame rate.
+| Field | Expected with real art |
+|---|---|
+| `Tex` | `player` (the AssetKeys.PLAYER value) |
+| `AnimOk` | `✓ yes` |
+| `Frame` | live frame index (0, 1, 2 …) |
+| `FPS` | configured frame rate (e.g. `12fps` while running) |
 
 Run `pnpm --filter @workspace/relics-of-aetheria run typecheck` — expect 0 errors.
+
+---
+
+## Placeholder Fallback
+
+`PlayerSpriteFactory.createPlaceholderTexture()` runs unconditionally in
+`BootScene.create()` and always generates the `kai_placeholder` texture.
+
+When `kai.png` is absent:
+- `KaiRenderer` uses `kai_placeholder` — the detailed procedural humanoid renders normally.
+- All animations are in "pending artwork" state — gameplay is fully functional.
+- F9 shows `Tex: kai_placeholder`, `AnimOk: · no (pending)`.
+
+The placeholder is a permanent fallback, not a temporary scaffold. It is never removed.
 
 ---
 
 ## Validation (M11)
 
 `PlayerSpriteImporter.validate(scene)` is called from `BootScene.create()` after
-`AnimationFactory.registerAll()`. It checks:
+`AnimationFactory.registerAll()`. When `kai.png` is present it checks:
 
 | Check | Outcome |
 |---|---|
@@ -166,7 +204,7 @@ When the spritesheet is absent, `validate()` returns immediately — no console 
 
 ---
 
-## F9 Debug Panel (M11)
+## F9 Debug Panel (M13)
 
 Press **F9** in-game to toggle the Kai character debug panel:
 
@@ -174,6 +212,7 @@ Press **F9** in-game to toggle the Kai character debug panel:
 ─────────────────
 [Kai F9]
 Anim   player_run       animation key (from AnimationRegistry)
+AnimOk ✓ yes            ✓ yes = registered; · no = pending artwork
 State  Run              PlayerStateMachine state
 Facing right            sprite flip direction
 VelX   240.0            horizontal velocity (px/s)
@@ -181,7 +220,14 @@ VelY   0.0              vertical velocity (px/s)
 Frame  2                current frame index (— when not animating)
 FPS    12fps            configured frameRate (— when not animating)
 Size   32×48            sprite display dimensions in pixels
-Tex    placeholder      "real" once kai.png is loaded
+Tex    player           actual Phaser texture key in use
+```
+
+With placeholder only (no kai.png):
+
+```
+AnimOk · no (pending)   animation not yet registered
+Tex    kai_placeholder  procedural fallback texture
 ```
 
 The panel is only active when F9 is pressed; `kaiDebugInfo` is not computed otherwise.
@@ -216,6 +262,15 @@ debug testing when the spritesheet is loaded.
 ## Renderer
 
 `KaiRenderer` wraps a `Phaser.GameObjects.Sprite` at depth 5 (above tiles, below UI).
+
+### Texture selection (M13)
+
+At construction time, `KaiRenderer` calls `PlayerSpriteImporter.isLoaded(scene)`:
+
+- **`true`** — uses `AssetKeys.PLAYER` (`'player'`). Animations registered by
+  `AnimationFactory` drive the real spritesheet frames.
+- **`false`** — uses `KAI_PLACEHOLDER_KEY` (`'kai_placeholder'`). The procedural
+  humanoid renders normally; `sprite.play()` calls are safe no-ops.
 
 ### Position sync
 
