@@ -152,6 +152,18 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
       );
     }
 
+    if (kaiDebug) {
+      lines.push(
+        `─────────────────`,
+        `[Kai F9]`,
+        `Anim   ${kaiDebug.animKey}`,
+        `State  ${kaiDebug.state}`,
+        `Facing ${kaiDebug.facing}`,
+        `VelX   ${kaiDebug.velocityX.toFixed(1)}`,
+        `VelY   ${kaiDebug.velocityY.toFixed(1)}`,
+      );
+    }
+
     this.setText(lines);
   }
 }

@@ -1,0 +1,202 @@
+You are continuing an existing professional Phaser 3 + TypeScript Android game called "Relics of Aetheria".
+
+IMPORTANT
+
+DO NOT rebuild anything.
+
+DO NOT recreate existing systems.
+
+Read the existing code before modifying anything.
+
+------------------------------------------------------------
+
+Completed Milestones
+
+✅ M1 Engine Foundation
+
+✅ M2 Tilemap Engine
+
+✅ M3 Professional Player Controller
+
+✅ M4 Entity System
+
+✅ M5 Camera & World Feel
+
+✅ M6 World Builder & Level Pipeline
+
+✅ M7 Gameplay Interaction Framework
+
+✅ M8 Asset Pipeline & Animation Foundation
+
+✅ M9 Mobile Controls (fully working including multitouch)
+
+------------------------------------------------------------
+
+CURRENT MILESTONE
+
+M10 — Kai Character System
+
+The previous AI reached its quota before finishing.
+
+DO NOT replace existing work.
+
+Continue exactly where it stopped.
+
+------------------------------------------------------------
+
+Already completed
+
+The following files already exist and must be reused.
+
+Kai.ts
+
+KaiRenderer.ts
+
+KaiAnimationController.ts
+
+PlayerSpriteFactory.ts
+
+KaiCharacter.md
+
+Player rectangle hiding logic
+
+Procedural placeholder character generation
+
+Kai renderer architecture
+
+Animation controller architecture
+
+------------------------------------------------------------
+
+Likely unfinished work
+
+Read the code first.
+
+Determine what remains.
+
+Most likely remaining work is:
+
+• Finish BootScene integration.
+
+• Finish GameScene integration.
+
+• Replace Player with Kai everywhere.
+
+• Finish F9 debug support.
+
+• Finish DebugOverlay player panel.
+
+• Connect KaiAnimationController to PlayerStateMachine.
+
+• Keep physics entirely unchanged.
+
+• Keep touch controls working.
+
+• Keep desktop controls working.
+
+------------------------------------------------------------
+
+Player requirements
+
+Kai must:
+
+Use the existing Player physics.
+
+Render separately from gameplay.
+
+Support:
+
+Idle
+
+Run
+
+Jump
+
+Fall
+
+Land
+
+Push (placeholder)
+
+Climb (placeholder)
+
+Celebrate (placeholder)
+
+Hurt (placeholder)
+
+Renderer follows the physics body every frame.
+
+Sprite flips automatically.
+
+------------------------------------------------------------
+
+Debug
+
+F9 toggles Kai debug.
+
+Display:
+
+Current animation
+
+Current PlayerState
+
+Facing direction
+
+Velocity
+
+Sprite position
+
+Physics position
+
+------------------------------------------------------------
+
+Architecture
+
+Player physics must stay inside Player.
+
+Rendering must stay inside KaiRenderer.
+
+Animation decisions must stay inside KaiAnimationController.
+
+Future spritesheet replacement should require no gameplay code changes.
+
+------------------------------------------------------------
+
+Verification
+
+Run pnpm run typecheck.
+
+Run the game.
+
+Verify:
+
+No TypeScript errors.
+
+No console errors.
+
+60 FPS.
+
+Kai replaces the blue rectangle.
+
+Desktop keyboard works.
+
+Android touch controls still work.
+
+Player movement is unchanged.
+
+------------------------------------------------------------
+
+When complete provide:
+
+1. Root cause (if anything unfinished was discovered)
+
+2. Every modified file
+
+3. Every new file
+
+4. Verification checklist
+
+5. What should be built next as Milestone 11
+
+Do not start Milestone 11.
+Finish M10 only.
