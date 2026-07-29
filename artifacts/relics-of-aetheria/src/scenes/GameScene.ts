@@ -4,6 +4,7 @@ import { DebugOverlay } from '../ui/DebugOverlay';
 import { EntityManager } from '../managers/EntityManager';
 import { CameraManager } from '../managers/CameraManager';
 import { InteractionManager } from '../managers/InteractionManager';
+import { TouchManager } from '../input/TouchManager';
 import { Crystal } from '../entities/collectible/Crystal';
 import { Checkpoint } from '../entities/interactable/Checkpoint';
 import { LevelExit } from '../entities/interactable/LevelExit';
@@ -34,6 +35,8 @@ import { AnimationFactory } from '../animation/AnimationFactory';
  *   F5 — camera debug (dead zone, look-ahead)
  *   F6 — interaction debug (radii, focus, checkpoint)
  *   F7 — asset pipeline debug (loaded assets, missing, registered animations)
+ *   F8 — touch/input debug (touch count, joystick vector, button states)
+ *   M9 — TouchManager owns all input; Player and GameScene read only TouchInputState.
  */
 export class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -42,19 +45,20 @@ export class GameScene extends Phaser.Scene {
   private entityManager!: EntityManager;
   private cameraManager!: CameraManager;
   private interactionManager!: InteractionManager;
+  private touchManager!: TouchManager;
   private level!: Level;
   private parallaxLayers: ParallaxLayer[] = [];
 
   // ── Level-complete overlay (shown when no next level exists) ──────────────
   private levelCompleteText: Phaser.GameObjects.Text | null = null;
 
-  // ── Input keys ────────────────────────────────────────────────────────────
+  // ── Debug F-keys (input is owned by TouchManager, not GameScene) ──────────
   private debugKey!: Phaser.Input.Keyboard.Key;
   private entityDebugKey!: Phaser.Input.Keyboard.Key;
   private cameraDebugKey!: Phaser.Input.Keyboard.Key;
   private interactionDebugKey!: Phaser.Input.Keyboard.Key;
   private assetDebugKey!: Phaser.Input.Keyboard.Key;
-  private eKey!: Phaser.Input.Keyboard.Key;
+  private touchDebugKey!: Phaser.Input.Keyboard.Key;
 
   // ── Debug state ───────────────────────────────────────────────────────────
   private collisionDebugActive    = false;
@@ -62,6 +66,7 @@ export class GameScene extends Phaser.Scene {
   private cameraDebugActive       = false;
   private interactionDebugActive  = false;
   private assetDebugActive        = false;
+  private touchDebugActive        = false;
 
   private levelId = WorldManager.startingLevelId;
 
@@ -76,6 +81,7 @@ export class GameScene extends Phaser.Scene {
     this.cameraDebugActive       = false;
     this.interactionDebugActive  = false;
     this.assetDebugActive        = false;
+    this.touchDebugActive        = false;
   }
 
   create(): void {
@@ -151,7 +157,11 @@ export class GameScene extends Phaser.Scene {
     // ── Level complete listener ──────────────────────────────────────────────
     this.events.on(InteractionEvents.LEVEL_COMPLETE, this._onLevelComplete, this);
 
-    // ── HUD & input ──────────────────────────────────────────────────────────
+    // ── Input — TouchManager owns all gameplay input (keyboard + touch) ───────
+    // It must be created before DebugOverlay so the F8 key doesn't conflict.
+    this.touchManager = new TouchManager(this);
+
+    // ── HUD & debug F-keys ────────────────────────────────────────────────────
     this.debugOverlay = new DebugOverlay(this);
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const kb = this.input.keyboard!;
@@ -160,7 +170,7 @@ export class GameScene extends Phaser.Scene {
     this.cameraDebugKey       = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F5);
     this.interactionDebugKey  = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F6);
     this.assetDebugKey        = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F7);
-    this.eKey                 = kb.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+    this.touchDebugKey        = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F8);
 
     // ── Shutdown cleanup ─────────────────────────────────────────────────────
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -175,14 +185,19 @@ export class GameScene extends Phaser.Scene {
   }
 
   update(_time: number, delta: number): void {
-    this.player.update(delta);
+    // TouchManager must be updated first — it produces the unified input state
+    // that Player and InteractionManager consume this frame.
+    this.touchManager.update();
+    const input = this.touchManager.currentState;
+
+    this.player.update(delta, input);
     this.entityManager.update(delta);
     this.cameraManager.update(delta);
 
-    const eJustDown = Phaser.Input.Keyboard.JustDown(this.eKey);
+    // Interact is driven by the unified input state (E key OR touch interact button)
     this.interactionManager.update(
       { x: this.player.x, y: this.player.y },
-      eJustDown,
+      input.interactJust,
     );
 
     // ── Debug key toggles ─────────────────────────────────────────────────
@@ -201,6 +216,9 @@ export class GameScene extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.assetDebugKey)) {
       this.assetDebugActive = !this.assetDebugActive;
     }
+    if (Phaser.Input.Keyboard.JustDown(this.touchDebugKey)) {
+      this.toggleTouchDebug();
+    }
 
     // ── HUD update ────────────────────────────────────────────────────────
     this.debugOverlay.update(
@@ -208,10 +226,11 @@ export class GameScene extends Phaser.Scene {
       this.player.x,
       this.player.y,
       this.player.debugInfo,
-      this.entityDebugActive      ? this.entityManager.debugInfo      : undefined,
-      this.cameraDebugActive      ? this.cameraManager.debugInfo      : undefined,
-      this.interactionDebugActive ? this.interactionManager.debugInfo : undefined,
-      this.assetDebugActive       ? this._buildAssetDebugInfo()        : undefined,
+      this.entityDebugActive      ? this.entityManager.debugInfo        : undefined,
+      this.cameraDebugActive      ? this.cameraManager.debugInfo        : undefined,
+      this.interactionDebugActive ? this.interactionManager.debugInfo   : undefined,
+      this.assetDebugActive       ? this._buildAssetDebugInfo()          : undefined,
+      this.touchDebugActive       ? this.touchManager.debugInfo         : undefined,
     );
   }
 
@@ -296,6 +315,15 @@ export class GameScene extends Phaser.Scene {
       this.interactionManager.showDebug();
     } else {
       this.interactionManager.hideDebug();
+    }
+  }
+
+  private toggleTouchDebug(): void {
+    this.touchDebugActive = !this.touchDebugActive;
+    if (this.touchDebugActive) {
+      this.touchManager.showDebug();
+    } else {
+      this.touchManager.hideDebug();
     }
   }
 

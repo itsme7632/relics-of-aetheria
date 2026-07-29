@@ -3,6 +3,7 @@ import type { PlayerDebugInfo } from '../entities/Player';
 import type { EntityDebugInfo } from '../managers/EntityManager';
 import type { CameraDebugInfo } from '../managers/CameraManager';
 import type { InteractionDebugInfo } from '../managers/InteractionManager';
+import type { TouchDebugInfo } from '../input/TouchManager';
 
 /**
  * Shape used by the F7 asset/animation debug panel.
@@ -61,6 +62,7 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
     cameraDebug?: CameraDebugInfo,
     interactionDebug?: InteractionDebugInfo,
     assetDebug?: AssetDebugInfo,
+    touchDebug?: TouchDebugInfo,
   ): void {
     const lines: string[] = [
       `FPS    ${Math.round(fps)}`,
@@ -134,6 +136,18 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
           .join(', ');
         lines.push(`Pend: ${preview}${assetDebug.pendingAnimKeys.length > 3 ? '…' : ''}`);
       }
+    }
+
+    if (touchDebug) {
+      lines.push(
+        `─────────────────`,
+        `Touch  ${touchDebug.touchCount}`,
+        `Vis    ${touchDebug.visible ? 'yes' : 'no'}`,
+        `MoveX  ${touchDebug.moveX.toFixed(2)}`,
+        `JstkAng ${touchDebug.joystickAngle}°`,
+        `Jump   ${touchDebug.jumpDown ? '▼ held' : 'up'}`,
+        `Iact   ${touchDebug.interactDown ? '▼ held' : 'up'}`,
+      );
     }
 
     this.setText(lines);

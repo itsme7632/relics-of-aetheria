@@ -1,3 +1,4 @@
 - [Tilemap engine conventions](tilemap-engine.md) — layer/object names are enforced constants; collision is Collision layer only; tileset generated procedurally in BootScene
 - [Capacitor install blocked](capacitor-install.md) — @capacitor/cli + @capacitor/android cannot be pnpm-installed; use capacitor.config.json not .ts
 - [Replit vite plugins incompatible](replit-vite-plugins.md) — cartographer and runtime-error-modal require React; do not add them to this artifact
+- [M9 input architecture](m9-input-architecture.md) — TouchManager owns ALL input; Player/GameScene/InteractionManager read only TouchInputState; never add direct KB/pointer reads back

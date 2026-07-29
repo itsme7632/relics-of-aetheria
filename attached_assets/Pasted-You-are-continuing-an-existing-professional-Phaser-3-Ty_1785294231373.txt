@@ -1,0 +1,159 @@
+You are continuing an existing professional Phaser 3 + TypeScript Android game project.
+
+IMPORTANT
+
+DO NOT rebuild the project.
+
+DO NOT recreate existing systems.
+
+Read the existing code before making changes.
+
+------------------------------------------------------------
+
+Completed milestones
+
+✅ M1 Engine Foundation
+
+✅ M2 Tilemap Engine
+
+✅ M3 Professional Player Controller
+
+✅ M4 Entity System
+
+✅ M5 Camera & World Feel
+
+✅ M6 World Builder & Level Pipeline
+
+✅ M7 Gameplay Interaction Framework
+
+✅ M8 Asset Pipeline & Animation Foundation
+
+------------------------------------------------------------
+
+Current milestone
+
+M9 Mobile Controls
+
+This milestone was started but the previous AI hit its quota.
+
+The following files already exist and must be reused:
+
+TouchManager.ts
+
+VirtualJoystick.ts
+
+TouchButton.ts
+
+TouchInputState.ts
+
+Player.ts has already been partially updated.
+
+DO NOT replace these files.
+
+Read them first.
+
+Continue from the existing implementation.
+
+------------------------------------------------------------
+
+OBJECTIVE
+
+Finish the Mobile Controls milestone.
+
+------------------------------------------------------------
+
+Remaining work
+
+Wire TouchManager into GameScene.
+
+Integrate touch input with the existing InputManager.
+
+Ensure Player reads from the unified input state rather than keyboard-only input.
+
+Create responsive on-screen controls.
+
+Show touch controls only on touch devices.
+
+Hide them automatically on desktop.
+
+Support:
+
+Move
+
+Jump
+
+Interact
+
+Support multi-touch.
+
+Implement joystick dead zone.
+
+Implement joystick clamp radius.
+
+Implement animated joystick thumb.
+
+Implement button press animation.
+
+Add F8 debug mode.
+
+Display:
+
+Touch count
+
+Joystick vector
+
+Move value
+
+Jump state
+
+Interact state
+
+------------------------------------------------------------
+
+Performance
+
+Maintain 60 FPS.
+
+No allocations inside update().
+
+------------------------------------------------------------
+
+Documentation
+
+Create:
+
+docs/MobileControls.md
+
+Explain:
+
+Architecture
+
+Touch flow
+
+Joystick math
+
+Button mapping
+
+Adding future buttons
+
+------------------------------------------------------------
+
+Verification
+
+Run TypeScript typecheck.
+
+Run the game.
+
+Verify:
+
+Desktop controls still work.
+
+Touch controls work.
+
+No console errors.
+
+No TypeScript errors.
+
+Maintain 60 FPS.
+
+When finished, summarize exactly which files were modified and what remains for the next milestone.
