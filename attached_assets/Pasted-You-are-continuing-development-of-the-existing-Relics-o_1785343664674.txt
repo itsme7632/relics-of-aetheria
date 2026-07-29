@@ -1,0 +1,101 @@
+You are continuing development of the existing Relics of Aetheria project.
+
+IMPORTANT
+
+Read the ENTIRE repository before making any changes.
+
+The project has already completed:
+
+✅ M1 Engine Foundation
+✅ M2 Tilemap Engine
+✅ M3 Player Controller
+✅ M4 Entity System
+✅ M5 Camera
+✅ M6 World Pipeline
+✅ M7 Interaction System
+✅ M8 Asset Pipeline
+✅ M9 Mobile Controls
+✅ M10 Kai Character System
+✅ M11 Production Sprite Integration Framework
+
+M12 has been STARTED but NOT completed.
+
+The previous agent already implemented part of M12 before running out of credits.
+
+DO NOT duplicate work.
+
+FIRST TASK
+
+Read every modified file and determine exactly what has already been completed.
+
+Current partial work includes:
+
+- AssetCatalog foundation
+- AssetManifest production path updates
+- AssetLoader category loading
+- PlayerSpriteImporter path updates
+- Asset debug overlay improvements (F7)
+- Production folder structure
+- Initial scene wiring
+
+Continue ONLY from the current repository state.
+
+------------------------------------------------------------
+
+M12 OBJECTIVE
+
+Complete the Production Asset Pipeline.
+
+Do NOT redesign existing architecture.
+
+Do NOT rewrite completed systems.
+
+Extend the current implementation only where necessary.
+
+------------------------------------------------------------
+
+Finish any remaining work including:
+
+• Complete AssetCatalog integration
+• Finish grouped asset loading
+• Complete validation system
+• Ensure production folder layout is fully supported
+• Update documentation (docs/AssetPipeline.md)
+• Verify compatibility with M11
+• Keep all gameplay unchanged
+
+------------------------------------------------------------
+
+Verification
+
+Run:
+
+- TypeScript typecheck
+- Build
+- Runtime verification
+
+Confirm:
+
+✅ 0 TypeScript errors
+✅ 0 new console errors
+✅ Desktop controls work
+✅ Android controls work
+✅ Existing gameplay unchanged
+✅ Asset pipeline fully operational
+
+------------------------------------------------------------
+
+Deliver:
+
+1. Summary of what was already completed before you started.
+2. Summary of what you completed.
+3. Modified files.
+4. New files.
+5. Verification checklist.
+6. Any recommendations before M13.
+
+IMPORTANT
+
+Do NOT start M13.
+
+Finish M12 only.

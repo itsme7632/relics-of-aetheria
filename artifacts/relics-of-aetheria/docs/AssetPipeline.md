@@ -18,11 +18,19 @@ This document covers all conventions for adding, naming, and loading game assets
 
 ```
 assets/
-├── sprites/
-│   ├── kai/             ← Player (Kai) spritesheet(s)
-│   ├── enemies/         ← Enemy spritesheets
-│   ├── effects/         ← VFX spritesheets
-│   └── objects/         ← Collectibles, interactables
+├── characters/
+│   └── kai/             ← Player (Kai) spritesheet(s)
+│       └── kai.png
+├── enemies/             ← Enemy spritesheets
+│   ├── slime.png
+│   ├── goblin.png
+│   └── bat.png
+├── effects/             ← VFX spritesheets
+│   ├── dust_puff.png
+│   ├── sparkle.png
+│   └── collect_burst.png
+├── objects/             ← Collectibles, interactables
+│   └── crystal.png
 ├── tilesets/
 │   ├── world01/         ← World 1 (Jungle Ruins) tileset PNG(s)
 │   └── world02/         ← World 2 (reserved)
@@ -44,17 +52,17 @@ assets/
 
 ### Files
 
-| Asset type       | Pattern                         | Example                    |
-|------------------|---------------------------------|----------------------------|
-| Player sheet     | `kai.png`                       | `sprites/kai/kai.png`      |
-| Enemy sheet      | `<enemy>.png`                   | `sprites/enemies/slime.png`|
-| Effect sheet     | `<effect_name>.png`             | `sprites/effects/dust_puff.png` |
-| Object sheet     | `<object>.png`                  | `sprites/objects/crystal.png` |
-| Tileset          | `<world_id>.png`                | `tilesets/world01/world01.png` |
-| BGM              | `<area>.ogg`                    | `audio/music/jungle.ogg`   |
-| SFX              | `<action>.ogg`                  | `audio/sfx/jump.ogg`       |
-| UI image         | `<element>.png`                 | `ui/heart.png`             |
-| Bitmap font      | `<name>.png` + `<name>.xml`     | `fonts/hud.png`, `fonts/hud.xml` |
+| Asset type       | Pattern                         | Example                             |
+|------------------|---------------------------------|-------------------------------------|
+| Player sheet     | `kai.png`                       | `characters/kai/kai.png`            |
+| Enemy sheet      | `<enemy>.png`                   | `enemies/slime.png`                 |
+| Effect sheet     | `<effect_name>.png`             | `effects/dust_puff.png`             |
+| Object sheet     | `<object>.png`                  | `objects/crystal.png`               |
+| Tileset          | `<world_id>.png`                | `tilesets/world01/world01.png`      |
+| BGM              | `<area>.ogg`                    | `audio/music/jungle.ogg`            |
+| SFX              | `<action>.ogg`                  | `audio/sfx/jump.ogg`                |
+| UI image         | `<element>.png`                 | `ui/heart.png`                      |
+| Bitmap font      | `<name>.png` + `<name>.xml`     | `fonts/hud.png`, `fonts/hud.xml`    |
 
 ### Code keys
 
@@ -116,16 +124,19 @@ Never use raw string literals for asset or animation keys in game code.
    {
      key:         AssetKeys.MY_NEW_SPRITE,
      type:        'spritesheet',
-     path:        'assets/sprites/objects/my_new_sprite.png',
+     path:        'assets/objects/my_new_sprite.png',
      frameWidth:  32,
      frameHeight: 32,
      // Remove optional: true once the file is confirmed present
    },
    ```
 
-4. **Remove `optional: true`** once the file is on disk and confirmed loading.
+4. **Add a category mapping** in `src/assets/AssetCatalog.ts` (`KEY_CATEGORY` map)
+   so the asset appears correctly in the F7 overlay and `loadByCategory()`.
 
-5. **Boot** — `AssetLoader` picks up the entry automatically. No other code changes needed.
+5. **Remove `optional: true`** once the file is on disk and confirmed loading.
+
+6. **Boot** — `AssetLoader` picks up the entry automatically. No other code changes needed.
 
 ---
 
@@ -160,22 +171,60 @@ Never use raw string literals for asset or animation keys in game code.
 
 ---
 
-## Asset Loading Pipeline
+## Asset Loading Pipeline (M12)
 
 ```
 BootScene.preload()
-  └─ WorldManager.preloadAll(this)   ← registers map JSON files
-  └─ AssetLoader.loadAll(this)       ← registers all ASSET_MANIFEST entries
+  └─ WorldManager.preloadAll(this)      ← registers map JSON files
+  └─ AssetLoader.loadAll(this)          ← registers all ASSET_MANIFEST entries
+                                          (optional entries skipped until files exist)
 
 BootScene.create()
-  └─ generateTilesetTexture()        ← procedural tileset (until real art arrives)
-  └─ AssetValidator.validate(this)   ← checks cache; warns on missing required assets
-  └─ AnimationFactory.registerAll(this) ← registers anims whose textures are loaded
+  └─ generateTilesetTexture()           ← procedural tileset (until real art arrives)
+  └─ PlayerSpriteFactory               ← procedural Kai placeholder (until kai.png arrives)
+  └─ AssetValidator.validate(this)      ← checks Phaser cache; warns on missing required assets
+  └─ AnimationFactory.registerAll(this) ← registers anims whose textures are loaded;
+                                          missing textures → "pending artwork"
+  └─ AssetCatalog.instance
+       .validateRuntime(this)           ← M12: enriches catalog with per-entry status;
+                                          drives F7 category breakdown and failed counts
+  └─ PlayerSpriteImporter.validate(this)← validates kai.png dimensions/frame ranges if present
   └─ scene.start('GameScene', ...)
 ```
 
 **Rule:** Game code (scenes, entities, managers) must never call `scene.load.*` directly.
 All loads go through `AssetLoader`. All animation registrations go through `AnimationFactory`.
+
+### Category-Based Loading (M12)
+
+As an alternative to `AssetLoader.loadAll()`, you can load assets one category at a time.
+This is useful for staged loading (e.g., load UI immediately, defer enemies until needed):
+
+```ts
+// In BootScene.preload() — load only specific categories:
+AssetLoader.loadByCategory(this, 'characters');
+AssetLoader.loadByCategory(this, 'ui');
+// defer 'enemies' and 'audio' to a later scene
+```
+
+Available categories: `characters`, `enemies`, `tilesets`, `backgrounds`, `objects`,
+`ui`, `particles`, `audio`, `fonts`.
+
+---
+
+## AssetCatalog (M12)
+
+`AssetCatalog` is the production-pipeline layer above `AssetManifest` and `AssetLoader`.
+
+| Responsibility | Details |
+|---|---|
+| Category assignment | Every manifest entry is assigned a category via `KEY_CATEGORY` map in `AssetCatalog.ts` |
+| Static validation | Runs at construction — detects duplicate keys/paths, bad extensions, missing metadata |
+| Runtime validation | `validateRuntime(scene)` — checks Phaser cache; sets `validationStatus` per entry |
+| Category loading | `loadByCategory(scene, category)` — queues one category with Phaser's loader |
+| Stats for F7 | `AssetCatalog.instance.stats` — total/loaded/failed per category + memory estimate |
+
+Singleton access: `AssetCatalog.instance`
 
 ---
 
@@ -183,15 +232,19 @@ All loads go through `AssetLoader`. All animation registrations go through `Anim
 
 Press **F7** in-game to toggle the asset debug panel:
 
-| Field    | Meaning                                     |
-|----------|---------------------------------------------|
-| Loaded   | Assets confirmed present in Phaser cache    |
-| MissReq  | Required assets that failed to load (⚠)    |
-| MissOpt  | Optional assets not yet on disk (expected)  |
-| FrmWarn  | Spritesheets with frame-size mismatches (⚠) |
-| Anims    | Animations registered with scene.anims      |
-| Pending  | Animations waiting on artwork               |
-| Pend:    | Names of first 3 pending animations         |
+| Field     | Meaning                                                      |
+|-----------|--------------------------------------------------------------|
+| Total     | Total entries in `AssetCatalog`                              |
+| Loaded    | Assets confirmed present in Phaser cache                     |
+| Failed    | Catalog entries with `missing_required` or `frame_error` (⚠) |
+| MissReq   | Required assets that failed to load (⚠)                      |
+| MissOpt   | Optional assets not yet on disk (expected during dev)        |
+| FrmWarn   | Spritesheets with frame-size mismatches (⚠)                  |
+| Mem       | JS heap estimate in MB (Chrome only)                         |
+| Anims     | Animations registered with `scene.anims`                     |
+| Pending   | Animations waiting on artwork                                |
+| Pend:     | Names of first 3 pending animations                          |
+| ✓/⚠ cat  | Per-category loaded/total counts with status indicator       |
 
 ---
 

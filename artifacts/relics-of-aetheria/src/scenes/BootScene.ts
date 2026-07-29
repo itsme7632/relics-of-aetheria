@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { WorldManager } from '../world/WorldManager';
 import { AssetLoader } from '../assets/AssetLoader';
 import { AssetValidator } from '../assets/AssetValidator';
+import { AssetCatalog } from '../assets/AssetCatalog';
 import { AnimationFactory } from '../animation/AnimationFactory';
 import { AssetKeys } from '../assets/AssetKeys';
 import { PlayerSpriteFactory } from '../entities/player/PlayerSpriteFactory';
@@ -55,6 +56,12 @@ export class BootScene extends Phaser.Scene {
     // Register animations for any textures that are already in the cache.
     // Animations whose textures are absent are queued as "pending artwork".
     AnimationFactory.registerAll(this);
+
+    // M12: Enrich catalog entries with runtime validation status.
+    // Updates each entry's validationStatus (loaded / missing_optional /
+    // missing_required / frame_error) and populates per-category stats
+    // for the F7 debug overlay.
+    AssetCatalog.instance.validateRuntime(this);
 
     // Validate the Kai spritesheet if it has been delivered.
     // Safe no-op when the file is absent — logs success or warnings when present.
