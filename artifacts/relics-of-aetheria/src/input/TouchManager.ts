@@ -152,7 +152,16 @@ export class TouchManager {
   update(): void {
     resetTouchInputState(this._state);
 
-    // Per-frame reset for buttons (clears justPressed from last frame)
+    // ── Snapshot button state BEFORE resetFrame() clears justPressed ────────
+    // Phaser fires pointerdown events before scene.update(), so by the time
+    // we reach here the _onDown handler has already set justPressed = true.
+    // resetFrame() must run for visual lerping, but it zeroes justPressed —
+    // so we capture the values first, then let resetFrame() clear the flag.
+    const btnJumpDown  = this._jumpBtn.isDown;
+    const btnJumpJust  = this._jumpBtn.justPressed;
+    const btnIntJust   = this._intBtn.justPressed;
+
+    // Per-frame visual lerp + clear justPressed for the NEXT frame
     this._jumpBtn.resetFrame();
     this._intBtn.resetFrame();
 
@@ -177,9 +186,9 @@ export class TouchManager {
     if (kbLeft  && kbRight)  moveX =  0;
 
     this._state.moveX        = moveX;
-    this._state.jumpDown     = kbJumpDown || this._jumpBtn.isDown;
-    this._state.jumpJust     = kbJumpJust || this._jumpBtn.justPressed;
-    this._state.interactJust = kbInteract || this._intBtn.justPressed;
+    this._state.jumpDown     = kbJumpDown || btnJumpDown;
+    this._state.jumpJust     = kbJumpJust || btnJumpJust;
+    this._state.interactJust = kbInteract || btnIntJust;
 
     // ── Debug overlay update ────────────────────────────────────────────────
     if (this._debugActive) {
