@@ -26,5 +26,10 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
   },
   input: {
     keyboard: true,
+    // activePointers sets how many simultaneous touch slots Phaser allocates.
+    // Default is 1 (pointer1 only). With 1 slot the joystick claims pointer1
+    // and any second finger (Jump / Interact button) is silently dropped.
+    // 3 covers: joystick + Jump + Interact all held at the same time.
+    activePointers: 3,
   },
 };
