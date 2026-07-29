@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { Player } from '../entities/Player';
+import { Kai } from '../entities/player/Kai';
 import { DebugOverlay } from '../ui/DebugOverlay';
 import { EntityManager } from '../managers/EntityManager';
 import { CameraManager } from '../managers/CameraManager';
@@ -28,6 +28,8 @@ import { AnimationFactory } from '../animation/AnimationFactory';
  *   M6    WorldManager (manifest → validation → Level)
  *   M7    InteractionManager (Checkpoint, LevelExit, Door, Sign)
  *   M8    Asset pipeline + Animation foundation
+ *   M9    Mobile controls (TouchManager → TouchInputState)
+ *   M10   Kai Character System (sprite renderer + animation controller)
  *
  * Debug keys:
  *   F3 — collision tile overlay
@@ -36,10 +38,10 @@ import { AnimationFactory } from '../animation/AnimationFactory';
  *   F6 — interaction debug (radii, focus, checkpoint)
  *   F7 — asset pipeline debug (loaded assets, missing, registered animations)
  *   F8 — touch/input debug (touch count, joystick vector, button states)
- *   M9 — TouchManager owns all input; Player and GameScene read only TouchInputState.
+ *   F9 — Kai character debug (anim key, facing, velocity, state)
  */
 export class GameScene extends Phaser.Scene {
-  private player!: Player;
+  private player!: Kai;
   private debugOverlay!: DebugOverlay;
   private worldManager!: WorldManager;
   private entityManager!: EntityManager;
@@ -59,6 +61,7 @@ export class GameScene extends Phaser.Scene {
   private interactionDebugKey!: Phaser.Input.Keyboard.Key;
   private assetDebugKey!: Phaser.Input.Keyboard.Key;
   private touchDebugKey!: Phaser.Input.Keyboard.Key;
+  private kaiDebugKey!:   Phaser.Input.Keyboard.Key;
 
   // ── Debug state ───────────────────────────────────────────────────────────
   private collisionDebugActive    = false;
@@ -67,6 +70,7 @@ export class GameScene extends Phaser.Scene {
   private interactionDebugActive  = false;
   private assetDebugActive        = false;
   private touchDebugActive        = false;
+  private kaiDebugActive          = false;
 
   private levelId = WorldManager.startingLevelId;
 
@@ -82,6 +86,7 @@ export class GameScene extends Phaser.Scene {
     this.interactionDebugActive  = false;
     this.assetDebugActive        = false;
     this.touchDebugActive        = false;
+    this.kaiDebugActive          = false;
   }
 
   create(): void {
@@ -142,9 +147,9 @@ export class GameScene extends Phaser.Scene {
       (scene, _x, _y, data) => new LevelExit(scene, data.width ?? 32, data.height ?? 64),
     );
 
-    // ── Player ───────────────────────────────────────────────────────────────
+    // ── Player (Kai — M10 sprite character) ──────────────────────────────────
     const { x, y } = this.level.objects.playerSpawn;
-    this.player = new Player(this, x, y);
+    this.player = new Kai(this, x, y);
 
     this.physics.add.collider(this.player, this.level.collisionLayer);
     this.entityManager.initOverlaps(this.player);
@@ -171,6 +176,7 @@ export class GameScene extends Phaser.Scene {
     this.interactionDebugKey  = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F6);
     this.assetDebugKey        = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F7);
     this.touchDebugKey        = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F8);
+    this.kaiDebugKey          = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F9);
 
     // ── Shutdown cleanup ─────────────────────────────────────────────────────
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -219,6 +225,9 @@ export class GameScene extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.touchDebugKey)) {
       this.toggleTouchDebug();
     }
+    if (Phaser.Input.Keyboard.JustDown(this.kaiDebugKey)) {
+      this.kaiDebugActive = !this.kaiDebugActive;
+    }
 
     // ── HUD update ────────────────────────────────────────────────────────
     this.debugOverlay.update(
@@ -231,6 +240,7 @@ export class GameScene extends Phaser.Scene {
       this.interactionDebugActive ? this.interactionManager.debugInfo   : undefined,
       this.assetDebugActive       ? this._buildAssetDebugInfo()          : undefined,
       this.touchDebugActive       ? this.touchManager.debugInfo         : undefined,
+      this.kaiDebugActive         ? this.player.kaiDebugInfo            : undefined,
     );
   }
 

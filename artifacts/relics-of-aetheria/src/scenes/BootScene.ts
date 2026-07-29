@@ -4,6 +4,7 @@ import { AssetLoader } from '../assets/AssetLoader';
 import { AssetValidator } from '../assets/AssetValidator';
 import { AnimationFactory } from '../animation/AnimationFactory';
 import { AssetKeys } from '../assets/AssetKeys';
+import { PlayerSpriteFactory } from '../entities/player/PlayerSpriteFactory';
 
 /**
  * BootScene
@@ -42,6 +43,10 @@ export class BootScene extends Phaser.Scene {
     // Generate the procedural placeholder tileset so maps render without
     // real art.  Replace this call with a real PNG load once artwork arrives.
     this.generateTilesetTexture();
+
+    // Generate the procedural Kai placeholder sprite (32×48 px character).
+    // Remove this call when the real spritesheet is added to the asset manifest.
+    PlayerSpriteFactory.createPlaceholderTexture(this);
 
     // Validate what actually loaded; logs warnings for missing required assets.
     AssetValidator.validate(this);

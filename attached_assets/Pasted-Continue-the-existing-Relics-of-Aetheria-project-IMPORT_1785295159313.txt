@@ -1,0 +1,181 @@
+Continue the existing "Relics of Aetheria" project.
+
+IMPORTANT
+
+Do NOT rebuild the project.
+
+Do NOT modify completed gameplay systems unless required for sprite integration.
+
+Completed milestones:
+
+✅ M1 Engine Foundation
+✅ M2 Tilemap Engine
+✅ M3 Professional Player Controller
+✅ M4 Entity System
+✅ M5 Camera & World Feel
+✅ M6 World Builder & Level Pipeline
+✅ M7 Gameplay Interaction Framework
+✅ M8 Asset Pipeline & Animation Foundation
+✅ M9 Mobile Controls
+
+------------------------------------------------------------
+
+OBJECTIVE
+
+Implement Milestone 10: Kai Character System.
+
+This milestone replaces the placeholder rectangle with a sprite-based character while preserving all existing gameplay behaviour.
+
+Do NOT create final artwork.
+
+Do NOT change movement physics.
+
+Do NOT modify camera behaviour.
+
+------------------------------------------------------------
+
+CREATE
+
+src/entities/player/
+
+Kai.ts
+
+KaiRenderer.ts
+
+KaiAnimationController.ts
+
+PlayerSpriteFactory.ts
+
+------------------------------------------------------------
+
+PLAYER SPRITE
+
+Replace the blue rectangle with a temporary placeholder sprite.
+
+If no sprite artwork exists yet:
+
+Generate a simple procedural placeholder character using Phaser Graphics and convert it into a texture.
+
+The placeholder should roughly represent:
+
+Head
+
+Body
+
+Legs
+
+Backpack
+
+rather than a plain rectangle.
+
+------------------------------------------------------------
+
+ANIMATION CONTROLLER
+
+Connect to the existing PlayerStateMachine.
+
+Support states:
+
+Idle
+
+Run
+
+Jump
+
+Fall
+
+Land
+
+Climb (placeholder)
+
+Push (placeholder)
+
+Hurt (placeholder)
+
+Celebrate (placeholder)
+
+If artwork is unavailable:
+
+Switch animation states internally and log transitions.
+
+The code should be ready for real spritesheets later.
+
+------------------------------------------------------------
+
+SPRITE ORIENTATION
+
+Automatically flip horizontally when changing direction.
+
+Keep collision boxes unchanged.
+
+------------------------------------------------------------
+
+PLAYER RENDERER
+
+Separate rendering from gameplay.
+
+Physics stays in Player.
+
+Rendering stays in KaiRenderer.
+
+------------------------------------------------------------
+
+DEBUG
+
+F9 toggles player debug.
+
+Display:
+
+Current animation
+
+Facing direction
+
+Velocity
+
+Current state
+
+------------------------------------------------------------
+
+PERFORMANCE
+
+Maintain 60 FPS.
+
+Avoid allocations in update().
+
+------------------------------------------------------------
+
+DOCUMENTATION
+
+Create:
+
+docs/KaiCharacter.md
+
+Explain:
+
+Architecture
+
+Renderer
+
+Animation controller
+
+State transitions
+
+Future spritesheet replacement
+
+------------------------------------------------------------
+
+SUCCESS
+
+The rectangle is replaced by a placeholder character.
+
+Gameplay remains unchanged.
+
+Touch controls continue working.
+
+Desktop controls continue working.
+
+Animation states update correctly.
+
+No TypeScript errors.
+
+No console errors.

@@ -4,6 +4,7 @@ import type { EntityDebugInfo } from '../managers/EntityManager';
 import type { CameraDebugInfo } from '../managers/CameraManager';
 import type { InteractionDebugInfo } from '../managers/InteractionManager';
 import type { TouchDebugInfo } from '../input/TouchManager';
+import type { KaiDebugInfo } from '../entities/player/Kai';
 
 /**
  * Shape used by the F7 asset/animation debug panel.
@@ -63,6 +64,7 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
     interactionDebug?: InteractionDebugInfo,
     assetDebug?: AssetDebugInfo,
     touchDebug?: TouchDebugInfo,
+    kaiDebug?: KaiDebugInfo,
   ): void {
     const lines: string[] = [
       `FPS    ${Math.round(fps)}`,
