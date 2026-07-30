@@ -56,6 +56,11 @@ export interface AssetDebugInfo {
   decorationPreset: string;
   /** Active animated tile preset identifier. */
   animatedTilePreset: string;
+  // M15 — Level identity
+  /** World identifier for the current level (e.g. 'world01_jungle'). */
+  worldPreset: string;
+  /** Human-readable level display name. */
+  levelDisplayName: string;
 }
 
 /**
@@ -188,11 +193,15 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
         }
       }
 
-      // ── M14: Environment systems ────────────────────────────────────────
+      // ── M15: Environment systems ────────────────────────────────────────
       lines.push(
         `─────────────────`,
-        `[Env M14]`,
+        `[Env M15]`,
       );
+
+      // Level identity (M15)
+      lines.push(`World   ${assetDebug.worldPreset}`);
+      lines.push(`Level   ${assetDebug.levelDisplayName}`);
 
       // Tilesets
       const tsStr = assetDebug.loadedTilesets.length > 0

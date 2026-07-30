@@ -396,6 +396,10 @@ export class GameScene extends Phaser.Scene {
       backgroundTheme:    envConfig.backgroundTheme,
       decorationPreset:   envConfig.decorationPreset,
       animatedTilePreset: envConfig.animatedTilePreset,
+
+      // ── M15 level identity fields ───────────────────────────────────────
+      worldPreset:       entry?.world        ?? '—',
+      levelDisplayName:  entry?.displayName  ?? '—',
     };
   }
 }

@@ -19,6 +19,13 @@ tileData[tileIndex] = { animation: frames };  // 0-based tileids relative to fir
 
 **Why:** Phaser reads `tileData[i].animation` internally to drive animated tile rendering. This matches the Tiled JSON export format.
 
+## Level1.json tileset metadata must match BootScene
+The Tiled map JSON `tilesets[0]` entry must declare `columns:32`, `imagewidth:1024`, `tilecount:32` to match the 32-tile procedural texture BootScene generates. Wrong column count causes tiles above GID 8 to render from the wrong row (texture is only 32px tall). Always update when expanding the tileset.
+
+## M15 parallax scroll factors (tuned for minimal distraction)
+- Sky: 0.02, Cloud: 0.015, Far jungle: 0.06, Mid canopy: 0.14, Foreground: 0.28
+- Keep all scroll factors ≤ 0.30; faster foreground is distracting on smaller screens.
+
 ## Tileset GID allocation (BootScene procedural tileset)
 - GIDs 1–7: Structural (ground, platform, temple block, stone wall, cracked ruins, grass, moss)
 - GIDs 8–22: Animated tile frames (water ×3, waterfall ×3, torch ×3, crystal ×3, leaves ×3)

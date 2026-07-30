@@ -231,7 +231,7 @@ function _buildJungleLayers(
   });
 
   // ── Layer 1 — cloud / fog band ────────────────────────────────────────────
-  const clouds = new ParallaxLayer(scene, 0.02, 0.0, -22, (g) => {
+  const clouds = new ParallaxLayer(scene, 0.015, 0.0, -22, (g) => {
     const fogAlpha = theme === 'jungle_night' ? 0.08 : 0.13;
     g.fillStyle(pal.haze, fogAlpha);
     // Irregular fog wisps using ellipses — deterministic positions
@@ -255,7 +255,7 @@ function _buildJungleLayers(
   });
 
   // ── Layer 2 — far jungle silhouette ──────────────────────────────────────
-  const farJungle = new ParallaxLayer(scene, 0.08, 0.02, -20, (g) => {
+  const farJungle = new ParallaxLayer(scene, 0.06, 0.01, -20, (g) => {
     // Dark canopy mass — rounded treetop silhouettes
     const fillCol = theme === 'jungle_night' ? 0x040e06 : 0x1a3a1a;
     g.fillStyle(fillCol, 1);
@@ -282,7 +282,7 @@ function _buildJungleLayers(
   });
 
   // ── Layer 3 — mid jungle canopy ───────────────────────────────────────────
-  const midJungle = new ParallaxLayer(scene, 0.20, 0.04, -15, (g) => {
+  const midJungle = new ParallaxLayer(scene, 0.14, 0.03, -15, (g) => {
     const fillCol = theme === 'jungle_night' ? 0x071207 : 0x163016;
     g.fillStyle(fillCol, 1);
 
@@ -311,7 +311,8 @@ function _buildJungleLayers(
   });
 
   // ── Layer 4 — foreground vegetation ──────────────────────────────────────
-  const foreground = new ParallaxLayer(scene, 0.45, 0.06, -5, (g) => {
+  // M15: reduced from 0.45 → 0.28 to avoid distracting fast motion
+  const foreground = new ParallaxLayer(scene, 0.28, 0.04, -5, (g) => {
     // Large frond silhouettes near bottom — slightly in front of world tiles
     const fillCol = theme === 'jungle_night' ? 0x050f05 : 0x0f200f;
     g.fillStyle(fillCol, 0.85);

@@ -96,7 +96,7 @@ export const LEVEL_MANIFEST: LevelManifestEntry[] = [
     backgroundTheme:    'jungle_day',
     decorationPreset:   'jungle_ruins',
     weatherPreset:      'none',
-    animatedTilePreset: 'none',
+    animatedTilePreset: 'jungle_water',
     nextLevel:          undefined,        // extend when level 2 is added
     completionRequirements: {
       reachExit: true,

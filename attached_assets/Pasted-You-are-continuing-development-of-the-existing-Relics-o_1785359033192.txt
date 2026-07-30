@@ -1,0 +1,248 @@
+You are continuing development of the existing Relics of Aetheria project.
+
+IMPORTANT
+
+Read the ENTIRE repository before making any changes.
+
+M1–M14 are COMPLETE.
+
+The engine architecture is LOCKED.
+
+DO NOT redesign systems.
+
+DO NOT add unnecessary abstractions.
+
+DO NOT build generic frameworks.
+
+The purpose of M15 is to transform World 1 – Level 1 from a prototype into a production-quality level using the systems that already exist.
+
+------------------------------------------------------------
+
+CURRENT MILESTONE
+
+M15
+
+World 1 – Level 1 Production Build
+
+------------------------------------------------------------
+
+OBJECTIVE
+
+Replace prototype visuals with production-ready world content while keeping gameplay identical.
+
+The player should immediately recognise this as an ancient jungle temple.
+
+------------------------------------------------------------
+
+LEVEL PRESENTATION
+
+Use the existing environment pipeline.
+
+Configure World 1 to use:
+
+• Jungle Day background
+• Jungle Ruins decoration preset
+• Animated jungle water preset
+• Appropriate ambient environment configuration
+
+------------------------------------------------------------
+
+LEVEL ART
+
+Replace placeholder-looking areas with production-style layout support.
+
+Prepare placement for:
+
+Temple stone blocks
+
+Cracked temple walls
+
+Moss-covered platforms
+
+Grass edges
+
+Roots
+
+Large trees
+
+Bushes
+
+Vines
+
+Wooden bridges
+
+Broken pillars
+
+Ancient statues
+
+Rocks
+
+Flowers
+
+Crystal shrine
+
+Checkpoint area
+
+Exit gate area
+
+Hidden cave entrance
+
+Waterfall section
+
+Secret room entrance
+
+------------------------------------------------------------
+
+LEVEL FLOW
+
+Keep gameplay exactly the same.
+
+Improve only presentation and readability.
+
+Clearly distinguish:
+
+Main route
+
+Hidden areas
+
+Safe platforms
+
+Danger zones
+
+Checkpoint
+
+Level exit
+
+------------------------------------------------------------
+
+PARALLAX
+
+Tune jungle parallax for better depth.
+
+Ensure layer movement feels natural.
+
+Avoid distracting movement.
+
+------------------------------------------------------------
+
+ANIMATED ELEMENTS
+
+Use existing animated systems.
+
+Enable:
+
+Water
+
+Waterfall
+
+Leaves
+
+Crystal shimmer
+
+Torch flames (where appropriate)
+
+------------------------------------------------------------
+
+POLISH
+
+Improve overall visual consistency.
+
+Ensure:
+
+No overlapping decorations
+
+No decoration blocking gameplay
+
+No collision issues
+
+No visual flickering
+
+Consistent tile usage
+
+------------------------------------------------------------
+
+DEBUG
+
+Expand the existing F7 world information to display:
+
+Current world preset
+
+Decoration preset
+
+Animated preset
+
+Parallax preset
+
+Decoration count
+
+Animated object count
+
+------------------------------------------------------------
+
+DOCUMENTATION
+
+Update:
+
+docs/LevelProduction.md
+
+Document:
+
+World 1 production workflow
+
+Level art guidelines
+
+Decoration rules
+
+Visual consistency rules
+
+Animated environment workflow
+
+------------------------------------------------------------
+
+VERIFICATION
+
+Run:
+
+TypeScript typecheck
+
+Build
+
+Runtime verification
+
+Confirm:
+
+✅ 0 TypeScript errors
+
+✅ 0 new console errors
+
+✅ Desktop controls unchanged
+
+✅ Android controls unchanged
+
+✅ Gameplay unchanged
+
+✅ 60 FPS maintained
+
+✅ World 1 visually improved
+
+------------------------------------------------------------
+
+DELIVER
+
+1. What already existed.
+
+2. What was added.
+
+3. Modified files.
+
+4. New files.
+
+5. Verification checklist.
+
+6. Recommendations before M16.
+
+IMPORTANT
+
+Do NOT begin M16.
+
+Finish M15 only.
