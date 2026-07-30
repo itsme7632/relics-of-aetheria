@@ -5,6 +5,7 @@ import { AssetValidator } from '../assets/AssetValidator';
 import { AssetCatalog } from '../assets/AssetCatalog';
 import { AnimationFactory } from '../animation/AnimationFactory';
 import { AssetKeys } from '../assets/AssetKeys';
+import { TilesetRegistry } from '../assets/TilesetRegistry';
 import { PlayerSpriteFactory } from '../entities/player/PlayerSpriteFactory';
 import { PlayerSpriteImporter } from '../entities/player/PlayerSpriteImporter';
 
@@ -20,10 +21,18 @@ import { PlayerSpriteImporter } from '../entities/player/PlayerSpriteImporter';
  *      (all entries currently optional; no crashes if files are absent)
  *
  * Create order:
- *   1. generateTilesetTexture   — procedural placeholder tileset (M14: expanded)
+ *   1. resolveTilesetSource     — M16: use production PNG or procedural fallback
  *   2. AssetValidator.validate  — checks cache, reports missing assets
  *   3. AnimationFactory.registerAll — registers anims whose textures exist
  *   4. scene.start('GameScene') — begin gameplay
+ *
+ * M16 tileset loading:
+ *   BootScene.preload() always queues assets/worlds/world01_jungle/tilesets/tileset.png
+ *   under the 'tiles' key.  If the file is present it loads into the cache;
+ *   if absent (404) the cache entry is never created.  create() checks
+ *   textures.exists('tiles') to decide between production and procedural paths.
+ *   Both optional atlas slots (tileset_anim.png, tileset_deco.png) are queued
+ *   the same way — presence is recorded in TilesetRegistry for the F7 panel.
  *
  * Future: add a progress bar using this.load.on('progress', ...) here.
  */
@@ -39,13 +48,20 @@ export class BootScene extends Phaser.Scene {
     // Register all art, audio, and font assets from the central manifest.
     // Files that don't exist yet are silently tolerated (optional: true).
     AssetLoader.loadAll(this);
+
+    // M16: Always attempt to load the production tileset + optional atlas slots.
+    // If a file is absent (404) Phaser simply does not add it to the texture cache;
+    // create() detects the miss via textures.exists() and falls back gracefully.
+    this.load.image(AssetKeys.TILESET_WORLD01,            AssetKeys.WORLD01_TILESET_PATHS.tileset);
+    this.load.image(AssetKeys.TILESET_WORLD01_ANIM_ATLAS, AssetKeys.WORLD01_TILESET_PATHS.animAtlas);
+    this.load.image(AssetKeys.TILESET_WORLD01_DECO_ATLAS, AssetKeys.WORLD01_TILESET_PATHS.decoAtlas);
   }
 
   create(): void {
-    // Generate the procedural placeholder tileset.
-    // M14: Expanded from 8 → 32 tiles to support jungle environment asset types.
-    // Replace this call with a real PNG load once artwork arrives.
-    this.generateTilesetTexture();
+    // M16: Resolve tileset source — production PNG or procedural fallback.
+    // textures.exists() returns true only if the file loaded successfully
+    // during preload(); a 404 leaves the key absent from the cache.
+    this._resolveTilesetSource();
 
     // Generate the procedural Kai placeholder sprite (32×48 px character).
     // Remove this call when the real spritesheet is added to the asset manifest.
@@ -72,6 +88,62 @@ export class BootScene extends Phaser.Scene {
   }
 
   // ── Private ──────────────────────────────────────────────────────────────────
+
+  /**
+   * M16: Resolve the active tileset source.
+   *
+   * Called first in create().  Checks whether the production tileset PNG was
+   * successfully loaded during preload() by testing the texture cache.
+   *
+   *   Production found  → texture already in cache under 'tiles'; skip generation.
+   *   Production absent → call generateTilesetTexture() to build the procedural one.
+   *
+   * In both cases, TilesetRegistry.record() is called with the final state so
+   * the F7 debug panel can display the source, dimensions, and atlas flags.
+   */
+  private _resolveTilesetSource(): void {
+    const TILE = 32;
+
+    const productionLoaded = this.textures.exists(AssetKeys.TILESET_WORLD01);
+
+    if (productionLoaded) {
+      // Production PNG is in the cache — use it directly; no procedural generation.
+      const src    = this.textures.get(AssetKeys.TILESET_WORLD01).source[0];
+      const cols   = Math.floor(src.width  / TILE);
+      const rows   = Math.floor(src.height / TILE);
+      TilesetRegistry.record({
+        source:          'production',
+        width:           src.width,
+        height:          src.height,
+        columns:         cols,
+        rows:            rows,
+        tileCount:       cols * rows,
+        animAtlasLoaded: this.textures.exists(AssetKeys.TILESET_WORLD01_ANIM_ATLAS),
+        decoAtlasLoaded: this.textures.exists(AssetKeys.TILESET_WORLD01_DECO_ATLAS),
+      });
+      console.log(
+        `[BootScene] Production tileset loaded ` +
+        `(${src.width}×${src.height}px, ${cols * rows} tile(s)).`,
+      );
+    } else {
+      // Production PNG absent — generate the procedural 32-tile placeholder.
+      this.generateTilesetTexture();
+      TilesetRegistry.record({
+        source:          'procedural',
+        width:           TILE * 32,
+        height:          TILE,
+        columns:         32,
+        rows:            1,
+        tileCount:       32,
+        animAtlasLoaded: false,
+        decoAtlasLoaded: false,
+      });
+      console.log(
+        `[BootScene] Production tileset absent — ` +
+        `using procedural fallback (${TILE * 32}×${TILE}px, 32 tiles).`,
+      );
+    }
+  }
 
   /**
    * M14: Expanded procedural placeholder tileset — 32 tiles at 32×32 px (1024×32).

@@ -1,0 +1,189 @@
+You are continuing development of the existing Relics of Aetheria project.
+
+IMPORTANT
+
+Read the ENTIRE repository before making any changes.
+
+M1–M15 are COMPLETE.
+
+The engine architecture is LOCKED.
+
+Do NOT redesign systems.
+
+Do NOT add new gameplay mechanics.
+
+Do NOT rewrite completed code.
+
+The goal of M16 is to prepare World 1 for its final production tileset while keeping gameplay identical.
+
+------------------------------------------------------------
+
+CURRENT MILESTONE
+
+M16
+
+Emerald Jungle Production Tileset Integration
+
+------------------------------------------------------------
+
+OBJECTIVE
+
+Replace the remaining procedural tile generation with a production-ready tileset loading workflow.
+
+The gameplay, collisions and level layout must remain exactly the same.
+
+------------------------------------------------------------
+
+ASSET PIPELINE
+
+Prepare World 1 to load a real external tileset from:
+
+assets/worlds/world01_jungle/tilesets/
+
+Support:
+
+tileset.png
+
+future animated tile atlas
+
+future decorative atlas
+
+Do not require any gameplay code changes when artwork is replaced.
+
+------------------------------------------------------------
+
+BOOTSCENE
+
+If a production tileset exists:
+
+Load it automatically.
+
+If it does not exist:
+
+Gracefully fall back to the procedural tileset.
+
+The game must always remain playable.
+
+------------------------------------------------------------
+
+LEVEL SUPPORT
+
+Verify:
+
+32-column layout
+
+32x32 tiles
+
+Correct GID mapping
+
+Animated tile compatibility
+
+Decoration compatibility
+
+------------------------------------------------------------
+
+MAP VALIDATION
+
+Validate at runtime:
+
+missing tile IDs
+
+invalid GIDs
+
+unknown layers
+
+missing tileset
+
+invalid dimensions
+
+Report warnings without crashing.
+
+------------------------------------------------------------
+
+DEBUG
+
+Expand the F7 panel.
+
+Display:
+
+Tileset source
+
+Procedural or Production
+
+Tileset dimensions
+
+Tile count
+
+Animation atlas loaded
+
+Decoration atlas loaded
+
+------------------------------------------------------------
+
+DOCUMENTATION
+
+Update:
+
+docs/TilesetPipeline.md
+
+Document:
+
+Folder structure
+
+Tileset requirements
+
+Import workflow
+
+Replacement workflow
+
+Validation rules
+
+------------------------------------------------------------
+
+VERIFICATION
+
+Run:
+
+TypeScript typecheck
+
+Build
+
+Runtime verification
+
+Confirm:
+
+✅ 0 TypeScript errors
+
+✅ 0 new console errors
+
+✅ Desktop controls unchanged
+
+✅ Android controls unchanged
+
+✅ Gameplay unchanged
+
+✅ 60 FPS maintained
+
+✅ Automatic fallback works
+
+------------------------------------------------------------
+
+DELIVER
+
+1. What already existed.
+
+2. What was added.
+
+3. Modified files.
+
+4. New files.
+
+5. Verification checklist.
+
+6. Recommendations before M17.
+
+IMPORTANT
+
+Do NOT begin M17.
+
+Finish M16 only.

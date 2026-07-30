@@ -20,6 +20,7 @@ import { buildEnvironmentConfig } from '../world/WorldEnvironment';
 import { AssetValidator } from '../assets/AssetValidator';
 import { AnimationFactory } from '../animation/AnimationFactory';
 import { AssetCatalog } from '../assets/AssetCatalog';
+import { TilesetRegistry } from '../assets/TilesetRegistry';
 
 /**
  * GameScene
@@ -400,6 +401,14 @@ export class GameScene extends Phaser.Scene {
       // ── M15 level identity fields ───────────────────────────────────────
       worldPreset:       entry?.world        ?? '—',
       levelDisplayName:  entry?.displayName  ?? '—',
+
+      // ── M16 tileset pipeline fields ─────────────────────────────────────
+      tilesetSource:     TilesetRegistry.info.source,
+      tilesetWidth:      TilesetRegistry.info.width,
+      tilesetHeight:     TilesetRegistry.info.height,
+      tilesetTileCount:  TilesetRegistry.info.tileCount,
+      animAtlasLoaded:   TilesetRegistry.info.animAtlasLoaded,
+      decoAtlasLoaded:   TilesetRegistry.info.decoAtlasLoaded,
     };
   }
 }

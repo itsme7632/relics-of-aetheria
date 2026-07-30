@@ -1,6 +1,9 @@
 import Phaser from 'phaser';
 import { LAYER_NAMES, OBJECT_LAYER_NAMES } from '../systems/Level';
 
+// Engine's known tile layer name set (all values from LAYER_NAMES)
+const KNOWN_TILE_LAYERS: ReadonlySet<string> = new Set(Object.values(LAYER_NAMES));
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface ValidationIssue {
@@ -80,6 +83,84 @@ export class MapValidator {
   ): ValidationResult {
     const issues: ValidationIssue[] = [];
     const tag = `[MapValidator] "${levelId}"`;
+
+    // ── M16: Missing tileset ────────────────────────────────────────────────
+    if (map.tilesets.length === 0) {
+      issues.push({
+        severity: 'error',
+        message: `${tag}: map has no tilesets defined.`,
+      });
+    }
+
+    // ── M16: Invalid tile dimensions ────────────────────────────────────────
+    for (const ts of map.tilesets) {
+      if (ts.tileWidth !== 32 || ts.tileHeight !== 32) {
+        issues.push({
+          severity: 'warning',
+          message:
+            `${tag}: tileset "${ts.name}" has tile size ${ts.tileWidth}×${ts.tileHeight}px — ` +
+            `engine standard is 32×32px.`,
+        });
+      }
+    }
+
+    // ── M16: Invalid map dimensions ─────────────────────────────────────────
+    if (map.width <= 0 || map.height <= 0) {
+      issues.push({
+        severity: 'error',
+        message:
+          `${tag}: map has invalid dimensions ${map.width}×${map.height} tiles — ` +
+          `both width and height must be greater than zero.`,
+      });
+    }
+
+    // ── M16: GID out-of-range tiles ─────────────────────────────────────────
+    // tile.index in Phaser is the 0-based tileset-relative index (GID − firstgid).
+    // Valid range: [0, tileCount − 1]. Empty tiles have index === −1.
+    for (const ts of map.tilesets) {
+      const maxIndex   = ts.total - 1; // ts.total = rows × columns in Phaser's Tileset type
+      const badGids    = new Set<number>();
+      const allLayers  = [
+        ...(REQUIRED_TILE_LAYERS as readonly string[]),
+        ...(EXPECTED_TILE_LAYERS  as readonly string[]),
+      ];
+
+      for (const layerName of allLayers) {
+        const ld = map.getLayer(layerName);
+        if (!ld) continue;
+        for (const row of ld.data) {
+          for (const tile of row) {
+            if (tile.index < 0) continue; // empty
+            if (tile.index > maxIndex) {
+              badGids.add(tile.index + ts.firstgid); // report as global GID
+            }
+          }
+        }
+      }
+
+      if (badGids.size > 0) {
+        const sample = [...badGids].slice(0, 5).join(', ');
+        issues.push({
+          severity: 'warning',
+          message:
+            `${tag}: ${badGids.size} tile(s) reference GID(s) outside ` +
+            `tileset "${ts.name}" range (max GID ${ts.firstgid + ts.total - 1}): ` +
+            `${sample}${badGids.size > 5 ? ' …' : ''}.`,
+        });
+      }
+    }
+
+    // ── M16: Unknown tile layers ─────────────────────────────────────────────
+    for (const layerData of map.layers) {
+      if (!KNOWN_TILE_LAYERS.has(layerData.name)) {
+        issues.push({
+          severity: 'warning',
+          message:
+            `${tag}: tile layer "${layerData.name}" is not used by the engine ` +
+            `and will be ignored.`,
+        });
+      }
+    }
 
     // ── Required tile layers ────────────────────────────────────────────────
     for (const name of REQUIRED_TILE_LAYERS) {

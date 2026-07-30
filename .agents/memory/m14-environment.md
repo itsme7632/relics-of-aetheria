@@ -19,6 +19,10 @@ tileData[tileIndex] = { animation: frames };  // 0-based tileids relative to fir
 
 **Why:** Phaser reads `tileData[i].animation` internally to drive animated tile rendering. This matches the Tiled JSON export format.
 
+## M16 conditional tileset loading (BootScene)
+BootScene.preload() always queues `load.image(TILESET_WORLD01, WORLD01_TILESET_PATHS.tileset)`. In create(), `textures.exists(TILESET_WORLD01)` distinguishes production (loaded) from procedural (404 → absent). Phaser logs "Failed to process file" for each missing PNG — this is expected dev behavior, not a bug. `TilesetRegistry.record()` captures source/dimensions/atlas flags for the F7 panel.
+Phaser Tileset type uses `ts.total` (not `ts.tileCount`) for the tile count.
+
 ## Level1.json tileset metadata must match BootScene
 The Tiled map JSON `tilesets[0]` entry must declare `columns:32`, `imagewidth:1024`, `tilecount:32` to match the 32-tile procedural texture BootScene generates. Wrong column count causes tiles above GID 8 to render from the wrong row (texture is only 32px tall). Always update when expanding the tileset.
 

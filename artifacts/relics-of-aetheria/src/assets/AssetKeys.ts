@@ -28,8 +28,26 @@
 // The value 'tiles' is the key used by BootScene.generateTilesetTexture()
 // and must match the tilesetKey field in LevelManifest.
 
-export const TILESET_WORLD01 = 'tiles'            as const;
-export const TILESET_WORLD02 = 'tiles_world02'    as const;
+export const TILESET_WORLD01            = 'tiles'                as const;
+export const TILESET_WORLD02            = 'tiles_world02'        as const;
+
+// M16: Optional atlas slots for World 1 production artwork.
+// These keys are reserved for future animated-tile and decorative-tile atlases.
+// BootScene will attempt to load both; missing files fall back silently.
+export const TILESET_WORLD01_ANIM_ATLAS = 'tiles_world01_anim'  as const;
+export const TILESET_WORLD01_DECO_ATLAS = 'tiles_world01_deco'  as const;
+
+// ── Production tileset paths (World 1) ───────────────────────────────────────
+// Canonical disk paths for all World 1 tileset files.
+// BootScene reads these; engine code must not hard-code the paths elsewhere.
+export const WORLD01_TILESET_PATHS = {
+  /** Main production tileset — 32×32 tiles, 32 columns, 1024×32 px minimum. */
+  tileset:   'assets/worlds/world01_jungle/tilesets/tileset.png'      as const,
+  /** Animated tile atlas (future delivery). */
+  animAtlas: 'assets/worlds/world01_jungle/tilesets/tileset_anim.png' as const,
+  /** Decorative tile atlas (future delivery). */
+  decoAtlas: 'assets/worlds/world01_jungle/tilesets/tileset_deco.png' as const,
+} as const;
 
 // ── Map keys ─────────────────────────────────────────────────────────────────
 // Must exactly match the LevelManifest entry ids — WorldManager.preloadAll()
@@ -96,6 +114,11 @@ export const AssetKeys = {
   // Tilesets
   TILESET_WORLD01,
   TILESET_WORLD02,
+  TILESET_WORLD01_ANIM_ATLAS,
+  TILESET_WORLD01_DECO_ATLAS,
+
+  // Production tileset paths (M16)
+  WORLD01_TILESET_PATHS,
 
   // Maps
   MAP_WORLD01_LEVEL01,

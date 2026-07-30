@@ -61,6 +61,19 @@ export interface AssetDebugInfo {
   worldPreset: string;
   /** Human-readable level display name. */
   levelDisplayName: string;
+  // M16 — Tileset pipeline
+  /** 'production' if a real PNG was loaded; 'procedural' if BootScene generated it. */
+  tilesetSource: string;
+  /** Width of the tileset texture in pixels. */
+  tilesetWidth: number;
+  /** Height of the tileset texture in pixels. */
+  tilesetHeight: number;
+  /** Total number of tiles in the sheet. */
+  tilesetTileCount: number;
+  /** Whether the animated tile atlas was loaded from disk. */
+  animAtlasLoaded: boolean;
+  /** Whether the decorative tile atlas was loaded from disk. */
+  decoAtlasLoaded: boolean;
 }
 
 /**
@@ -224,6 +237,13 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
         assetDebug.decorationTypes.length > 0
           ? ` (${assetDebug.decorationTypes.slice(0, 2).join(', ')}${assetDebug.decorationTypes.length > 2 ? '…' : ''})`
           : ''}`);
+
+      // ── M16: Tileset pipeline ────────────────────────────────────────────
+      const srcLabel = assetDebug.tilesetSource === 'production' ? '✓ prod' : '· proc';
+      lines.push(`TsSrc   ${srcLabel}`);
+      lines.push(`TsDim   ${assetDebug.tilesetWidth}×${assetDebug.tilesetHeight} (${assetDebug.tilesetTileCount} tiles)`);
+      lines.push(`AnimAk  ${assetDebug.animAtlasLoaded ? '✓ yes' : '· no'}`);
+      lines.push(`DecoAk  ${assetDebug.decoAtlasLoaded ? '✓ yes' : '· no'}`);
     }
 
     if (touchDebug) {
