@@ -5,6 +5,7 @@ import type { CameraDebugInfo } from '../managers/CameraManager';
 import type { InteractionDebugInfo } from '../managers/InteractionManager';
 import type { TouchDebugInfo } from '../input/TouchManager';
 import type { KaiDebugInfo } from '../entities/player/Kai';
+import type { EnemyDebugInfo } from '../entities/enemy/SnakeEnemy';
 
 /**
  * Shape used by the F7 asset/animation debug panel.
@@ -111,6 +112,7 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
     playerY: number,
     debug?: PlayerDebugInfo,
     entityDebug?: EntityDebugInfo,
+    enemyDebug?: EnemyDebugInfo,
     cameraDebug?: CameraDebugInfo,
     interactionDebug?: InteractionDebugInfo,
     assetDebug?: AssetDebugInfo,
@@ -141,6 +143,25 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
         `Active   ${entityDebug.activeCount}`,
         `Crystals ${entityDebug.collectedCrystals}`,
       );
+    }
+
+    if (enemyDebug) {
+      lines.push(
+        `─────────────────`,
+        `[Enemies F4]`,
+        `Total    ${enemyDebug.totalCount}`,
+        `Active   ${enemyDebug.activeCount}`,
+        `Sleeping ${enemyDebug.sleepingCount}`,
+        `Defeated ${enemyDebug.defeatedCount}`,
+      );
+      // Show patrol state for each snake (truncate at 6)
+      const states = enemyDebug.patrolStates.slice(0, 6);
+      for (let i = 0; i < states.length; i++) {
+        lines.push(`  #${i + 1} ${states[i]}`);
+      }
+      if (enemyDebug.patrolStates.length > 6) {
+        lines.push(`  …+${enemyDebug.patrolStates.length - 6} more`);
+      }
     }
 
     if (cameraDebug) {

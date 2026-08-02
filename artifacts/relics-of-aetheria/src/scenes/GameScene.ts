@@ -21,6 +21,8 @@ import { AssetValidator } from '../assets/AssetValidator';
 import { AnimationFactory } from '../animation/AnimationFactory';
 import { AssetCatalog } from '../assets/AssetCatalog';
 import { TilesetRegistry } from '../assets/TilesetRegistry';
+import { SnakeEnemy } from '../entities/enemy/SnakeEnemy';
+import type { EnemyDebugInfo } from '../entities/enemy/SnakeEnemy';
 
 /**
  * GameScene
@@ -81,6 +83,9 @@ export class GameScene extends Phaser.Scene {
   private assetDebugActive        = false;
   private touchDebugActive        = false;
   private kaiDebugActive          = false;
+
+  /** M17: Cached snake references for wake/sleep management and debug. */
+  private snakes: SnakeEnemy[] = [];
 
   private levelId = WorldManager.startingLevelId;
 

@@ -1,0 +1,167 @@
+You are continuing development of the existing Relics of Aetheria project.
+
+IMPORTANT
+
+Read the ENTIRE repository before making any changes.
+
+M1–M16 are COMPLETE.
+
+The engine architecture is LOCKED.
+
+Do NOT redesign systems.
+
+Do NOT rewrite existing gameplay.
+
+Do NOT introduce unnecessary abstractions.
+
+The goal of M17 is to introduce the game's first production enemy.
+
+------------------------------------------------------------
+
+CURRENT MILESTONE
+
+M17
+
+Snake Enemy System
+
+------------------------------------------------------------
+
+OBJECTIVE
+
+Implement the first complete enemy using the existing entity framework.
+
+Gameplay quality is more important than adding generic systems.
+
+The snake should feel polished even while using placeholder artwork.
+
+------------------------------------------------------------
+
+ENEMY
+
+Create:
+
+SnakeEnemy
+
+Behaviour:
+
+• Patrol between two points
+• Turn around at patrol limits
+• Turn around at platform edges
+• Idle briefly before changing direction
+• Smooth movement
+• Stable collision
+
+------------------------------------------------------------
+
+PLAYER INTERACTION
+
+Player touching the snake:
+
+• Takes damage
+• Small knockback
+• Short invulnerability window
+
+Player jumping on the snake:
+
+• Snake defeated
+• Small bounce for player
+• Enemy disappears
+• Optional placeholder defeat effect
+
+------------------------------------------------------------
+
+LEVEL SUPPORT
+
+Allow enemy placement through Tiled object layers.
+
+Support configurable:
+
+• Patrol distance
+• Initial facing
+• Movement speed
+
+------------------------------------------------------------
+
+DEBUG
+
+Expand F7.
+
+Display:
+
+Enemy count
+
+Active enemies
+
+Sleeping enemies
+
+Current patrol state
+
+------------------------------------------------------------
+
+DOCUMENTATION
+
+Create:
+
+docs/EnemySystem.md
+
+Include:
+
+Enemy architecture
+
+Snake behaviour
+
+Object layer setup
+
+Future enemy guidelines
+
+------------------------------------------------------------
+
+VERIFICATION
+
+Run:
+
+TypeScript typecheck
+
+Build
+
+Runtime verification
+
+Confirm:
+
+✅ 0 TypeScript errors
+
+✅ 0 new console errors
+
+✅ Desktop controls unchanged
+
+✅ Android controls unchanged
+
+✅ 60 FPS maintained
+
+✅ Snake patrols correctly
+
+✅ Player damage works
+
+✅ Stomp defeat works
+
+------------------------------------------------------------
+
+DELIVER
+
+1. What already existed.
+
+2. What was added.
+
+3. Modified files.
+
+4. New files.
+
+5. Verification checklist.
+
+6. Recommendations before M18.
+
+IMPORTANT
+
+Do NOT begin M18.
+
+Finish M17 only.

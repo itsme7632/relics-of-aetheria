@@ -70,6 +70,9 @@ export class Kai extends Player {
   private readonly _renderer:       KaiRenderer;
   private readonly _animController: KaiAnimationController;
 
+  /** Accumulator used to compute the flash phase during invulnerability. */
+  private _flashTimer = 0;
+
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y);
 
@@ -92,7 +95,7 @@ export class Kai extends Player {
    * property mutations.
    */
   override update(delta: number, input: TouchInputState): void {
-    // 1. Run all physics, state machine transitions (Player.update)
+    // 1. Run all physics, state machine transitions, invulnerability timer
     super.update(delta, input);
 
     // 2. Sync animation state with state machine
@@ -100,6 +103,17 @@ export class Kai extends Player {
 
     // 3. Sync sprite position and facing with physics body
     this._renderer.update(this.x, this.y, this.body.velocity.x);
+
+    // 4. M17 — flash the sprite during the invulnerability window.
+    //    Toggles visibility every 120 ms so the player can tell they were hit
+    //    without losing track of their character.
+    if (this.isInvulnerable) {
+      this._flashTimer += delta;
+      this._renderer.setVisible(Math.floor(this._flashTimer / 120) % 2 === 0);
+    } else {
+      this._flashTimer = 0;
+      this._renderer.setVisible(true);
+    }
   }
 
   // ── Public API ────────────────────────────────────────────────────────────

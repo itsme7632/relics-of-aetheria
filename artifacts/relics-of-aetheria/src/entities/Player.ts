@@ -51,6 +51,16 @@ export class Player extends Phaser.GameObjects.Rectangle {
   /** Track previous-frame grounded so we can detect the landing transition. */
   private wasOnGround = true;
 
+  // ── M17: Damage & invulnerability ─────────────────────────────────────────
+  /** Starting hit points. */
+  static readonly MAX_HP = 3;
+  /** How long (ms) the player is invulnerable after taking damage. */
+  static readonly INVUL_DURATION = 1500;
+
+  private _hp         = Player.MAX_HP;
+  /** Counts down from INVUL_DURATION to 0 after taking damage. */
+  protected _invulTimer = 0;
+
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(
       scene, x, y,
@@ -73,6 +83,31 @@ export class Player extends Phaser.GameObjects.Rectangle {
     return this.stateMachine.state;
   }
 
+  /** Current hit points. */
+  get hp(): number { return this._hp; }
+
+  /** True while the post-damage invulnerability window is active. */
+  get isInvulnerable(): boolean { return this._invulTimer > 0; }
+
+  /**
+   * Apply one hit of damage to the player.
+   * Ignored when the invulnerability window is active (prevents damage-spam).
+   *
+   * @param knockbackVX  Horizontal knockback velocity (px/s, signed).
+   * @param knockbackVY  Vertical knockback velocity (px/s, negative = up).
+   * @returns  true if damage was applied; false if blocked by invulnerability.
+   */
+  takeDamage(knockbackVX: number, knockbackVY: number): boolean {
+    if (this._invulTimer > 0) return false;
+
+    this._hp = Math.max(0, this._hp - 1);
+    this.body.setVelocityX(knockbackVX);
+    this.body.setVelocityY(knockbackVY);
+    this._invulTimer = Player.INVUL_DURATION;
+    this.emit('hurt');
+    return true;
+  }
+
   /** Snapshot of internal state for the debug overlay. */
   get debugInfo(): PlayerDebugInfo {
     return {
@@ -92,6 +127,11 @@ export class Player extends Phaser.GameObjects.Rectangle {
    *               Merges keyboard and touch — Player never reads either directly.
    */
   update(delta: number, input: TouchInputState): void {
+    // ── M17: Invulnerability countdown ──────────────────────────────────────
+    if (this._invulTimer > 0) {
+      this._invulTimer = Math.max(0, this._invulTimer - delta);
+    }
+
     const body         = this.body;
     const onGround     = body.blocked.down;
     const worldGravity = (this.scene as Phaser.Scene).physics.world.gravity.y;
