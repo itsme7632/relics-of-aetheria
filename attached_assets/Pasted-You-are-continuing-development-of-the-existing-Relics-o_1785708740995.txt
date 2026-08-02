@@ -1,0 +1,177 @@
+You are continuing development of the existing Relics of Aetheria project.
+
+IMPORTANT
+
+Read the ENTIRE repository before making ANY changes.
+
+Do NOT assume the previous agent completed anything.
+
+Inspect the current repository first.
+
+M1–M16 are COMPLETE.
+
+M17 has been STARTED but NOT FINISHED.
+
+Several files already contain partial M17 work.
+
+Do NOT overwrite working code.
+
+Continue from the existing implementation.
+
+------------------------------------------------------------
+
+FIRST TASK
+
+Read the repository completely.
+
+Determine exactly which M17 work is already implemented and which parts remain.
+
+Only modify incomplete sections.
+
+------------------------------------------------------------
+
+Current partially modified files include (verify before editing):
+
+- src/entities/player/Player.ts
+- src/entities/player/Kai.ts
+- src/scenes/GameScene.ts
+- src/ui/DebugOverlay.ts
+- src/entities/enemies/SnakeEnemy.ts
+- docs/EnemySystem.md (may or may not exist)
+
+There may also be AssetKeys or manifest updates.
+
+Verify everything.
+
+------------------------------------------------------------
+
+M17 OBJECTIVE
+
+Complete the Snake Enemy system.
+
+Requirements:
+
+• Patrol between two configurable patrol points
+• Turn around at patrol limits
+• Turn around at platform edges
+• Optional idle pause before reversing
+• Stable collision
+• Configurable movement speed
+• Configurable initial direction
+
+------------------------------------------------------------
+
+PLAYER INTERACTION
+
+If player touches snake:
+
+• Damage player
+• Knockback player
+• Temporary invulnerability
+• Kai flashes during invulnerability
+
+If player lands on snake:
+
+• Snake defeated
+• Player receives bounce
+• Snake disappears cleanly
+• Optional placeholder defeat effect
+
+------------------------------------------------------------
+
+LEVEL SUPPORT
+
+Enemies must be placeable from Tiled object layers.
+
+Support:
+
+• patrolDistance
+• speed
+• facing
+• spawn position
+
+------------------------------------------------------------
+
+DEBUG (F7)
+
+Display:
+
+• Enemy count
+• Active enemies
+• Sleeping enemies
+• Snake patrol state
+• Player invulnerability state
+
+------------------------------------------------------------
+
+DOCUMENTATION
+
+Create or complete:
+
+docs/EnemySystem.md
+
+Include:
+
+• Enemy architecture
+• Snake lifecycle
+• Patrol behaviour
+• Tiled object setup
+• Future enemy guidelines
+
+------------------------------------------------------------
+
+VERIFY
+
+Run:
+
+• TypeScript typecheck
+• Build
+• Runtime verification
+
+Confirm:
+
+✅ Zero TypeScript errors
+
+✅ Zero new console errors
+
+✅ Desktop controls unchanged
+
+✅ Android controls unchanged
+
+✅ Stable 60 FPS
+
+✅ Snake patrols correctly
+
+✅ Snake turns at edges
+
+✅ Player takes damage correctly
+
+✅ Invulnerability works
+
+✅ Kai flashes correctly
+
+✅ Snake can be stomped
+
+------------------------------------------------------------
+
+DELIVER
+
+Provide a complete report including:
+
+1. What already existed.
+2. What was already implemented before this session.
+3. What you completed.
+4. Modified files.
+5. New files.
+6. Verification checklist.
+7. Recommendations before M18.
+
+IMPORTANT
+
+Do NOT begin M18.
+
+Finish M17 only.
+
+Do NOT redesign existing architecture.
+
+Preserve the coding style already used throughout the project.

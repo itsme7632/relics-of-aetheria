@@ -133,6 +133,7 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
         `VelY   ${debug.velocityY.toFixed(1)}`,
         `Coyote ${Math.ceil(debug.coyoteTimer)}ms`,
         `JmpBuf ${Math.ceil(debug.jumpBufferTimer)}ms`,
+        `Invul  ${debug.isInvulnerable ? 'yes' : 'no'}`,
       );
     }
 

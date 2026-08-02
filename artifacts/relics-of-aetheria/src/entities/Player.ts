@@ -11,6 +11,8 @@ export interface PlayerDebugInfo {
   velocityY: number;
   coyoteTimer: number;
   jumpBufferTimer: number;
+  /** M17 — true while post-damage invulnerability window is active. */
+  isInvulnerable: boolean;
 }
 
 /**
@@ -117,6 +119,7 @@ export class Player extends Phaser.GameObjects.Rectangle {
       velocityY:       this.body.velocity.y,
       coyoteTimer:     this.coyoteTimer,
       jumpBufferTimer: this.jumpBufferTimer,
+      isInvulnerable:  this.isInvulnerable,
     };
   }
 

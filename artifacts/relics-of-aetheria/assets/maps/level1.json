@@ -10757,10 +10757,99 @@
           "height": 0
         }
       ]
+    },
+    {
+      "id": 10,
+      "name": "Enemies",
+      "opacity": 1,
+      "type": "objectgroup",
+      "visible": true,
+      "x": 0,
+      "y": 0,
+      "objects": [
+        {
+          "id": 10,
+          "name": "Snake",
+          "type": "",
+          "x": 480,
+          "y": 576,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "patrolDistance",
+              "type": "int",
+              "value": 128
+            },
+            {
+              "name": "speed",
+              "type": "int",
+              "value": 56
+            },
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "right"
+            }
+          ]
+        },
+        {
+          "id": 11,
+          "name": "Snake",
+          "type": "",
+          "x": 1024,
+          "y": 576,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "patrolDistance",
+              "type": "int",
+              "value": 192
+            },
+            {
+              "name": "speed",
+              "type": "int",
+              "value": 72
+            },
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "left"
+            }
+          ]
+        },
+        {
+          "id": 12,
+          "name": "Snake",
+          "type": "",
+          "x": 1760,
+          "y": 576,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "patrolDistance",
+              "type": "int",
+              "value": 160
+            },
+            {
+              "name": "speed",
+              "type": "int",
+              "value": 64
+            },
+            {
+              "name": "facing",
+              "type": "string",
+              "value": "right"
+            }
+          ]
+        }
+      ]
     }
   ],
-  "nextlayerid": 10,
-  "nextobjectid": 10,
+  "nextlayerid": 11,
+  "nextobjectid": 13,
   "orientation": "orthogonal",
   "renderorder": "right-down",
   "tiledversion": "1.10.2",

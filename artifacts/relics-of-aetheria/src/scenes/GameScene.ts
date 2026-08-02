@@ -186,6 +186,9 @@ export class GameScene extends Phaser.Scene {
     this.entityManager.initOverlaps(this.player);
     this.interactionManager.initOverlaps(this.player);
 
+    // ── M17: Snake enemies ─────────────────────────────────────────────────
+    this._spawnSnakes();
+
     // ── Camera Manager ───────────────────────────────────────────────────────
     this.cameraManager = new CameraManager(this, this.player, this.level);
     this.cameraManager.effects.fadeIn(400);
@@ -218,6 +221,8 @@ export class GameScene extends Phaser.Scene {
       this.cameraManager.destroy();
       for (const layer of this.parallaxLayers) layer.destroy();
       this.parallaxLayers = [];
+      for (const snake of this.snakes) snake.destroy();
+      this.snakes = [];
     });
   }
 
@@ -229,6 +234,12 @@ export class GameScene extends Phaser.Scene {
 
     this.player.update(delta, input);
     this.entityManager.update(delta);
+
+    // ── M17: Snake enemy updates ───────────────────────────────────────────
+    for (const snake of this.snakes) {
+      if (!snake.isDefeated) snake.update(delta);
+    }
+
     this.cameraManager.update(delta);
 
     // Interact is driven by the unified input state (E key OR touch interact button)
@@ -267,6 +278,7 @@ export class GameScene extends Phaser.Scene {
       this.player.y,
       this.player.debugInfo,
       this.entityDebugActive      ? this.entityManager.debugInfo        : undefined,
+      this.entityDebugActive      ? this._buildEnemyDebugInfo()          : undefined,
       this.cameraDebugActive      ? this.cameraManager.debugInfo        : undefined,
       this.interactionDebugActive ? this.interactionManager.debugInfo   : undefined,
       this.assetDebugActive       ? this._buildAssetDebugInfo()          : undefined,
@@ -366,6 +378,77 @@ export class GameScene extends Phaser.Scene {
     } else {
       this.touchManager.hideDebug();
     }
+  }
+
+  // ── M17: Snake enemy helpers ──────────────────────────────────────────────
+
+  /**
+   * Reads the "Enemies" object layer from the Tiled map and spawns a
+   * SnakeEnemy for every object named "Snake".  Each snake receives its own
+   * overlap registrations immediately after spawning.
+   */
+  private _spawnSnakes(): void {
+    const enemyLayer = this.level.map.getObjectLayer('Enemies');
+    if (!enemyLayer) return; // layer is optional — no enemies in this level is fine
+
+    for (const obj of enemyLayer.objects) {
+      if (obj.name !== 'Snake') continue;
+
+      const snake = new SnakeEnemy(this, obj, this.level.collisionLayer);
+      // Tiled rectangle x,y is the top-left corner; obj.x / obj.y are the
+      // world coordinates of the spawn point placed in the editor.
+      snake.spawn(obj.x ?? 0, obj.y ?? 0);
+      this.snakes.push(snake);
+      this._wireSnakeOverlap(snake);
+    }
+
+    console.log(`[GameScene] M17 — spawned ${this.snakes.length} snake(s).`);
+  }
+
+  /**
+   * Registers stomp and touch overlap callbacks for a single snake.
+   *
+   * Stomp  — player is falling AND player bottom is near or above snake top →
+   *   defeat the snake, bounce the player upward.
+   * Touch  — any other overlap → deal one point of damage with horizontal
+   *   knockback pushing the player away from the snake.
+   */
+  private _wireSnakeOverlap(snake: SnakeEnemy): void {
+    this.physics.add.overlap(
+      this.player,
+      snake.physicsRect,
+      () => {
+        if (snake.isDefeated) return;
+
+        const playerBottom  = this.player.y + this.player.height  / 2;
+        const snakeTop      = snake.physicsRect.y - snake.physicsRect.height / 2;
+        const playerFalling = this.player.body.velocity.y > 50;
+
+        if (playerFalling && playerBottom <= snakeTop + 14) {
+          // ── Stomp ────────────────────────────────────────────────────────
+          snake.defeat();
+          this.player.body.setVelocityY(-360);   // bounce the player up
+        } else {
+          // ── Touch damage ─────────────────────────────────────────────────
+          const knockDir = this.player.x <= snake.x ? -1 : 1;
+          const hit = this.player.takeDamage(knockDir * 260, -300);
+          if (hit) {
+            this.shakeCamera(120, 0.006);
+          }
+        }
+      },
+    );
+  }
+
+  /** Snapshot consumed by DebugOverlay when F4 enemy debug is active. */
+  private _buildEnemyDebugInfo(): EnemyDebugInfo {
+    const totalCount    = this.snakes.length;
+    const defeatedCount = this.snakes.filter((s) => s.isDefeated).length;
+    const alive         = this.snakes.filter((s) => !s.isDefeated);
+    const activeCount   = alive.filter((s) =>  s.isEnabled).length;
+    const sleepingCount = alive.filter((s) => !s.isEnabled).length;
+    const patrolStates  = this.snakes.map((s) => s.getPatrolSummary());
+    return { totalCount, activeCount, sleepingCount, defeatedCount, patrolStates };
   }
 
   private _buildAssetDebugInfo() {
