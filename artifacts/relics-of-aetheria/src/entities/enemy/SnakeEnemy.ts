@@ -200,6 +200,29 @@ export class SnakeEnemy extends Entity {
       ease:     'Quad.easeOut',
       onComplete: () => { this.destroy(); },
     });
+
+    // ── M18: Particle burst on defeat ─────────────────────────────────────
+    const px = this._rect.x;
+    const py = this._rect.y;
+    for (let i = 0; i < 6; i++) {
+      const p = this.scene.add.graphics().setDepth(5);
+      p.fillStyle(i % 2 === 0 ? 0x5aab2a : 0x99ee44, 1.0);
+      p.fillCircle(0, 0, 2.5 + Math.random() * 2);
+      p.setPosition(px, py);
+      const angle = (i / 6) * Math.PI * 2;
+      const dist  = 30 + Math.random() * 30;
+      this.scene.tweens.add({
+        targets:  p,
+        x:        px + Math.cos(angle) * dist,
+        y:        py + Math.sin(angle) * dist - 15,
+        alpha:    0,
+        scaleX:   0.2,
+        scaleY:   0.2,
+        duration: 320 + Math.random() * 140,
+        ease:     'Quad.easeOut',
+        onComplete: () => p.destroy(),
+      });
+    }
   }
 
   destroy(): void {

@@ -1,0 +1,304 @@
+You are continuing development of the existing Relics of Aetheria project.
+
+IMPORTANT
+
+Read the ENTIRE repository before making ANY changes.
+
+Do NOT assume anything.
+
+Inspect the current codebase first.
+
+M1–M17 are COMPLETE and LOCKED.
+
+Do NOT redesign architecture.
+
+Do NOT rewrite existing systems.
+
+Continue using the existing coding style.
+
+------------------------------------------------------------
+
+CURRENT MILESTONE
+
+M18
+
+Player Experience, HUD & Game Flow
+
+------------------------------------------------------------
+
+OBJECTIVE
+
+Transform the prototype into a polished playable experience.
+
+Gameplay mechanics must remain unchanged.
+
+This milestone focuses on feedback, UI and player experience.
+
+------------------------------------------------------------
+
+HEALTH HUD
+
+Create a permanent HUD.
+
+Display:
+
+• 3 heart containers
+• Full heart
+• Half/empty heart support (future-proof)
+• Update immediately when damage occurs
+• Mobile and desktop compatible
+
+Position:
+
+Top-left corner.
+
+------------------------------------------------------------
+
+PLAYER DAMAGE FEEDBACK
+
+When Kai takes damage:
+
+• Flash (existing)
+• Small camera shake
+• Brief freeze-frame (hit stop 40–60ms)
+• Knockback (existing)
+• Short red screen flash (low opacity)
+
+------------------------------------------------------------
+
+SNAKE DEFEAT FEEDBACK
+
+When snake is stomped:
+
+• Small squash animation
+• Fade out
+• Simple particle burst
+• Player bounce (existing)
+• Remove enemy cleanly
+
+------------------------------------------------------------
+
+CRYSTAL COLLECTION
+
+Improve feedback.
+
+When collected:
+
+• Sparkle particles
+• Small scale pop animation
+• Collection sound hook
+• Floating +1 animation placeholder
+
+------------------------------------------------------------
+
+GAME OVER
+
+When HP reaches zero:
+
+Pause gameplay.
+
+Display:
+
+GAME OVER
+
+Buttons:
+
+• Retry Level
+• Exit to Menu (placeholder)
+
+Retry reloads current level.
+
+------------------------------------------------------------
+
+LEVEL COMPLETE
+
+When reaching the exit:
+
+Display:
+
+LEVEL COMPLETE
+
+Show:
+
+• Crystals collected
+• Damage taken
+• Time taken
+
+Buttons:
+
+• Next Level
+• Replay
+
+If no next level exists:
+
+Show:
+
+WORLD COMPLETE
+
+------------------------------------------------------------
+
+PAUSE MENU
+
+Pause button (ESC desktop).
+
+Mobile:
+
+Pause icon at top-right.
+
+Menu:
+
+Resume
+
+Restart
+
+Settings
+
+Exit
+
+------------------------------------------------------------
+
+SETTINGS
+
+Simple overlay.
+
+Options:
+
+Music ON/OFF
+
+SFX ON/OFF
+
+Vibration ON/OFF
+
+Persist values.
+
+------------------------------------------------------------
+
+HUD POLISH
+
+Add:
+
+• Crystal counter
+
+• HP display
+
+• Current level name
+
+• Optional FPS remains only in debug
+
+------------------------------------------------------------
+
+DEBUG
+
+Expand F7.
+
+Display:
+
+HP
+
+Crystals
+
+Paused
+
+GameOver
+
+LevelComplete
+
+------------------------------------------------------------
+
+VISUALS
+
+Use procedural placeholder graphics only.
+
+NO production artwork.
+
+NO external assets.
+
+Everything should be replaceable later.
+
+------------------------------------------------------------
+
+DOCUMENTATION
+
+Create:
+
+docs/GameFlow.md
+
+Include:
+
+HUD architecture
+
+Game Over flow
+
+Level Complete flow
+
+Pause flow
+
+Settings persistence
+
+Future expansion
+
+------------------------------------------------------------
+
+VERIFY
+
+Run:
+
+TypeScript typecheck
+
+Build
+
+Runtime verification
+
+Confirm:
+
+✅ Zero TypeScript errors
+
+✅ Zero new console errors
+
+✅ Stable 60 FPS
+
+✅ Mobile controls unchanged
+
+✅ Desktop controls unchanged
+
+✅ Hearts update correctly
+
+✅ Game Over works
+
+✅ Retry reloads level
+
+✅ Pause works
+
+✅ Settings persist
+
+✅ Crystal counter updates
+
+------------------------------------------------------------
+
+DELIVER
+
+Provide:
+
+1. What already existed.
+
+2. What you completed.
+
+3. Modified files.
+
+4. New files.
+
+5. Verification checklist.
+
+6. Recommendations before M19.
+
+IMPORTANT
+
+Do NOT begin M19.
+
+Finish M18 only.
+
+Do NOT redesign architecture.
+
+Maintain existing code style.
+
+Everything must integrate cleanly with the current engine.

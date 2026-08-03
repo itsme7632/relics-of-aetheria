@@ -23,6 +23,14 @@ import { AssetCatalog } from '../assets/AssetCatalog';
 import { TilesetRegistry } from '../assets/TilesetRegistry';
 import { SnakeEnemy } from '../entities/enemy/SnakeEnemy';
 import type { EnemyDebugInfo } from '../entities/enemy/SnakeEnemy';
+import { Player } from '../entities/Player';
+import { HudDisplay } from '../ui/HudDisplay';
+import { GameOverScreen } from '../ui/GameOverScreen';
+import { LevelCompleteScreen } from '../ui/LevelCompleteScreen';
+import { PauseMenu } from '../ui/PauseMenu';
+import { SettingsMenu } from '../ui/SettingsMenu';
+import { ScreenFlash } from '../ui/ScreenFlash';
+import { GameEvents } from '../events/GameEvents';
 
 /**
  * GameScene
@@ -38,15 +46,19 @@ import type { EnemyDebugInfo } from '../entities/enemy/SnakeEnemy';
  *   M9    Mobile controls (TouchManager → TouchInputState)
  *   M10   Kai Character System (sprite renderer + animation controller)
  *   M14   Environment systems (parallax themes, animated tiles, decoration presets)
+ *   M17   Snake enemy system
+ *   M18   Player experience: HUD (HP hearts, crystal counter), screen flash,
+ *         hit-stop, game-over / level-complete / pause / settings screens
  *
  * Debug keys:
  *   F3 — collision tile overlay
  *   F4 — entity counts
  *   F5 — camera debug (dead zone, look-ahead)
  *   F6 — interaction debug (radii, focus, checkpoint)
- *   F7 — asset pipeline + M14 environment debug
+ *   F7 — asset pipeline + M14 environment + M18 game-flow debug
  *   F8 — touch/input debug (touch count, joystick vector, button states)
  *   F9 — Kai character debug (anim key, facing, velocity, state)
+ *   ESC — toggle pause
  */
 export class GameScene extends Phaser.Scene {
   private player!: Kai;
@@ -63,8 +75,27 @@ export class GameScene extends Phaser.Scene {
   private animatedTileSystem!: AnimatedTileSystem;
   private decorationSystem!: DecorationSystem;
 
-  // ── Level-complete overlay (shown when no next level exists) ──────────────
-  private levelCompleteText: Phaser.GameObjects.Text | null = null;
+  // ── M18 — Game flow ───────────────────────────────────────────────────────
+  /** Current game flow state — controls which updates run each frame. */
+  private _flowState: 'playing' | 'paused' | 'gameover' | 'levelcomplete' = 'playing';
+  /** Remaining hit-stop duration (ms) — skips gameplay updates while > 0. */
+  private _hitStopTimer = 0;
+
+  // ── M18 — Session stats (for Level Complete screen) ───────────────────────
+  private _sessionStartTime   = 0;   // Date.now() at level create()
+  private _sessionDamageTaken = 0;   // incremented per successful hit
+  private _totalCrystals      = 0;   // total crystals spawned this level
+
+  // ── M18 — UI instances ────────────────────────────────────────────────────
+  private hudDisplay!:          HudDisplay;
+  private screenFlash!:         ScreenFlash;
+  private gameOverScreen!:      GameOverScreen;
+  private levelCompleteScreen!: LevelCompleteScreen;
+  private pauseMenu!:           PauseMenu;
+  private settingsMenu!:        SettingsMenu;
+
+  // ── M18 — Pause key (ESC) ─────────────────────────────────────────────────
+  private pauseKey!: Phaser.Input.Keyboard.Key;
 
   // ── Debug F-keys (input is owned by TouchManager, not GameScene) ──────────
   private debugKey!: Phaser.Input.Keyboard.Key;
@@ -102,6 +133,10 @@ export class GameScene extends Phaser.Scene {
     this.assetDebugActive        = false;
     this.touchDebugActive        = false;
     this.kaiDebugActive          = false;
+    // M18 — reset flow state and session stats each restart
+    this._flowState          = 'playing';
+    this._hitStopTimer       = 0;
+    this._sessionDamageTaken = 0;
   }
 
   create(): void {
@@ -140,6 +175,8 @@ export class GameScene extends Phaser.Scene {
     this.entityManager = new EntityManager(this);
     this.entityManager.registerType('Crystal', (scene) => new Crystal(scene));
     this.entityManager.spawnFromMap(this.level.map);
+    // M18: record total crystals placed in this level for the stats screen
+    this._totalCrystals = this.entityManager.entityCount;
 
     // ── Interaction system ───────────────────────────────────────────────────
     this.interactionManager = new InteractionManager(this);
@@ -212,9 +249,57 @@ export class GameScene extends Phaser.Scene {
     this.touchDebugKey        = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F8);
     this.kaiDebugKey          = kb.addKey(Phaser.Input.Keyboard.KeyCodes.F9);
 
+    // ── M18: ESC pause key ────────────────────────────────────────────────────
+    this.pauseKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+
+    // ── M18: Session tracking ──────────────────────────────────────────────────
+    this._sessionStartTime = Date.now();
+
+    // ── M18: HUD ──────────────────────────────────────────────────────────────
+    const levelEntry = this.worldManager.getCurrentEntry();
+    this.hudDisplay = new HudDisplay(
+      this,
+      Player.MAX_HP,
+      levelEntry?.displayName ?? '',
+      () => { if (this._flowState === 'playing') this._pauseGame(); },
+    );
+    this.hudDisplay.setHp(Player.MAX_HP, Player.MAX_HP);
+
+    // ── M18: Screen flash ──────────────────────────────────────────────────────
+    this.screenFlash = new ScreenFlash(this);
+
+    // ── M18: Game Over screen ──────────────────────────────────────────────────
+    this.gameOverScreen = new GameOverScreen(this, {
+      onRetry: () => { this.scene.restart({ levelId: this.levelId }); },
+      onExit:  () => { console.log('[GameScene] Exit to menu — not yet implemented.'); },
+    });
+
+    // ── M18: Level Complete screen ─────────────────────────────────────────────
+    this.levelCompleteScreen = new LevelCompleteScreen(this, {
+      onNext:   () => { this.transitionToNextLevel(); },
+      onReplay: () => { this.scene.restart({ levelId: this.levelId }); },
+    });
+
+    // ── M18: Settings + Pause menus (settings created first; pause opens it) ────
+    this.settingsMenu = new SettingsMenu(this, {
+      onClose: () => { this.settingsMenu.hide(); this.pauseMenu.show(); },
+    });
+    this.pauseMenu = new PauseMenu(this, {
+      onResume:   () => this._resumeGame(),
+      onRestart:  () => { this.scene.restart({ levelId: this.levelId }); },
+      onSettings: () => { this.pauseMenu.hide(); this.settingsMenu.show(); },
+      onExit:     () => { console.log('[GameScene] Exit to menu — not yet implemented.'); },
+    });
+
+    // ── M18: Crystal collected → update HUD counter ────────────────────────────
+    this.events.on(GameEvents.CRYSTAL_COLLECTED, () => {
+      this.hudDisplay.setCrystals(this.entityManager.collectedCrystals);
+    });
+
     // ── Shutdown cleanup ─────────────────────────────────────────────────────
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.events.off(InteractionEvents.LEVEL_COMPLETE, this._onLevelComplete, this);
+      this.events.off(GameEvents.CRYSTAL_COLLECTED);
       this.worldManager.destroy();
       this.entityManager.destroyAll();
       this.interactionManager.destroyAll();
@@ -223,6 +308,13 @@ export class GameScene extends Phaser.Scene {
       this.parallaxLayers = [];
       for (const snake of this.snakes) snake.destroy();
       this.snakes = [];
+      // M18 UI
+      this.hudDisplay.destroy();
+      this.screenFlash.destroy();
+      this.gameOverScreen.destroy();
+      this.levelCompleteScreen.destroy();
+      this.pauseMenu.destroy();
+      this.settingsMenu.destroy();
     });
   }
 
@@ -232,6 +324,37 @@ export class GameScene extends Phaser.Scene {
     this.touchManager.update();
     const input = this.touchManager.currentState;
 
+    // ── ESC: pause toggle (works in 'playing' and 'paused') ───────────────
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    if (Phaser.Input.Keyboard.JustDown(this.pauseKey)) {
+      if      (this._flowState === 'playing') this._pauseGame();
+      else if (this._flowState === 'paused')  this._resumeGame();
+    }
+
+    // ── Debug key toggles (always active regardless of flow state) ────────
+    if (Phaser.Input.Keyboard.JustDown(this.debugKey))            this.toggleCollisionDebug();
+    if (Phaser.Input.Keyboard.JustDown(this.entityDebugKey))      this.entityDebugActive = !this.entityDebugActive;
+    if (Phaser.Input.Keyboard.JustDown(this.cameraDebugKey))      this.toggleCameraDebug();
+    if (Phaser.Input.Keyboard.JustDown(this.interactionDebugKey)) this.toggleInteractionDebug();
+    if (Phaser.Input.Keyboard.JustDown(this.assetDebugKey))       this.assetDebugActive = !this.assetDebugActive;
+    if (Phaser.Input.Keyboard.JustDown(this.touchDebugKey))       this.toggleTouchDebug();
+    if (Phaser.Input.Keyboard.JustDown(this.kaiDebugKey))         this.kaiDebugActive = !this.kaiDebugActive;
+
+    // ── Non-playing states: skip gameplay, still render debug overlay ─────
+    if (this._flowState !== 'playing') {
+      this._updateDebugOverlay();
+      return;
+    }
+
+    // ── Hit-stop: brief freeze after taking damage ─────────────────────────
+    if (this._hitStopTimer > 0) {
+      this._hitStopTimer = Math.max(0, this._hitStopTimer - delta);
+      this.cameraManager.update(delta);
+      this._updateDebugOverlay();
+      return;
+    }
+
+    // ── Normal gameplay ───────────────────────────────────────────────────
     this.player.update(delta, input);
     this.entityManager.update(delta);
 
@@ -248,43 +371,7 @@ export class GameScene extends Phaser.Scene {
       input.interactJust,
     );
 
-    // ── Debug key toggles ─────────────────────────────────────────────────
-    if (Phaser.Input.Keyboard.JustDown(this.debugKey)) {
-      this.toggleCollisionDebug();
-    }
-    if (Phaser.Input.Keyboard.JustDown(this.entityDebugKey)) {
-      this.entityDebugActive = !this.entityDebugActive;
-    }
-    if (Phaser.Input.Keyboard.JustDown(this.cameraDebugKey)) {
-      this.toggleCameraDebug();
-    }
-    if (Phaser.Input.Keyboard.JustDown(this.interactionDebugKey)) {
-      this.toggleInteractionDebug();
-    }
-    if (Phaser.Input.Keyboard.JustDown(this.assetDebugKey)) {
-      this.assetDebugActive = !this.assetDebugActive;
-    }
-    if (Phaser.Input.Keyboard.JustDown(this.touchDebugKey)) {
-      this.toggleTouchDebug();
-    }
-    if (Phaser.Input.Keyboard.JustDown(this.kaiDebugKey)) {
-      this.kaiDebugActive = !this.kaiDebugActive;
-    }
-
-    // ── HUD update ────────────────────────────────────────────────────────
-    this.debugOverlay.update(
-      this.game.loop.actualFps,
-      this.player.x,
-      this.player.y,
-      this.player.debugInfo,
-      this.entityDebugActive      ? this.entityManager.debugInfo        : undefined,
-      this.entityDebugActive      ? this._buildEnemyDebugInfo()          : undefined,
-      this.cameraDebugActive      ? this.cameraManager.debugInfo        : undefined,
-      this.interactionDebugActive ? this.interactionManager.debugInfo   : undefined,
-      this.assetDebugActive       ? this._buildAssetDebugInfo()          : undefined,
-      this.touchDebugActive       ? this.touchManager.debugInfo         : undefined,
-      this.kaiDebugActive         ? this.player.kaiDebugInfo            : undefined,
-    );
+    this._updateDebugOverlay();
   }
 
   // ── Camera API ────────────────────────────────────────────────────────────
@@ -310,38 +397,22 @@ export class GameScene extends Phaser.Scene {
   // ── Private ───────────────────────────────────────────────────────────────
 
   private _onLevelComplete(): void {
-    const next = this.worldManager.getNextEntry();
-    if (next) {
-      this.transitionToNextLevel();
-    } else {
-      this._showLevelCompleteOverlay();
-    }
-  }
+    if (this._flowState !== 'playing') return; // guard: fire only once
+    this._flowState = 'levelcomplete';
+    this.physics.world.pause();
 
-  private _showLevelCompleteOverlay(): void {
-    if (this.levelCompleteText) return; // guard against multiple calls
+    const hasNext    = !!this.worldManager.getNextEntry();
+    const elapsed    = Math.floor((Date.now() - this._sessionStartTime) / 1000);
 
-    const cam = this.cameras.main;
-    this.levelCompleteText = this.add.text(
-      cam.width  / 2,
-      cam.height / 2,
-      'LEVEL COMPLETE',
-      {
-        fontSize:   '52px',
-        fontFamily: '"Courier New", Courier, monospace',
-        color:      '#ffff44',
-        stroke:     '#000000',
-        strokeThickness: 6,
-        backgroundColor: 'rgba(0,0,0,0.6)',
-        padding: { x: 24, y: 14 },
-      },
-    );
-    this.levelCompleteText
-      .setScrollFactor(0)
-      .setDepth(1001)
-      .setOrigin(0.5);
+    this.levelCompleteScreen.show({
+      hasNext,
+      crystalsCollected: this.entityManager.collectedCrystals,
+      totalCrystals:     this._totalCrystals,
+      damageTaken:       this._sessionDamageTaken,
+      timeSeconds:       elapsed,
+    });
 
-    console.log('[GameScene] Level complete! No next level configured.');
+    console.log('[GameScene] Level complete!');
   }
 
   private toggleCollisionDebug(): void {
@@ -434,10 +505,65 @@ export class GameScene extends Phaser.Scene {
           const hit = this.player.takeDamage(knockDir * 260, -300);
           if (hit) {
             this.shakeCamera(120, 0.006);
+            this._hitStopTimer = 50;                    // 50 ms freeze
+            this.screenFlash.flash();                   // red flash
+            this.hudDisplay.setHp(this.player.hp, Player.MAX_HP);
+            this._sessionDamageTaken++;
+            if (this.player.hp <= 0) this._showGameOver();
           }
         }
       },
     );
+  }
+
+  // ── M18: Game-flow helpers ────────────────────────────────────────────────
+
+  private _pauseGame(): void {
+    this._flowState = 'paused';
+    this.physics.world.pause();
+    this.pauseMenu.show();
+  }
+
+  private _resumeGame(): void {
+    this._flowState = 'playing';
+    this.physics.world.resume();
+    this.pauseMenu.hide();
+    this.settingsMenu.hide();
+  }
+
+  private _showGameOver(): void {
+    if (this._flowState !== 'playing') return;
+    this._flowState = 'gameover';
+    this.physics.world.pause();
+    this.gameOverScreen.show();
+  }
+
+  /** Extracted debug-overlay call — runs from all update() exit paths. */
+  private _updateDebugOverlay(): void {
+    this.debugOverlay.update(
+      this.game.loop.actualFps,
+      this.player.x,
+      this.player.y,
+      this.player.debugInfo,
+      this.entityDebugActive      ? this.entityManager.debugInfo      : undefined,
+      this.entityDebugActive      ? this._buildEnemyDebugInfo()        : undefined,
+      this.cameraDebugActive      ? this.cameraManager.debugInfo      : undefined,
+      this.interactionDebugActive ? this.interactionManager.debugInfo : undefined,
+      this.assetDebugActive       ? this._buildAssetDebugInfo()        : undefined,
+      this.touchDebugActive       ? this.touchManager.debugInfo       : undefined,
+      this.kaiDebugActive         ? this.player.kaiDebugInfo          : undefined,
+      this.assetDebugActive       ? this._buildGameFlowDebugInfo()     : undefined,
+    );
+  }
+
+  private _buildGameFlowDebugInfo() {
+    return {
+      flowState:         this._flowState,
+      hp:                this.player.hp,
+      maxHp:             Player.MAX_HP,
+      crystalsCollected: this.entityManager.collectedCrystals,
+      totalCrystals:     this._totalCrystals,
+    };
   }
 
   /** Snapshot consumed by DebugOverlay when F4 enemy debug is active. */

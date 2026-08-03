@@ -15,6 +15,15 @@ export const GameEvents = {
   /** Fired when a Crystal is collected by the player.
    *  Payload: the Crystal instance that was collected. */
   CRYSTAL_COLLECTED: 'crystal_collected',
+
+  // ── M18 ───────────────────────────────────────────────────────────────────
+
+  /** Fired (on scene bus) when the player successfully takes damage.
+   *  Payload: { hp: number } — remaining HP after the hit. */
+  PLAYER_DAMAGED: 'player_damaged',
+
+  /** Fired (on scene bus) when the player's HP reaches zero. */
+  PLAYER_DIED: 'player_died',
 } as const;
 
 export type GameEventName = (typeof GameEvents)[keyof typeof GameEvents];

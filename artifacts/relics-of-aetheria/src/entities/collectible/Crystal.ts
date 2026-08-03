@@ -91,15 +91,56 @@ export class Crystal extends Collectible {
     // ── Collect animation: scale up + float up + fade out ─────────────────
     this.scene.tweens.add({
       targets: this.gem,
-      alpha: 0,
-      scaleX: 2.8,
-      scaleY: 2.8,
-      y: this.gem.y - 24,
+      alpha:   0,
+      scaleX:  2.8,
+      scaleY:  2.8,
+      y:       this.gem.y - 24,
       duration: 380,
-      ease: 'Quad.easeOut',
-      onComplete: () => {
-        this.gem.destroy();
-      },
+      ease:    'Quad.easeOut',
+      onComplete: () => { this.gem.destroy(); },
+    });
+
+    // ── M18: Sparkle particle burst ────────────────────────────────────────
+    const gx = this.gem.x;
+    const gy = this.gem.y;
+    for (let i = 0; i < 7; i++) {
+      const spark = this.scene.add.graphics().setDepth(7);
+      spark.fillStyle(i % 2 === 0 ? 0x33ccff : 0xffffff, 1.0);
+      spark.fillRect(-2, -2, 4, 4);
+      spark.setPosition(gx, gy);
+      const angle = (i / 7) * Math.PI * 2;
+      const dist  = 18 + Math.random() * 14;
+      this.scene.tweens.add({
+        targets:  spark,
+        x:        gx + Math.cos(angle) * dist,
+        y:        gy + Math.sin(angle) * dist,
+        alpha:    0,
+        scaleX:   0.2,
+        scaleY:   0.2,
+        duration: 380 + Math.random() * 120,
+        ease:     'Quad.easeOut',
+        onComplete: () => spark.destroy(),
+      });
+    }
+
+    // ── M18: Floating +1 text ─────────────────────────────────────────────
+    const plusOne = this.scene.add
+      .text(gx, gy - 8, '+1', {
+        fontSize:        '14px',
+        fontFamily:      '"Courier New", Courier, monospace',
+        color:           '#33ccff',
+        stroke:          '#001122',
+        strokeThickness: 3,
+      })
+      .setOrigin(0.5)
+      .setDepth(8);
+    this.scene.tweens.add({
+      targets:  plusOne,
+      y:        plusOne.y - 32,
+      alpha:    0,
+      duration: 680,
+      ease:     'Quad.easeOut',
+      onComplete: () => plusOne.destroy(),
     });
   }
 

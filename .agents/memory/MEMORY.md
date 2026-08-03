@@ -3,3 +3,4 @@
 - [Replit vite plugins incompatible](replit-vite-plugins.md) — cartographer and runtime-error-modal require React; do not add them to this artifact
 - [M9 input architecture](m9-input-architecture.md) — TouchManager owns ALL input; Player/GameScene/InteractionManager read only TouchInputState; never add direct KB/pointer reads back
 - [M14 environment architecture](m14-environment.md) — WorldEnvironment.ts owns all preset types; LevelManifest fields are strings (not type unions); Phaser Tileset.tileData used for animated tiles (no addTileAnimationData in types)
+- [M18 game flow architecture](m18-game-flow.md) — _flowState string in GameScene; all UI screens are Phaser-native Graphics+Zone; TS casts to Phaser component interfaces require `unknown` double-cast

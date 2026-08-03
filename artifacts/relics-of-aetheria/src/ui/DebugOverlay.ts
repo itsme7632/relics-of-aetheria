@@ -78,6 +78,23 @@ export interface AssetDebugInfo {
 }
 
 /**
+ * Snapshot consumed by DebugOverlay when F7 (asset debug) is also active.
+ * Built by GameScene._buildGameFlowDebugInfo().
+ */
+export interface GameFlowDebugInfo {
+  /** Current game flow state string. */
+  flowState:         string;
+  /** Player current HP. */
+  hp:                number;
+  /** Player max HP. */
+  maxHp:             number;
+  /** Crystals collected this session. */
+  crystalsCollected: number;
+  /** Total crystals placed in the level. */
+  totalCrystals:     number;
+}
+
+/**
  * DebugOverlay
  *
  * Fixed-position HUD text that displays game state for each active debug mode:
@@ -118,6 +135,7 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
     assetDebug?: AssetDebugInfo,
     touchDebug?: TouchDebugInfo,
     kaiDebug?: KaiDebugInfo,
+    gameFlowDebug?: GameFlowDebugInfo,
   ): void {
     const lines: string[] = [
       `FPS    ${Math.round(fps)}`,
@@ -298,6 +316,18 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
         `FPS    ${fpsStr}`,
         `Size   ${sizeStr}`,
         `Tex    ${kaiDebug.textureKey}`,
+      );
+    }
+
+    if (gameFlowDebug) {
+      lines.push(
+        `─────────────────`,
+        `[GameFlow M18]`,
+        `HP       ${gameFlowDebug.hp}/${gameFlowDebug.maxHp}`,
+        `Crystals ${gameFlowDebug.crystalsCollected}/${gameFlowDebug.totalCrystals}`,
+        `Paused   ${gameFlowDebug.flowState === 'paused'        ? 'yes' : 'no'}`,
+        `GameOver ${gameFlowDebug.flowState === 'gameover'      ? 'yes' : 'no'}`,
+        `LvlDone  ${gameFlowDebug.flowState === 'levelcomplete' ? 'yes' : 'no'}`,
       );
     }
 
