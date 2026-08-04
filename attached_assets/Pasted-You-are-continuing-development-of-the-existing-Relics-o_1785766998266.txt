@@ -1,0 +1,310 @@
+You are continuing development of the existing "Relics of Aetheria" project.
+
+IMPORTANT:
+- First read the entire codebase before writing a single line of code.
+- Read all relevant files in parallel where possible.
+- Do NOT rewrite working systems.
+- Preserve all architecture and coding style.
+- Modify only what is required for M19.
+- Run TypeScript typecheck before finishing.
+- Verify gameplay after implementation.
+- Maintain 60 FPS.
+- Do not introduce regressions.
+
+====================================================
+M19 — Checkpoints, Respawn & Gameplay Polish
+====================================================
+
+The game currently has:
+
+✅ Kai movement
+✅ Mobile controls
+✅ Camera
+✅ HP system
+✅ Invulnerability
+✅ Snake enemy
+✅ Crystal collection
+✅ HUD
+✅ Pause Menu
+✅ Game Over screen
+✅ Level Complete screen
+✅ Debug overlays
+✅ Jungle environment
+✅ Animated tiles
+✅ Decoration system
+
+M19 is NOT an art milestone.
+
+This milestone focuses only on gameplay polish.
+
+====================================================
+1. CHECKPOINT SYSTEM
+====================================================
+
+Create a dedicated CheckpointSystem.
+
+Requirements:
+
+• Checkpoint activates only once.
+• Activated checkpoint glows.
+• Store:
+  - checkpoint position
+  - checkpoint ID
+  - timestamp
+
+When activated:
+
+- short flash
+- particle burst
+- play checkpoint sound (placeholder if needed)
+- HUD notification:
+  "Checkpoint Reached"
+
+====================================================
+2. PLAYER RESPAWN
+====================================================
+
+If HP reaches zero:
+
+Instead of restarting immediately:
+
+Sequence:
+
+Fade screen to black
+↓
+
+Wait 0.4 seconds
+↓
+
+Respawn at latest checkpoint
+
+↓
+
+Restore full HP
+
+↓
+
+Restore player control
+
+↓
+
+Fade back in
+
+If no checkpoint exists:
+
+Respawn at level start.
+
+====================================================
+3. CAMERA POLISH
+====================================================
+
+Improve camera feel.
+
+Add:
+
+• landing shake
+• damage shake
+• checkpoint pulse
+• level complete cinematic pan
+
+Camera movement must remain smooth.
+
+====================================================
+4. HIT STOP
+====================================================
+
+Improve combat feel.
+
+When:
+
+- stomping snake
+- taking damage
+
+Freeze gameplay briefly.
+
+Duration:
+
+30–60ms
+
+Do NOT freeze UI.
+
+====================================================
+5. PARTICLE EFFECTS
+====================================================
+
+Create reusable particle helpers.
+
+Effects:
+
+Checkpoint
+
+Crystal collection
+
+Snake death
+
+Player damage
+
+Landing dust
+
+These can use procedural placeholders.
+
+Architecture must support replacing with production art later.
+
+====================================================
+6. SCREEN FLASHES
+====================================================
+
+Expand ScreenFlash system.
+
+Support:
+
+white flash
+red flash
+gold flash
+black fade
+
+Used by:
+
+damage
+
+checkpoint
+
+level complete
+
+respawn
+
+====================================================
+7. LEVEL TRANSITION
+====================================================
+
+Create TransitionManager.
+
+Support:
+
+fade out
+
+load level
+
+fade in
+
+Reusable for all future worlds.
+
+====================================================
+8. HUD POLISH
+====================================================
+
+Improve HUD.
+
+Animate:
+
+heart loss
+
+heart refill
+
+crystal count
+
+checkpoint notification
+
+world complete
+
+Everything should feel alive.
+
+====================================================
+9. DEBUG
+====================================================
+
+Expand F7.
+
+Add:
+
+Current checkpoint
+
+Respawn count
+
+Deaths
+
+Current HP
+
+Transition state
+
+Hit stop active
+
+Particle count
+
+====================================================
+10. DOCUMENTATION
+====================================================
+
+Create:
+
+docs/CheckpointSystem.md
+
+docs/TransitionSystem.md
+
+Update:
+
+GameFlow.md
+
+====================================================
+RULES
+====================================================
+
+Do NOT touch:
+
+Kai movement
+
+Physics
+
+Snake AI
+
+Touch controls
+
+Animation pipeline
+
+Asset pipeline
+
+Tileset pipeline
+
+Existing gameplay balance
+
+====================================================
+VERIFICATION
+====================================================
+
+Before finishing:
+
+✅ TypeScript clean (0 errors)
+
+✅ 60 FPS maintained
+
+✅ Mobile controls still work
+
+✅ Desktop controls still work
+
+✅ Checkpoints activate correctly
+
+✅ Respawn works
+
+✅ Fade transitions work
+
+✅ HUD updates correctly
+
+✅ Hit stop works
+
+✅ Camera polish works
+
+✅ No console errors
+
+====================================================
+DELIVERABLE
+====================================================
+
+At the end provide a complete report including:
+
+1. Files modified
+2. Files created
+3. Gameplay changes
+4. Verification checklist
+5. Any recommendations for M20
+
+Do not stop until M19 is completely implemented, verified, and ready to commit.

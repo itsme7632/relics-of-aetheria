@@ -32,9 +32,14 @@ export class CameraEffects {
    * Smoothly zoom to a target scale.
    * @param scale     Target zoom level (1 = 100 %). Default 1.
    * @param duration  Duration in milliseconds. Default 400.
+   * @param callback  Optional callback when the zoom completes.
    */
-  zoomTo(scale = 1, duration = 400): void {
-    this.camera.zoomTo(scale, duration, 'Linear');
+  zoomTo(scale = 1, duration = 400, callback?: () => void): void {
+    this.camera.zoomTo(scale, duration, 'Linear', false, callback
+      ? (_cam: Phaser.Cameras.Scene2D.Camera, progress: number) => {
+          if (progress === 1) callback();
+        }
+      : undefined);
   }
 
   // ── Fade ──────────────────────────────────────────────────────────────────

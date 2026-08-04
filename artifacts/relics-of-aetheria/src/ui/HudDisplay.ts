@@ -4,6 +4,7 @@ import Phaser from 'phaser';
  * HudDisplay
  *
  * M18: Permanent in-game HUD.
+ * M19: Animated HP loss/restore, animated crystal counter, checkpoint notification.
  *
  * Layout (all elements pinned to viewport, scrollFactor 0):
  *   Top-left  — HP hearts (3 max, future-proof for half-hearts)
@@ -14,7 +15,10 @@ import Phaser from 'phaser';
  * Usage:
  *   const hud = new HudDisplay(scene, Player.MAX_HP, entry.displayName, () => pause());
  *   hud.setHp(2, 3);
- *   hud.setCrystals(4);
+ *   hud.animateHpLoss(2, 3);        // M19: animated heart loss
+ *   hud.animateHpRestore(3, 3);     // M19: animated full heal
+ *   hud.setCrystals(4);             // M19: animated crystal pop
+ *   hud.showNotification('text', 0xffcc00); // M19: slide-in banner
  *   hud.destroy();
  */
 
@@ -23,6 +27,7 @@ const HEART_GAP  = 28;  // px between heart centres
 const FONT       = '"Courier New", Courier, monospace';
 
 export class HudDisplay {
+  private readonly _scene:       Phaser.Scene;
   private readonly _hearts:      Phaser.GameObjects.Graphics;
   private readonly _crystalText: Phaser.GameObjects.Text;
   private readonly _levelText:   Phaser.GameObjects.Text;
@@ -35,6 +40,7 @@ export class HudDisplay {
     levelName: string,
     onPause:   () => void,
   ) {
+    this._scene = scene;
     const { width } = scene.scale;
 
     // ── Hearts ────────────────────────────────────────────────────────────
@@ -85,14 +91,113 @@ export class HudDisplay {
 
   // ── Public API ────────────────────────────────────────────────────────────
 
-  /** Update heart display. Call whenever HP changes. */
+  /** Update heart display (instant, no animation). Call whenever HP changes. */
   setHp(hp: number, maxHp: number): void {
     this._drawHearts(hp, maxHp);
   }
 
-  /** Update the crystal counter label. */
+  /**
+   * M19: Animate a heart loss — redraws hearts then shakes the hearts row.
+   * Call instead of setHp() when the player takes damage.
+   */
+  animateHpLoss(hp: number, maxHp: number): void {
+    this._drawHearts(hp, maxHp);
+    // Small horizontal shake to sell the impact
+    this._scene.tweens.killTweensOf(this._hearts);
+    this._scene.tweens.add({
+      targets:  this._hearts,
+      x:        5,
+      duration: 35,
+      yoyo:     true,
+      repeat:   3,
+      ease:     'Linear',
+      onComplete: () => { this._hearts.x = 0; },
+    });
+  }
+
+  /**
+   * M19: Animate a full HP restore — redraws hearts then pulses scale up/down.
+   * Call during the respawn sequence.
+   */
+  animateHpRestore(hp: number, maxHp: number): void {
+    this._drawHearts(hp, maxHp);
+    this._scene.tweens.killTweensOf(this._hearts);
+    this._scene.tweens.add({
+      targets:  this._hearts,
+      scaleX:   1.35,
+      scaleY:   1.35,
+      duration: 160,
+      yoyo:     true,
+      ease:     'Back.easeOut',
+      onComplete: () => {
+        this._hearts.setScale(1);
+        this._hearts.x = 0;
+      },
+    });
+  }
+
+  /**
+   * M19: Update the crystal counter with a pop animation.
+   * Replaces the plain setCrystals() for collect events.
+   */
   setCrystals(count: number): void {
     this._crystalText.setText(`◆ ${count}`);
+    this._scene.tweens.killTweensOf(this._crystalText);
+    this._scene.tweens.add({
+      targets:  this._crystalText,
+      scaleX:   1.45,
+      scaleY:   1.45,
+      duration: 90,
+      yoyo:     true,
+      ease:     'Back.easeOut',
+      onComplete: () => { this._crystalText.setScale(1); },
+    });
+  }
+
+  /**
+   * M19: Show a slide-in notification banner at the top-centre of the viewport.
+   * Auto-dismisses after 2 s.
+   * @param text   Label to display.
+   * @param color  Text colour as a Phaser hex number (e.g. 0xffcc00 for gold).
+   */
+  showNotification(text: string, color: number): void {
+    const hex = '#' + color.toString(16).padStart(6, '0');
+    const { width } = this._scene.scale;
+
+    const notif = this._scene.add
+      .text(width / 2, -40, text, {
+        fontSize:        '16px',
+        fontFamily:      FONT,
+        color:           hex,
+        stroke:          '#000000',
+        strokeThickness: 4,
+        backgroundColor: 'rgba(0,0,0,0.70)',
+        padding:         { x: 18, y: 8 },
+      })
+      .setScrollFactor(0)
+      .setDepth(HUD_DEPTH + 5)
+      .setOrigin(0.5, 0);
+
+    // Slide in from above
+    this._scene.tweens.add({
+      targets:  notif,
+      y:        42,
+      duration: 300,
+      ease:     'Back.easeOut',
+      onComplete: () => {
+        // Hold 2 seconds, then fade+slide out
+        this._scene.time.delayedCall(2000, () => {
+          this._scene.tweens.add({
+            targets:  notif,
+            y:        -60,
+            alpha:    0,
+            duration: 280,
+            ease:     'Quad.easeIn',
+            onComplete: () => notif.destroy(),
+          });
+        });
+      },
+    });
   }
 
   destroy(): void {

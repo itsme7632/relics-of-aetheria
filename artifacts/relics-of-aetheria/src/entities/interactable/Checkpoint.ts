@@ -85,6 +85,15 @@ export class Checkpoint extends Interactable {
     return this._activated;
   }
 
+  /**
+   * M19 — Ground-level Y for respawn positioning.
+   * Returns the bottom edge of the activation zone, which corresponds to the
+   * floor the player should stand on after respawning at this checkpoint.
+   */
+  get spawnY(): number {
+    return this.y + this._h / 2;
+  }
+
   // ── Private ────────────────────────────────────────────────────────────────
 
   private _drawVisual(): void {

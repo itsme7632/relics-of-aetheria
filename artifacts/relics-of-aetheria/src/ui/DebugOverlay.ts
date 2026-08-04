@@ -80,8 +80,10 @@ export interface AssetDebugInfo {
 /**
  * Snapshot consumed by DebugOverlay when F7 (asset debug) is also active.
  * Built by GameScene._buildGameFlowDebugInfo().
+ * Updated M19: includes checkpoint, respawn, transition and particle fields.
  */
 export interface GameFlowDebugInfo {
+  // ── M18 fields ──────────────────────────────────────────────────────────
   /** Current game flow state string. */
   flowState:         string;
   /** Player current HP. */
@@ -92,6 +94,20 @@ export interface GameFlowDebugInfo {
   crystalsCollected: number;
   /** Total crystals placed in the level. */
   totalCrystals:     number;
+
+  // ── M19 fields ──────────────────────────────────────────────────────────
+  /** World position of the last activated checkpoint, or null. */
+  checkpointPos:   { x: number; y: number } | null;
+  /** Number of times the player has respawned this session. */
+  respawnCount:    number;
+  /** Total deaths (same as respawnCount for now; separate for future lives). */
+  deathCount:      number;
+  /** TransitionManager state string. */
+  transitionState: string;
+  /** True while hit-stop timer is active. */
+  hitStopActive:   boolean;
+  /** Number of active particle graphics objects across all particle bursts. */
+  particleCount:   number;
 }
 
 /**
@@ -320,14 +336,20 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
     }
 
     if (gameFlowDebug) {
+      const cp = gameFlowDebug.checkpointPos;
       lines.push(
         `─────────────────`,
-        `[GameFlow M18]`,
+        `[GameFlow M19]`,
+        `State    ${gameFlowDebug.flowState}`,
         `HP       ${gameFlowDebug.hp}/${gameFlowDebug.maxHp}`,
         `Crystals ${gameFlowDebug.crystalsCollected}/${gameFlowDebug.totalCrystals}`,
-        `Paused   ${gameFlowDebug.flowState === 'paused'        ? 'yes' : 'no'}`,
-        `GameOver ${gameFlowDebug.flowState === 'gameover'      ? 'yes' : 'no'}`,
-        `LvlDone  ${gameFlowDebug.flowState === 'levelcomplete' ? 'yes' : 'no'}`,
+        `CkptX    ${cp ? cp.x : '—'}`,
+        `CkptY    ${cp ? cp.y : '—'}`,
+        `Respawns ${gameFlowDebug.respawnCount}`,
+        `Deaths   ${gameFlowDebug.deathCount}`,
+        `Transit  ${gameFlowDebug.transitionState}`,
+        `HitStop  ${gameFlowDebug.hitStopActive ? 'yes' : 'no'}`,
+        `Ptcls    ${gameFlowDebug.particleCount}`,
       );
     }
 

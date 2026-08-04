@@ -25,7 +25,7 @@ export class ScreenFlash {
   }
 
   /**
-   * Trigger the flash.
+   * Trigger a flash.
    * @param color    Fill colour (default: red damage tint).
    * @param alpha    Peak opacity (default: 0.35 — noticeable but not blinding).
    * @param duration Fade-out duration in ms (default: 220 ms).
@@ -39,6 +39,23 @@ export class ScreenFlash {
       duration,
       ease:     'Quad.easeOut',
     });
+  }
+
+  // ── M19: Named presets ────────────────────────────────────────────────────
+
+  /** Bright white flash — used on stomp kills. */
+  flashWhite(): void {
+    this.flash(0xffffff, 0.45, 180);
+  }
+
+  /** Gold flash — used on checkpoint activation and level complete. */
+  flashGold(): void {
+    this.flash(0xffcc00, 0.40, 300);
+  }
+
+  /** Red damage flash — alias for the default. */
+  flashDamage(): void {
+    this.flash(0xff2233, 0.35, 220);
   }
 
   destroy(): void {

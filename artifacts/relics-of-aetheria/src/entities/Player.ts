@@ -110,6 +110,17 @@ export class Player extends Phaser.GameObjects.Rectangle {
     return true;
   }
 
+  /**
+   * M19 — Restore HP, optionally by a specific amount.
+   * Clamps at MAX_HP.  Call this during the respawn sequence.
+   * @param amount  HP to restore (default: full heal to MAX_HP).
+   */
+  restoreHp(amount = Player.MAX_HP): void {
+    this._hp = Math.min(Player.MAX_HP, this._hp + amount);
+    // Reset invulnerability so the player doesn't spawn inside an enemy damage zone
+    this._invulTimer = Player.INVUL_DURATION;
+  }
+
   /** Snapshot of internal state for the debug overlay. */
   get debugInfo(): PlayerDebugInfo {
     return {

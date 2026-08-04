@@ -31,6 +31,9 @@ import { PauseMenu } from '../ui/PauseMenu';
 import { SettingsMenu } from '../ui/SettingsMenu';
 import { ScreenFlash } from '../ui/ScreenFlash';
 import { GameEvents } from '../events/GameEvents';
+import { CheckpointSystem } from '../systems/CheckpointSystem';
+import { TransitionManager } from '../systems/TransitionManager';
+import { ParticleSystem } from '../systems/ParticleSystem';
 
 /**
  * GameScene
@@ -49,6 +52,8 @@ import { GameEvents } from '../events/GameEvents';
  *   M17   Snake enemy system
  *   M18   Player experience: HUD (HP hearts, crystal counter), screen flash,
  *         hit-stop, game-over / level-complete / pause / settings screens
+ *   M19   Checkpoint respawn, camera polish, particle effects, transitions,
+ *         HUD animations, expanded F7 debug
  *
  * Debug keys:
  *   F3 — collision tile overlay
@@ -97,6 +102,14 @@ export class GameScene extends Phaser.Scene {
   // ── M18 — Pause key (ESC) ─────────────────────────────────────────────────
   private pauseKey!: Phaser.Input.Keyboard.Key;
 
+  // ── M19 — Checkpoint / respawn / transition ────────────────────────────────
+  private _checkpointSystem!: CheckpointSystem;
+  private _transitionManager!: TransitionManager;
+  /** Number of times the player has respawned this session. */
+  private _respawnCount = 0;
+  /** Total deaths (= respawns for now; kept separate for future lives system). */
+  private _deathCount   = 0;
+
   // ── Debug F-keys (input is owned by TouchManager, not GameScene) ──────────
   private debugKey!: Phaser.Input.Keyboard.Key;
   private entityDebugKey!: Phaser.Input.Keyboard.Key;
@@ -137,6 +150,9 @@ export class GameScene extends Phaser.Scene {
     this._flowState          = 'playing';
     this._hitStopTimer       = 0;
     this._sessionDamageTaken = 0;
+    // M19
+    this._respawnCount = 0;
+    this._deathCount   = 0;
   }
 
   create(): void {
@@ -296,6 +312,21 @@ export class GameScene extends Phaser.Scene {
       this.hudDisplay.setCrystals(this.entityManager.collectedCrystals);
     });
 
+    // ── M19: CheckpointSystem ──────────────────────────────────────────────────
+    this._checkpointSystem = new CheckpointSystem(
+      this,
+      this.screenFlash,
+      this.hudDisplay,
+      this.cameraManager.effects,
+    );
+    this._checkpointSystem.init();
+
+    // ── M19: TransitionManager ─────────────────────────────────────────────────
+    this._transitionManager = new TransitionManager(this);
+
+    // ── M19: Landing feedback ──────────────────────────────────────────────────
+    this.player.on('land', this._onLand, this);
+
     // ── Shutdown cleanup ─────────────────────────────────────────────────────
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.events.off(InteractionEvents.LEVEL_COMPLETE, this._onLevelComplete, this);
@@ -315,6 +346,10 @@ export class GameScene extends Phaser.Scene {
       this.levelCompleteScreen.destroy();
       this.pauseMenu.destroy();
       this.settingsMenu.destroy();
+      // M19
+      this._checkpointSystem.destroy();
+      this._transitionManager.destroy();
+      this.player.off('land', this._onLand, this);
     });
   }
 
@@ -389,9 +424,13 @@ export class GameScene extends Phaser.Scene {
   transitionToNextLevel(): void {
     const next = this.worldManager.getNextEntry();
     if (!next) return;
-    this.cameraManager.effects.fadeOut(500, 0x000000, () => {
-      this.scene.restart({ levelId: next.id });
-    });
+    // Reset any level-complete zoom before fading out
+    this.cameras.main.zoom = 1.0;
+    this._transitionManager.fadeOut(
+      this.cameraManager.effects,
+      500,
+      () => { this.scene.restart({ levelId: next.id }); },
+    );
   }
 
   // ── Private ───────────────────────────────────────────────────────────────
@@ -401,18 +440,28 @@ export class GameScene extends Phaser.Scene {
     this._flowState = 'levelcomplete';
     this.physics.world.pause();
 
-    const hasNext    = !!this.worldManager.getNextEntry();
-    const elapsed    = Math.floor((Date.now() - this._sessionStartTime) / 1000);
+    // M19: gold flash + zoom-out cinematic before showing the stats screen
+    this.screenFlash.flashGold();
 
-    this.levelCompleteScreen.show({
-      hasNext,
-      crystalsCollected: this.entityManager.collectedCrystals,
-      totalCrystals:     this._totalCrystals,
-      damageTaken:       this._sessionDamageTaken,
-      timeSeconds:       elapsed,
+    const cam = this.cameras.main;
+    this.tweens.add({
+      targets:  cam,
+      zoom:     0.85,
+      duration: 650,
+      ease:     'Quad.easeOut',
+      onComplete: () => {
+        const hasNext = !!this.worldManager.getNextEntry();
+        const elapsed = Math.floor((Date.now() - this._sessionStartTime) / 1000);
+        this.levelCompleteScreen.show({
+          hasNext,
+          crystalsCollected: this.entityManager.collectedCrystals,
+          totalCrystals:     this._totalCrystals,
+          damageTaken:       this._sessionDamageTaken,
+          timeSeconds:       elapsed,
+        });
+        console.log('[GameScene] Level complete!');
+      },
     });
-
-    console.log('[GameScene] Level complete!');
   }
 
   private toggleCollisionDebug(): void {

@@ -24,6 +24,16 @@ export const GameEvents = {
 
   /** Fired (on scene bus) when the player's HP reaches zero. */
   PLAYER_DIED: 'player_died',
+
+  // ── M19 ───────────────────────────────────────────────────────────────────
+
+  /** Fired by CheckpointSystem after all checkpoint feedback effects are
+   *  triggered.  Payload: CheckpointData snapshot. */
+  CHECKPOINT_REACHED: 'checkpoint_reached',
+
+  /** Fired (on scene bus) after the player has been fully respawned and
+   *  control has been restored.  Payload: respawn count (number). */
+  PLAYER_RESPAWNED: 'player_respawned',
 } as const;
 
 export type GameEventName = (typeof GameEvents)[keyof typeof GameEvents];
