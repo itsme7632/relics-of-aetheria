@@ -539,6 +539,8 @@ export class GameScene extends Phaser.Scene {
       snake.physicsRect,
       () => {
         if (snake.isDefeated) return;
+        // M19: ignore collisions while a respawn/level transition is running
+        if (this._transitionManager.isTransitioning) return;
 
         const playerBottom  = this.player.y + this.player.height  / 2;
         const snakeTop      = snake.physicsRect.y - snake.physicsRect.height / 2;
@@ -556,6 +558,7 @@ export class GameScene extends Phaser.Scene {
             this.shakeCamera(120, 0.006);
             this._hitStopTimer = 50;                    // 50 ms freeze
             this.screenFlash.flash();                   // red flash
+            ParticleSystem.playerDamage(this, this.player.x, this.player.y); // M19
             this.hudDisplay.setHp(this.player.hp, Player.MAX_HP);
             this._sessionDamageTaken++;
             if (this.player.hp <= 0) this._showGameOver();
@@ -582,6 +585,13 @@ export class GameScene extends Phaser.Scene {
 
   private _showGameOver(): void {
     if (this._flowState !== 'playing') return;
+    if (this._checkpointSystem.hasCheckpoint) {
+      // M19: respawn at last checkpoint instead of immediate game over
+      this._flowState = 'gameover'; // freeze gameplay updates during transition
+      this.physics.world.pause();
+      this._respawn();              // _respawn resets flowState → 'playing' on complete
+      return;
+    }
     this._flowState = 'gameover';
     this.physics.world.pause();
     this.gameOverScreen.show();
@@ -607,12 +617,69 @@ export class GameScene extends Phaser.Scene {
 
   private _buildGameFlowDebugInfo() {
     return {
+      // ── M18 ──────────────────────────────────────────────────────────────
       flowState:         this._flowState,
       hp:                this.player.hp,
       maxHp:             Player.MAX_HP,
       crystalsCollected: this.entityManager.collectedCrystals,
       totalCrystals:     this._totalCrystals,
+      // ── M19 ──────────────────────────────────────────────────────────────
+      checkpointPos:   this._checkpointSystem.getRespawnPoint(),
+      respawnCount:    this._respawnCount,
+      deathCount:      this._deathCount,
+      transitionState: this._transitionManager.state,
+      hitStopActive:   this._hitStopTimer > 0,
+      particleCount:   ParticleSystem.activeParticleCount,
     };
+  }
+
+  /**
+   * M19 — Landing feedback.
+   * Called when the player emits 'land' after a significant fall.
+   * Spawns a procedural dust puff at the player's feet.
+   */
+  private _onLand(_fallingVelocity: number): void {
+    const px = this.player.x;
+    const py = this.player.y + this.player.height / 2; // feet
+    ParticleSystem.landingDust(this, px, py);
+  }
+
+  /**
+   * M19 — Checkpoint respawn sequence.
+   *
+   * Crossfades to black, teleports the player to the last activated
+   * checkpoint, fully heals them, then fades back in and restores gameplay.
+   * Guards against double-trigger via TransitionManager.isTransitioning.
+   *
+   * Called by _showGameOver() when at least one checkpoint has been reached.
+   */
+  private _respawn(): void {
+    if (this._transitionManager.isTransitioning) return;
+    this._respawnCount++;
+    this._deathCount++;
+
+    this._transitionManager.crossfade(
+      this.cameraManager.effects,
+      300,    // fade-out duration ms
+      () => {
+        // Mid-point: screen is fully black — safe to teleport
+        const pt = this._checkpointSystem.getRespawnPoint()!;
+        this.player.setPosition(pt.x, pt.y);
+        this.player.body.setVelocity(0, 0);
+        this.player.restoreHp(Player.MAX_HP);
+        this.hudDisplay.setHp(Player.MAX_HP, Player.MAX_HP);
+      },
+      150,    // hold-black duration ms
+      400,    // fade-in duration ms
+      () => {
+        // Complete — restore gameplay
+        this._flowState = 'playing';
+        this.physics.world.resume();
+        this.screenFlash.flashWhite();
+        this.events.emit(GameEvents.PLAYER_RESPAWNED, this._respawnCount);
+        console.log(`[GameScene] Respawned at checkpoint (count ${this._respawnCount})`);
+      },
+    );
   }
 
   /** Snapshot consumed by DebugOverlay when F4 enemy debug is active. */
