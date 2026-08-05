@@ -1,0 +1,161 @@
+You are continuing development of the existing "Relics of Aetheria" project.
+
+IMPORTANT:
+
+Read the ENTIRE repository before writing any code.
+
+Read all relevant files in parallel.
+
+Do NOT rewrite working systems.
+
+Continue ONLY from the current M19 progress.
+
+=========================================================
+CURRENT PROJECT STATUS
+=========================================================
+
+M1–M18 are COMPLETE.
+
+M19 has already been STARTED.
+
+The previous agent completed:
+
+✓ Full repository exploration
+✓ M19 architecture planning
+✓ Created/updated several systems
+✓ Batch 1 implemented
+✓ Batch 2 implemented
+✓ Large portions of GameScene.ts edited
+✓ Work stopped ONLY because Replit monthly credits expired.
+
+The repository already contains partial M19 implementation.
+
+DO NOT START M19 FROM SCRATCH.
+
+=========================================================
+CURRENT M19 FILES ALREADY MODIFIED
+=========================================================
+
+Player.ts
+
+Checkpoint.ts
+
+GameEvents.ts
+
+CameraEffects.ts
+
+GameScene.ts (partially complete)
+
+DebugOverlay.ts
+
+HudDisplay.ts
+
+ScreenFlash.ts
+
+...plus additional M19 files already created.
+
+First inspect everything before editing.
+
+=========================================================
+YOUR JOB
+=========================================================
+
+Resume M19 exactly where it stopped.
+
+Determine automatically:
+
+• what is already finished
+
+• what is partially implemented
+
+• what still remains
+
+Complete ONLY the missing work.
+
+Do not duplicate code.
+
+Do not replace working systems.
+
+=========================================================
+M19 FEATURES
+=========================================================
+
+✓ Checkpoint activation
+
+✓ Respawn system
+
+✓ Respawn at latest checkpoint
+
+✓ Camera polish
+
+✓ Hit stop polish
+
+✓ Particle helpers
+
+✓ Screen flash improvements
+
+✓ Transition manager
+
+✓ HUD polish
+
+✓ Debug additions
+
+✓ Documentation
+
+=========================================================
+REQUIRED BEFORE FINISHING
+=========================================================
+
+Run:
+
+pnpm typecheck
+
+Fix ALL TypeScript errors.
+
+Run the game.
+
+Verify:
+
+✓ 60 FPS
+
+✓ Mobile controls
+
+✓ Desktop controls
+
+✓ Checkpoints
+
+✓ Respawn
+
+✓ HUD
+
+✓ Camera
+
+✓ Hit stop
+
+✓ Screen flashes
+
+✓ Game Over
+
+✓ Level Complete
+
+✓ No new console errors
+
+=========================================================
+FINAL DELIVERY
+=========================================================
+
+Provide a COMPLETE report including:
+
+1. What was already implemented before continuing
+
+2. What you completed
+
+3. Files modified
+
+4. Files created
+
+5. Verification checklist
+
+6. Any recommendations for M20
+
+Only stop when M19 is fully complete, verified, and ready to commit.
