@@ -1,5 +1,11 @@
 import Phaser from 'phaser';
 import type { BackgroundTheme } from '../world/WorldEnvironment';
+import {
+  BG_WORLD01_SKY, BG_WORLD01_CLOUDS, BG_WORLD01_MOUNTAINS,
+  BG_WORLD01_JUNGLE, BG_WORLD01_TREES, BG_WORLD01_VINES,
+  BG_WORLD01_MIST, BG_WORLD01_SUNRAYS,
+} from '../assets/AssetKeys';
+import { BackgroundImporter } from '../assets/BackgroundImporter';
 
 /**
  * ParallaxLayer
@@ -23,7 +29,10 @@ import type { BackgroundTheme } from '../world/WorldEnvironment';
  *   3. Supply a draw callback.  Draw in world coordinates starting at (0, 0).
  */
 export class ParallaxLayer {
-  private readonly gfx: Phaser.GameObjects.Graphics;
+  /** Procedural Graphics visual. Always present (may be invisible in production mode). */
+  private gfx!: Phaser.GameObjects.Graphics;
+  /** M20A: Production TileSprite visual — null in procedural mode. */
+  private _tileSprite: Phaser.GameObjects.TileSprite | null = null;
 
   /**
    * @param scene          Active Phaser scene.
@@ -47,8 +56,41 @@ export class ParallaxLayer {
     draw(this.gfx);
   }
 
+  /**
+   * M20A: Factory that creates a TileSprite-backed production layer.
+   * Uses Object.create to bypass the constructor — no draw callback needed.
+   * Returns null if the texture key is not in the cache.
+   */
+  static fromTexture(
+    scene:         Phaser.Scene,
+    textureKey:    string,
+    scrollFactorX: number,
+    scrollFactorY: number,
+    depth:         number,
+    levelW:        number,
+    levelH:        number,
+  ): ParallaxLayer {
+    const layer = Object.create(ParallaxLayer.prototype) as ParallaxLayer;
+
+    // Assign a lightweight invisible Graphics so destroy() is always safe
+    const dummy = scene.add.graphics();
+    dummy.setVisible(false);
+    layer.gfx = dummy;
+
+    // Production TileSprite — tiles horizontally across the entire level
+    const totalW = levelW + 1280;
+    layer._tileSprite = scene.add
+      .tileSprite(0, 0, totalW, levelH, textureKey)
+      .setScrollFactor(scrollFactorX, scrollFactorY)
+      .setDepth(depth)
+      .setOrigin(0, 0);
+
+    return layer;
+  }
+
   destroy(): void {
     this.gfx.destroy();
+    this._tileSprite?.destroy();
   }
 }
 
@@ -73,12 +115,51 @@ export function buildParallaxLayers(
   switch (theme) {
     case 'jungle_day':
     case 'jungle_dusk':
-    case 'jungle_night':
-      return _buildJungleLayers(scene, levelW, levelH, theme);
+    case 'jungle_night': {
+      // M20A: try production TileSprite layers first; fall back per-theme if absent
+      const prod = _tryProductionJungleLayers(scene, levelW, levelH);
+      return prod ?? _buildJungleLayers(scene, levelW, levelH, theme);
+    }
     case 'default':
     default:
       return _buildDefaultLayers(scene, levelW, levelH);
   }
+}
+
+/**
+ * M20A: Attempt to build production TileSprite background layers for World 1.
+ * Requires at minimum the sky layer to commit to production rendering.
+ * Returns null when artwork is absent so the procedural path runs instead.
+ */
+function _tryProductionJungleLayers(
+  scene:  Phaser.Scene,
+  levelW: number,
+  levelH: number,
+): ParallaxLayer[] | null {
+  const has = (key: string) => BackgroundImporter.isLayerLoaded(scene, key);
+
+  // Need at least the sky to commit — otherwise fall through to procedural
+  if (!has(BG_WORLD01_SKY)) return null;
+
+  const mk = (key: string, sx: number, sy: number, depth: number): ParallaxLayer =>
+    has(key)
+      ? ParallaxLayer.fromTexture(scene, key, sx, sy, depth, levelW, levelH)
+      : new ParallaxLayer(scene, sx, sy, depth, () => {}); // transparent stub
+
+  const layers: ParallaxLayer[] = [
+    mk(BG_WORLD01_SKY,       0.02,  0.00, -25),
+    mk(BG_WORLD01_CLOUDS,    0.015, 0.00, -22),
+    mk(BG_WORLD01_MOUNTAINS, 0.06,  0.01, -20),
+    mk(BG_WORLD01_JUNGLE,    0.14,  0.03, -15),
+    mk(BG_WORLD01_TREES,     0.20,  0.03, -12),
+    mk(BG_WORLD01_VINES,     0.28,  0.04,  -5),
+  ];
+
+  if (has(BG_WORLD01_MIST))    layers.push(mk(BG_WORLD01_MIST,    0.10, 0.0, -4));
+  if (has(BG_WORLD01_SUNRAYS)) layers.push(mk(BG_WORLD01_SUNRAYS, 0.05, 0.0, -3));
+
+  console.log(`[ParallaxLayer] M20A — production backgrounds active (${layers.length} layers).`);
+  return layers;
 }
 
 // ─── Default theme ────────────────────────────────────────────────────────────

@@ -1,4 +1,9 @@
 import Phaser from 'phaser';
+import {
+  PARTICLE_DUST,
+  PARTICLE_CHECKPOINT,
+  PARTICLE_DAMAGE,
+} from '../assets/AssetKeys';
 
 /**
  * ParticleSystem — M19
@@ -26,12 +31,16 @@ export class ParticleSystem {
 
   /** Gold starburst — fires when a checkpoint is activated. */
   static checkpointBurst(scene: Phaser.Scene, x: number, y: number): void {
-    ParticleSystem._burst(scene, x, y, [0xffcc00, 0xffee88, 0xffffff], 10, 72, 4, 380);
+    if (!ParticleSystem._spriteParticle(scene, PARTICLE_CHECKPOINT, 'ptcl_checkpoint', x, y)) {
+      ParticleSystem._burst(scene, x, y, [0xffcc00, 0xffee88, 0xffffff], 10, 72, 4, 380);
+    }
   }
 
   /** Red scatter — fires when the player takes damage. */
   static playerDamage(scene: Phaser.Scene, x: number, y: number): void {
-    ParticleSystem._burst(scene, x, y, [0xff2233, 0xff6655], 7, 52, 3, 300);
+    if (!ParticleSystem._spriteParticle(scene, PARTICLE_DAMAGE, 'ptcl_damage', x, y)) {
+      ParticleSystem._burst(scene, x, y, [0xff2233, 0xff6655], 7, 52, 3, 300);
+    }
   }
 
   /**
@@ -39,6 +48,10 @@ export class ParticleSystem {
    * Particles spread mostly sideways to sell the dust-cloud feel.
    */
   static landingDust(scene: Phaser.Scene, x: number, y: number): void {
+    // M20A: try production sprite path first
+    if (ParticleSystem._spriteParticle(scene, PARTICLE_DUST, 'ptcl_dust', x, y)) return;
+
+    // Procedural fallback
     const count = 6;
     for (let i = 0; i < count; i++) {
       const g = scene.add.graphics().setDepth(6);
@@ -60,6 +73,39 @@ export class ParticleSystem {
         onComplete: () => { g.destroy(); ParticleSystem._activeCount--; },
       });
     }
+  }
+
+  // ── Internal helpers ───────────────────────────────────────────────────────
+
+  /**
+   * M20A: Attempt to emit one animated sprite particle.
+   * Returns true and spawns a Sprite if the texture + animation both exist;
+   * returns false so the caller falls back to procedural Graphics.
+   */
+  private static _spriteParticle(
+    scene:   Phaser.Scene,
+    texKey:  string,
+    animKey: string,
+    x:       number,
+    y:       number,
+  ): boolean {
+    if (
+      !scene.textures.exists(texKey) ||
+      scene.textures.get(texKey).key === '__MISSING' ||
+      !scene.anims.exists(animKey)
+    ) return false;
+
+    ParticleSystem._activeCount++;
+    const spr = scene.add.sprite(x, y, texKey).setDepth(20).play(animKey);
+
+    scene.tweens.add({
+      targets:  spr,
+      alpha:    0,
+      duration: 280,
+      ease:     'Quad.easeOut',
+      onComplete: () => { spr.destroy(); ParticleSystem._activeCount--; },
+    });
+    return true;
   }
 
   // ── Internal burst engine ──────────────────────────────────────────────────

@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { AssetKeys } from '../assets/AssetKeys';
+import { HudArtImporter } from '../assets/HudArtImporter';
 
 /**
  * HudDisplay
@@ -27,12 +29,18 @@ const HEART_GAP  = 28;  // px between heart centres
 const FONT       = '"Courier New", Courier, monospace';
 
 export class HudDisplay {
-  private readonly _scene:       Phaser.Scene;
-  private readonly _hearts:      Phaser.GameObjects.Graphics;
-  private readonly _crystalText: Phaser.GameObjects.Text;
-  private readonly _levelText:   Phaser.GameObjects.Text;
-  private readonly _pauseGfx:    Phaser.GameObjects.Graphics;
-  private readonly _pauseZone:   Phaser.GameObjects.Zone;
+  private readonly _scene:               Phaser.Scene;
+  private readonly _hearts:              Phaser.GameObjects.Graphics;
+  /** M20A: Production Image hearts — empty array in procedural mode. */
+  private readonly _heartImages:         Phaser.GameObjects.Image[]   = [];
+  /** M20A: True when production heart textures (UI_HEART / UI_HEART_EMPTY) are loaded. */
+  private readonly _useProductionHearts: boolean;
+  /** M20A: Crystal icon Image — null when the production sprite is absent. */
+  private          _crystalIcon:         Phaser.GameObjects.Image | null = null;
+  private readonly _crystalText:         Phaser.GameObjects.Text;
+  private readonly _levelText:           Phaser.GameObjects.Text;
+  private readonly _pauseGfx:            Phaser.GameObjects.Graphics;
+  private readonly _pauseZone:           Phaser.GameObjects.Zone;
 
   constructor(
     scene:     Phaser.Scene,
@@ -45,7 +53,29 @@ export class HudDisplay {
 
     // ── Hearts ────────────────────────────────────────────────────────────
     this._hearts = scene.add.graphics().setScrollFactor(0).setDepth(HUD_DEPTH);
-    this._drawHearts(maxHp, maxHp);
+    this._useProductionHearts = HudArtImporter.isHeartSpriteLoaded(scene);
+
+    if (this._useProductionHearts) {
+      // Production: Image sprites per heart slot — Graphics stays empty/invisible
+      for (let i = 0; i < maxHp; i++) {
+        this._heartImages.push(
+          scene.add
+            .image(20 + i * HEART_GAP, 20, AssetKeys.UI_HEART)
+            .setScrollFactor(0)
+            .setDepth(HUD_DEPTH),
+        );
+      }
+      // M20A: Optional crystal icon
+      if (HudArtImporter.isCrystalIconLoaded(scene)) {
+        this._crystalIcon = scene.add
+          .image(20, 52, AssetKeys.UI_CRYSTAL_ICON)
+          .setScrollFactor(0)
+          .setDepth(HUD_DEPTH);
+      }
+    } else {
+      // Procedural: draw polygon hearts into the Graphics object
+      this._drawHearts(maxHp, maxHp);
+    }
 
     // ── Crystal counter ───────────────────────────────────────────────────
     this._crystalText = scene.add
@@ -102,7 +132,26 @@ export class HudDisplay {
    */
   animateHpLoss(hp: number, maxHp: number): void {
     this._drawHearts(hp, maxHp);
-    // Small horizontal shake to sell the impact
+
+    if (this._useProductionHearts) {
+      // Punch-scale the heart that just became empty
+      const img = this._heartImages[hp];
+      if (img) {
+        this._scene.tweens.killTweensOf(img);
+        this._scene.tweens.add({
+          targets:  img,
+          scaleX:   1.5,
+          scaleY:   1.5,
+          duration: 60,
+          yoyo:     true,
+          ease:     'Back.easeOut',
+          onComplete: () => { img.setScale(1); },
+        });
+      }
+      return;
+    }
+
+    // Procedural: small horizontal shake to sell the impact
     this._scene.tweens.killTweensOf(this._hearts);
     this._scene.tweens.add({
       targets:  this._hearts,
@@ -121,6 +170,25 @@ export class HudDisplay {
    */
   animateHpRestore(hp: number, maxHp: number): void {
     this._drawHearts(hp, maxHp);
+
+    if (this._useProductionHearts) {
+      // Pulse all heart Images up and back
+      for (const img of this._heartImages) {
+        this._scene.tweens.killTweensOf(img);
+        this._scene.tweens.add({
+          targets:  img,
+          scaleX:   1.35,
+          scaleY:   1.35,
+          duration: 160,
+          yoyo:     true,
+          ease:     'Back.easeOut',
+          onComplete: () => { img.setScale(1); },
+        });
+      }
+      return;
+    }
+
+    // Procedural: pulse the Graphics row
     this._scene.tweens.killTweensOf(this._hearts);
     this._scene.tweens.add({
       targets:  this._hearts,
@@ -202,6 +270,8 @@ export class HudDisplay {
 
   destroy(): void {
     this._hearts.destroy();
+    for (const img of this._heartImages) img.destroy();
+    this._crystalIcon?.destroy();
     this._crystalText.destroy();
     this._levelText.destroy();
     this._pauseGfx.destroy();
@@ -211,6 +281,16 @@ export class HudDisplay {
   // ── Private drawing ───────────────────────────────────────────────────────
 
   private _drawHearts(hp: number, maxHp: number): void {
+    if (this._useProductionHearts) {
+      // Production: swap textures on Image objects (full/empty heart)
+      for (let i = 0; i < this._heartImages.length; i++) {
+        this._heartImages[i].setTexture(
+          i < hp ? AssetKeys.UI_HEART : AssetKeys.UI_HEART_EMPTY,
+        );
+      }
+      return;
+    }
+    // Procedural: redraw polygon hearts
     this._hearts.clear();
     for (let i = 0; i < maxHp; i++) {
       this._drawHeart(20 + i * HEART_GAP, 20, i < hp);

@@ -102,6 +102,21 @@ export class PlayerSpriteImporter {
   }
 
   /**
+   * M20A: Build a ProductionArtRegistry-compatible status entry for Kai.
+   */
+  static getStatus(scene: Phaser.Scene): import('../../assets/ProductionArtRegistry').ArtCategoryStatus {
+    const loaded = this.isLoaded(scene);
+    const key    = KAI_SPRITE_SPEC.textureKey;
+    return {
+      label:        'Kai Character',
+      source:       loaded ? 'production' : 'procedural',
+      loadedKeys:   loaded ? [key] : [],
+      missingKeys:  loaded ? [] : [key],
+      fallbackDesc: loaded ? '' : 'Procedural placeholder texture (PlayerSpriteFactory)',
+    };
+  }
+
+  /**
    * Quick check — is the real Kai spritesheet in the texture cache?
    * Returns false when only the procedural placeholder is present.
    */

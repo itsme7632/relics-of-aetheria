@@ -1,0 +1,365 @@
+You are continuing development of the existing "Relics of Aetheria" project.
+
+IMPORTANT:
+
+Read the ENTIRE repository before making any changes.
+
+Read all relevant files in parallel.
+
+Do NOT rewrite working systems.
+
+Preserve all gameplay.
+
+Preserve architecture.
+
+M1–M19 are COMPLETE.
+
+This milestone begins the production art pass.
+
+==========================================================
+M20A — Production Asset Pipeline & Core Art
+==========================================================
+
+This is NOT a gameplay milestone.
+
+No mechanics should change.
+
+No physics should change.
+
+No enemy AI should change.
+
+No player movement should change.
+
+Only replace placeholder visuals with production-ready assets while preserving every existing system.
+
+==========================================================
+GOALS
+==========================================================
+
+Build the production visual pipeline.
+
+Prepare the engine to automatically switch between placeholder assets and production assets.
+
+==========================================================
+1. FINAL KAI PIPELINE
+==========================================================
+
+Replace placeholder support with production-ready architecture.
+
+Support:
+
+assets/characters/kai/
+
+kai.png
+
+kai.json (optional)
+
+future skins
+
+future palettes
+
+animation metadata
+
+KaiRenderer must automatically use production assets whenever available.
+
+No gameplay changes.
+
+==========================================================
+2. SNAKE PRODUCTION PIPELINE
+==========================================================
+
+Create production asset loading for Snake.
+
+Support:
+
+idle
+
+crawl
+
+attack
+
+hurt
+
+death
+
+If assets are missing, automatically fall back to placeholder.
+
+==========================================================
+3. WORLD 1 PRODUCTION TILESET
+==========================================================
+
+Support loading production tileset.
+
+Folder:
+
+assets/worlds/world01_jungle/tilesets/
+
+Support:
+
+ground
+
+grass
+
+stone
+
+wood
+
+bridge
+
+roots
+
+plants
+
+flowers
+
+ruins
+
+water
+
+waterfall
+
+crystals
+
+decorations
+
+Automatically fall back to procedural tiles.
+
+==========================================================
+4. BACKGROUND ART
+==========================================================
+
+Support production backgrounds.
+
+Layers:
+
+Sky
+
+Clouds
+
+Mountains
+
+Jungle
+
+Trees
+
+Foreground vines
+
+Mist
+
+Sun rays
+
+If production assets are unavailable, use procedural backgrounds.
+
+==========================================================
+5. HUD ART PIPELINE
+==========================================================
+
+Replace placeholder rectangles with sprite support.
+
+Support:
+
+heart
+
+empty heart
+
+crystal
+
+pause
+
+settings
+
+notification frame
+
+Future art should load automatically.
+
+==========================================================
+6. MENU ART PIPELINE
+==========================================================
+
+Support production assets for:
+
+Pause
+
+Game Over
+
+Level Complete
+
+Settings
+
+Buttons
+
+Panels
+
+Borders
+
+Fonts
+
+No functionality changes.
+
+==========================================================
+7. PARTICLE ART PIPELINE
+==========================================================
+
+Support sprite particles for:
+
+dust
+
+leaf
+
+spark
+
+crystal
+
+checkpoint
+
+damage
+
+Fallback to procedural particles.
+
+==========================================================
+8. ART REGISTRY
+==========================================================
+
+Create a centralized ProductionArtRegistry.
+
+It should report:
+
+Loaded assets
+
+Missing assets
+
+Fallback assets
+
+Memory usage
+
+Categories
+
+==========================================================
+9. DEBUG
+==========================================================
+
+Expand F7.
+
+Display:
+
+Production assets loaded
+
+Fallback assets
+
+Missing production assets
+
+Current Kai skin
+
+Current snake skin
+
+Tileset source
+
+Background source
+
+HUD source
+
+==========================================================
+10. DOCUMENTATION
+==========================================================
+
+Create:
+
+docs/ProductionArtPipeline.md
+
+Explain:
+
+folder layout
+
+asset naming
+
+sprite conventions
+
+fallback system
+
+future artist workflow
+
+==========================================================
+RULES
+==========================================================
+
+Do NOT change:
+
+Physics
+
+Movement
+
+AI
+
+Camera
+
+HUD logic
+
+Game flow
+
+Hit stop
+
+Particles logic
+
+Checkpoint system
+
+Respawn system
+
+==========================================================
+VERIFICATION
+==========================================================
+
+Before finishing:
+
+Run:
+
+pnpm typecheck
+
+Verify:
+
+✓ Zero TypeScript errors
+
+✓ 60 FPS
+
+✓ Desktop controls
+
+✓ Mobile controls
+
+✓ Snake still works
+
+✓ Kai still works
+
+✓ HUD still works
+
+✓ Menus still work
+
+✓ Checkpoints still work
+
+✓ World complete still works
+
+✓ Game over still works
+
+✓ Production assets auto-load
+
+✓ Missing assets gracefully fall back
+
+✓ No new console errors
+
+==========================================================
+DELIVERABLE
+==========================================================
+
+Provide a complete report including:
+
+1. What was added
+
+2. Files modified
+
+3. Files created
+
+4. Asset pipeline summary
+
+5. Verification checklist
+
+6. Recommendations for M20B
+
+Do not stop until M20A is completely implemented, tested, verified, and ready to commit.

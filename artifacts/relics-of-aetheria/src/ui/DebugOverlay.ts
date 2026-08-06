@@ -111,6 +111,21 @@ export interface GameFlowDebugInfo {
 }
 
 /**
+ * M20A — Production art pipeline status snapshot.
+ * Built by GameScene._buildProductionArtDebugInfo() from ProductionArtRegistry.
+ */
+export interface ProductionArtDebugInfo {
+  /** Total art categories registered (characters, enemies, backgrounds, …). */
+  totalCategories: number;
+  /** Number of categories where all expected assets are loaded. */
+  loadedCategories: number;
+  /** Number of categories still missing at least one asset. */
+  pendingCategories: number;
+  /** One status line per category, e.g. "characters: ✓ prod | · proc". */
+  categoryLines: string[];
+}
+
+/**
  * DebugOverlay
  *
  * Fixed-position HUD text that displays game state for each active debug mode:
@@ -152,6 +167,7 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
     touchDebug?: TouchDebugInfo,
     kaiDebug?: KaiDebugInfo,
     gameFlowDebug?: GameFlowDebugInfo,
+    prodArtDebug?: ProductionArtDebugInfo,
   ): void {
     const lines: string[] = [
       `FPS    ${Math.round(fps)}`,
@@ -350,6 +366,16 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
         `Transit  ${gameFlowDebug.transitionState}`,
         `HitStop  ${gameFlowDebug.hitStopActive ? 'yes' : 'no'}`,
         `Ptcls    ${gameFlowDebug.particleCount}`,
+      );
+    }
+
+    if (prodArtDebug) {
+      lines.push(
+        `─────────────────`,
+        `[ProdArt M20A]`,
+        `Categories ${prodArtDebug.loadedCategories}/${prodArtDebug.totalCategories} loaded`,
+        `Pending    ${prodArtDebug.pendingCategories}`,
+        ...prodArtDebug.categoryLines,
       );
     }
 

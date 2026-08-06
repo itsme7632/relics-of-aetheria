@@ -20,6 +20,7 @@ import { buildEnvironmentConfig } from '../world/WorldEnvironment';
 import { AssetValidator } from '../assets/AssetValidator';
 import { AnimationFactory } from '../animation/AnimationFactory';
 import { AssetCatalog } from '../assets/AssetCatalog';
+import { ProductionArtRegistry } from '../assets/ProductionArtRegistry';
 import { TilesetRegistry } from '../assets/TilesetRegistry';
 import { SnakeEnemy } from '../entities/enemy/SnakeEnemy';
 import type { EnemyDebugInfo } from '../entities/enemy/SnakeEnemy';
@@ -604,15 +605,40 @@ export class GameScene extends Phaser.Scene {
       this.player.x,
       this.player.y,
       this.player.debugInfo,
-      this.entityDebugActive      ? this.entityManager.debugInfo      : undefined,
-      this.entityDebugActive      ? this._buildEnemyDebugInfo()        : undefined,
-      this.cameraDebugActive      ? this.cameraManager.debugInfo      : undefined,
-      this.interactionDebugActive ? this.interactionManager.debugInfo : undefined,
-      this.assetDebugActive       ? this._buildAssetDebugInfo()        : undefined,
-      this.touchDebugActive       ? this.touchManager.debugInfo       : undefined,
-      this.kaiDebugActive         ? this.player.kaiDebugInfo          : undefined,
-      this.assetDebugActive       ? this._buildGameFlowDebugInfo()     : undefined,
+      this.entityDebugActive      ? this.entityManager.debugInfo            : undefined,
+      this.entityDebugActive      ? this._buildEnemyDebugInfo()              : undefined,
+      this.cameraDebugActive      ? this.cameraManager.debugInfo            : undefined,
+      this.interactionDebugActive ? this.interactionManager.debugInfo       : undefined,
+      this.assetDebugActive       ? this._buildAssetDebugInfo()              : undefined,
+      this.touchDebugActive       ? this.touchManager.debugInfo             : undefined,
+      this.kaiDebugActive         ? this.player.kaiDebugInfo                : undefined,
+      this.assetDebugActive       ? this._buildGameFlowDebugInfo()           : undefined,
+      this.assetDebugActive       ? this._buildProductionArtDebugInfo()      : undefined,
     );
+  }
+
+  /** M20A — Build ProductionArtDebugInfo from ProductionArtRegistry. */
+  private _buildProductionArtDebugInfo() {
+    const report = ProductionArtRegistry.instance.report;
+    const categoryLines: string[] = [];
+    let loadedCategories  = 0;
+    let pendingCategories = 0;
+
+    for (const status of report.byCategory) {
+      const srcLabel = status.source === 'production' ? '✓ prod'
+                     : status.source === 'partial'    ? '· part'
+                     : '· proc';
+      categoryLines.push(`  ${status.label.slice(0, 14).padEnd(14)} ${srcLabel}`);
+      if (status.source === 'production') loadedCategories++;
+      else pendingCategories++;
+    }
+
+    return {
+      totalCategories:   report.byCategory.length,
+      loadedCategories,
+      pendingCategories,
+      categoryLines,
+    };
   }
 
   private _buildGameFlowDebugInfo() {

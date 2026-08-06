@@ -28,10 +28,12 @@ import {
   ENEMY_SLIME,
   ENEMY_GOBLIN,
   ENEMY_BAT,
+  ENEMY_SNAKE,
   EFFECT_DUST_PUFF,
   EFFECT_SPARKLE,
   EFFECT_COLLECT_BURST,
   UI_HEART,
+  UI_HEART_EMPTY,
   UI_CRYSTAL_ICON,
   UI_PANEL,
   UI_BUTTON_NORMAL,
@@ -48,6 +50,22 @@ import {
   AUDIO_SFX_DOOR_OPEN,
   FONT_HUD,
   FONT_TITLE,
+  BG_WORLD01_SKY,
+  BG_WORLD01_CLOUDS,
+  BG_WORLD01_MOUNTAINS,
+  BG_WORLD01_JUNGLE,
+  BG_WORLD01_TREES,
+  BG_WORLD01_VINES,
+  BG_WORLD01_MIST,
+  BG_WORLD01_SUNRAYS,
+  WORLD01_BG_PATHS,
+  ENEMY_SNAKE_PATHS,
+  PARTICLE_DUST,
+  PARTICLE_LEAF,
+  PARTICLE_SPARK,
+  PARTICLE_CRYSTAL,
+  PARTICLE_CHECKPOINT,
+  PARTICLE_DAMAGE,
 } from './AssetKeys';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -302,6 +320,40 @@ export const ASSET_MANIFEST: AssetEntry[] = [
     xmlPath:  'assets/fonts/title.xml',
     optional: true,
   },
+
+  // ── M20A: Snake enemy spritesheet — assets/enemies/snake/ ────────────────────
+  // 32×32 px frames, 18 total — see SnakeSpriteImporter.SNAKE_SPRITE_SPEC
+  {
+    key:         ENEMY_SNAKE,
+    type:        'spritesheet',
+    path:        ENEMY_SNAKE_PATHS.spritesheet,
+    frameWidth:  32,
+    frameHeight: 32,
+    frameCount:  18,
+    optional:    true,
+  },
+
+  // ── M20A: Background layers — assets/worlds/world01_jungle/backgrounds/ ───────
+  { key: BG_WORLD01_SKY,       type: 'image', path: WORLD01_BG_PATHS.sky,       optional: true },
+  { key: BG_WORLD01_CLOUDS,    type: 'image', path: WORLD01_BG_PATHS.clouds,    optional: true },
+  { key: BG_WORLD01_MOUNTAINS, type: 'image', path: WORLD01_BG_PATHS.mountains, optional: true },
+  { key: BG_WORLD01_JUNGLE,    type: 'image', path: WORLD01_BG_PATHS.jungle,    optional: true },
+  { key: BG_WORLD01_TREES,     type: 'image', path: WORLD01_BG_PATHS.trees,     optional: true },
+  { key: BG_WORLD01_VINES,     type: 'image', path: WORLD01_BG_PATHS.vines,     optional: true },
+  { key: BG_WORLD01_MIST,      type: 'image', path: WORLD01_BG_PATHS.mist,      optional: true },
+  { key: BG_WORLD01_SUNRAYS,   type: 'image', path: WORLD01_BG_PATHS.sunrays,   optional: true },
+
+  // ── M20A: HUD extras — assets/ui/ ────────────────────────────────────────────
+  { key: UI_HEART_EMPTY, type: 'image', path: 'assets/ui/heart_empty.png', optional: true },
+
+  // ── M20A: Particle sprites — assets/effects/particles/ ───────────────────────
+  // All 16×16 px horizontal strips; frame counts in ParticleArtImporter.PARTICLE_ANIM_DEFS
+  { key: PARTICLE_DUST,       type: 'spritesheet', path: 'assets/effects/particles/dust.png',       frameWidth: 16, frameHeight: 16, frameCount: 4, optional: true },
+  { key: PARTICLE_LEAF,       type: 'spritesheet', path: 'assets/effects/particles/leaf.png',       frameWidth: 16, frameHeight: 16, frameCount: 4, optional: true },
+  { key: PARTICLE_SPARK,      type: 'spritesheet', path: 'assets/effects/particles/spark.png',      frameWidth: 16, frameHeight: 16, frameCount: 3, optional: true },
+  { key: PARTICLE_CRYSTAL,    type: 'spritesheet', path: 'assets/effects/particles/crystal.png',    frameWidth: 16, frameHeight: 16, frameCount: 4, optional: true },
+  { key: PARTICLE_CHECKPOINT, type: 'spritesheet', path: 'assets/effects/particles/checkpoint.png', frameWidth: 16, frameHeight: 16, frameCount: 4, optional: true },
+  { key: PARTICLE_DAMAGE,     type: 'spritesheet', path: 'assets/effects/particles/damage.png',     frameWidth: 16, frameHeight: 16, frameCount: 4, optional: true },
 ];
 
 /** Total number of entries in the manifest (convenience for debug display). */

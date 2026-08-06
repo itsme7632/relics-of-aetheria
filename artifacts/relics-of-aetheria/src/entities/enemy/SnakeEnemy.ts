@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import { Entity } from '../Entity';
+import { AssetKeys } from '../../assets/AssetKeys';
+import { SNAKE_SPRITE_SPEC } from '../../assets/SnakeSpriteImporter';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -56,8 +58,11 @@ const TILE          = 32;   // tile size used for platform-edge check
  */
 export class SnakeEnemy extends Entity {
   // ── Scene objects ──────────────────────────────────────────────────────────
-  private _rect!: Phaser.GameObjects.Rectangle;
-  private _gfx!:  Phaser.GameObjects.Graphics;
+  private _rect!:   Phaser.GameObjects.Rectangle;
+  /** Procedural Graphics snake — null when production sprite is used. */
+  private _gfx:     Phaser.GameObjects.Graphics | null = null;
+  /** Production Sprite snake — null when procedural Graphics is used. */
+  private _sprite:  Phaser.GameObjects.Sprite   | null = null;
 
   // ── Tuning (read from Tiled properties) ────────────────────────────────────
   private readonly _speed:          number;
@@ -114,12 +119,27 @@ export class SnakeEnemy extends Entity {
     // Tile collision — snake stays on platforms
     this.scene.physics.add.collider(this._rect, this._collisionLayer);
 
-    // ── Graphics (drawn facing right; setScale flips for left direction) ──
-    this._gfx = this.scene.add.graphics();
-    this._gfx.setDepth(4);
-    this._drawSnake();
-    this._gfx.setScale(this._direction, 1);
-    this._gfx.setPosition(x, y);
+    // ── M20A: Production sprite path (if artwork is present) ─────────────
+    const useSprite =
+      this.scene.textures.exists(AssetKeys.ENEMY_SNAKE) &&
+      this.scene.textures.get(AssetKeys.ENEMY_SNAKE).key !== '__MISSING';
+
+    if (useSprite) {
+      this._sprite = this.scene.add
+        .sprite(x, y, AssetKeys.ENEMY_SNAKE)
+        .setDepth(4);
+      if (this._direction === -1) this._sprite.setFlipX(true);
+      if (this.scene.anims.exists(SNAKE_SPRITE_SPEC.clips.idle.key)) {
+        this._sprite.play(SNAKE_SPRITE_SPEC.clips.idle.key);
+      }
+    } else {
+      // ── Procedural Graphics fallback ──────────────────────────────────
+      this._gfx = this.scene.add.graphics();
+      this._gfx.setDepth(4);
+      this._drawSnake();
+      this._gfx.setScale(this._direction, 1);
+      this._gfx.setPosition(x, y);
+    }
 
     this._active = true;
   }
@@ -167,13 +187,19 @@ export class SnakeEnemy extends Entity {
       }
     }
 
-    // ── Sync graphics to physics body centre ──────────────────────────────
-    this._gfx.setPosition(this._rect.x, this._rect.y);
-
-    // ── Flip graphic when direction changes (no redraw needed) ────────────
-    if (this._direction !== this._lastDir) {
-      this._gfx.setScale(this._direction, 1);
-      this._lastDir = this._direction;
+    // ── Sync visual to physics body centre ────────────────────────────────
+    if (this._sprite) {
+      this._sprite.setPosition(this._rect.x, this._rect.y);
+      if (this._direction !== this._lastDir) {
+        this._sprite.setFlipX(this._direction === -1);
+        this._lastDir = this._direction;
+      }
+    } else if (this._gfx) {
+      this._gfx.setPosition(this._rect.x, this._rect.y);
+      if (this._direction !== this._lastDir) {
+        this._gfx.setScale(this._direction, 1);
+        this._lastDir = this._direction;
+      }
     }
   }
 
@@ -190,9 +216,10 @@ export class SnakeEnemy extends Entity {
     body.setVelocityX(0);
     body.setAllowGravity(false);
 
-    // Squish + fade out
+    // Squish + fade out (targets whichever visual is active)
+    const visual = this._sprite ?? this._gfx;
     this.scene.tweens.add({
-      targets:  this._gfx,
+      targets:  visual,
       scaleX:   Math.abs(this._lastDir) * 1.9,
       scaleY:   0.12,
       alpha:    0,
@@ -229,6 +256,7 @@ export class SnakeEnemy extends Entity {
     this._active = false;
     this._rect?.destroy();
     this._gfx?.destroy();
+    this._sprite?.destroy();
   }
 
   // ── Accessors ──────────────────────────────────────────────────────────────
@@ -276,6 +304,7 @@ export class SnakeEnemy extends Entity {
    *   • Dark outline
    */
   private _drawSnake(): void {
+    if (!this._gfx) return;   // production sprite path — no draw needed
     const g  = this._gfx;
     const hw = SNAKE_W / 2;
     const hh = SNAKE_H / 2;

@@ -29,13 +29,18 @@ import Phaser from 'phaser';
 import { ASSET_MANIFEST, AssetEntry, AssetType, SpritesheetEntry, AtlasEntry, FontEntry } from './AssetManifest';
 import {
   PLAYER, CRYSTAL,
-  ENEMY_SLIME, ENEMY_GOBLIN, ENEMY_BAT,
+  ENEMY_SLIME, ENEMY_GOBLIN, ENEMY_BAT, ENEMY_SNAKE,
   EFFECT_DUST_PUFF, EFFECT_SPARKLE, EFFECT_COLLECT_BURST,
-  UI_HEART, UI_CRYSTAL_ICON, UI_PANEL, UI_BUTTON_NORMAL, UI_BUTTON_HOVER,
+  UI_HEART, UI_HEART_EMPTY, UI_CRYSTAL_ICON, UI_PANEL, UI_BUTTON_NORMAL, UI_BUTTON_HOVER,
   AUDIO_BGM_JUNGLE, AUDIO_BGM_CAVE, AUDIO_BGM_RUINS,
   AUDIO_SFX_JUMP, AUDIO_SFX_LAND, AUDIO_SFX_CRYSTAL_COLLECT,
   AUDIO_SFX_CHECKPOINT, AUDIO_SFX_LEVEL_COMPLETE, AUDIO_SFX_HURT, AUDIO_SFX_DOOR_OPEN,
   FONT_HUD, FONT_TITLE,
+  BG_WORLD01_SKY, BG_WORLD01_CLOUDS, BG_WORLD01_MOUNTAINS,
+  BG_WORLD01_JUNGLE, BG_WORLD01_TREES, BG_WORLD01_VINES,
+  BG_WORLD01_MIST, BG_WORLD01_SUNRAYS,
+  PARTICLE_DUST, PARTICLE_LEAF, PARTICLE_SPARK,
+  PARTICLE_CRYSTAL, PARTICLE_CHECKPOINT, PARTICLE_DAMAGE,
 } from './AssetKeys';
 
 // ─── Category ─────────────────────────────────────────────────────────────────
@@ -131,10 +136,12 @@ const KEY_CATEGORY: Record<string, AssetCategory> = {
   [ENEMY_SLIME]:          'enemies',
   [ENEMY_GOBLIN]:         'enemies',
   [ENEMY_BAT]:            'enemies',
+  [ENEMY_SNAKE]:          'enemies',      // M20A
 
   [CRYSTAL]:              'objects',
 
   [UI_HEART]:             'ui',
+  [UI_HEART_EMPTY]:       'ui',           // M20A
   [UI_CRYSTAL_ICON]:      'ui',
   [UI_PANEL]:             'ui',
   [UI_BUTTON_NORMAL]:     'ui',
@@ -143,6 +150,24 @@ const KEY_CATEGORY: Record<string, AssetCategory> = {
   [EFFECT_DUST_PUFF]:     'particles',
   [EFFECT_SPARKLE]:       'particles',
   [EFFECT_COLLECT_BURST]: 'particles',
+
+  // M20A: particle sprites
+  [PARTICLE_DUST]:        'particles',
+  [PARTICLE_LEAF]:        'particles',
+  [PARTICLE_SPARK]:       'particles',
+  [PARTICLE_CRYSTAL]:     'particles',
+  [PARTICLE_CHECKPOINT]:  'particles',
+  [PARTICLE_DAMAGE]:      'particles',
+
+  // M20A: background layers
+  [BG_WORLD01_SKY]:       'backgrounds',
+  [BG_WORLD01_CLOUDS]:    'backgrounds',
+  [BG_WORLD01_MOUNTAINS]: 'backgrounds',
+  [BG_WORLD01_JUNGLE]:    'backgrounds',
+  [BG_WORLD01_TREES]:     'backgrounds',
+  [BG_WORLD01_VINES]:     'backgrounds',
+  [BG_WORLD01_MIST]:      'backgrounds',
+  [BG_WORLD01_SUNRAYS]:   'backgrounds',
 
   [AUDIO_BGM_JUNGLE]:          'audio',
   [AUDIO_BGM_CAVE]:            'audio',

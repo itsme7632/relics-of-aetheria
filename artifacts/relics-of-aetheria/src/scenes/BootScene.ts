@@ -8,6 +8,12 @@ import { AssetKeys } from '../assets/AssetKeys';
 import { TilesetRegistry } from '../assets/TilesetRegistry';
 import { PlayerSpriteFactory } from '../entities/player/PlayerSpriteFactory';
 import { PlayerSpriteImporter } from '../entities/player/PlayerSpriteImporter';
+import { ProductionArtRegistry } from '../assets/ProductionArtRegistry';
+import { SnakeSpriteImporter } from '../assets/SnakeSpriteImporter';
+import { BackgroundImporter } from '../assets/BackgroundImporter';
+import { HudArtImporter } from '../assets/HudArtImporter';
+import { MenuArtImporter } from '../assets/MenuArtImporter';
+import { ParticleArtImporter } from '../assets/ParticleArtImporter';
 
 /**
  * BootScene
@@ -83,6 +89,27 @@ export class BootScene extends Phaser.Scene {
     // Validate the Kai spritesheet if it has been delivered.
     // Safe no-op when the file is absent — logs success or warnings when present.
     PlayerSpriteImporter.validate(this);
+
+    // ── M20A: Populate production art registry ────────────────────────────
+    // Resets from any previous run, then registers every art category.
+    // Each importer checks textures.exists() and sets its own status.
+    const reg = ProductionArtRegistry.instance;
+    reg.reset();
+
+    // Each importer's getStatus() checks textures.exists() and returns a
+    // full ArtCategoryStatus with label, source, loadedKeys, and missingKeys.
+    reg.register('characters',  PlayerSpriteImporter.getStatus(this));
+    reg.register('enemies',     SnakeSpriteImporter.getStatus(this));
+    reg.register('backgrounds', BackgroundImporter.getStatus(this));
+    reg.register('hud',         HudArtImporter.getStatus(this));
+    reg.register('menus',       MenuArtImporter.getStatus(this));
+    reg.register('particles',   ParticleArtImporter.getStatus(this));
+
+    // Register animations for production assets that need them
+    SnakeSpriteImporter.registerAnimations(this);
+    ParticleArtImporter.registerAnimations(this);
+
+    console.log('[BootScene] M20A production art registry populated.', reg.report);
 
     this.scene.start('GameScene', { levelId: WorldManager.startingLevelId });
   }
