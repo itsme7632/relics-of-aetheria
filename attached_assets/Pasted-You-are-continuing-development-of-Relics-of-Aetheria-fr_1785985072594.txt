@@ -1,0 +1,72 @@
+You are continuing development of Relics of Aetheria from the latest Git commit.
+
+IMPORTANT:
+Before making any changes, read the ENTIRE repository and understand the current architecture. Do not assume anything. Inspect all relevant files, documentation, asset pipeline, production art registry, manifest, renderer, and world systems before writing any code.
+
+Current progress:
+- M1–M20A are complete.
+- Engine, gameplay systems, HUD, checkpoints, particles, transitions, enemies, production art pipeline, and asset registry are implemented.
+- World 1 currently uses placeholder/procedural graphics.
+- The production art pipeline is ready to automatically use real PNG assets when they exist.
+
+For this task:
+
+DO NOT modify gameplay, physics, controls, collision, AI, camera, UI logic, save system, checkpoints, particles, or TypeScript architecture unless absolutely required.
+
+Instead, focus on creating production-quality artwork.
+
+IMPORTANT:
+Do NOT use the coding Agent to generate artwork if a better option exists.
+
+If Replit provides Canvas mode, Image Generation, Design mode, or any dedicated visual generation tool, USE THAT instead of the coding agent for pixel art creation.
+
+The coding Agent should only coordinate importing and validating the assets.
+
+Art requirements:
+
+- Consistent commercial-quality pixel art
+- 24×24 tile grid
+- Transparent PNGs
+- Clean outlines
+- Consistent color palette
+- No blurry scaling
+- No placeholder graphics
+- No AI artifacts
+- Fully compatible with the existing engine
+
+Start with World 1 Jungle.
+
+Generate production-quality assets for:
+
+• Jungle ground tiles
+• Stone blocks
+• Moss blocks
+• Temple ruins
+• Wooden bridges
+• Jungle decorations
+• Bushes
+• Flowers
+• Vines
+• Roots
+• Rocks
+• Water
+• Waterfall
+• Animated water frames
+• Animated waterfall frames
+
+Save everything inside:
+
+assets/worlds/world01_jungle/tilesets/
+
+After generating the artwork:
+
+1. Validate image dimensions.
+2. Validate transparency.
+3. Validate 24×24 alignment.
+4. Validate Phaser compatibility.
+5. Verify the production art pipeline loads the new assets instead of the procedural fallback.
+6. Run TypeScript.
+7. Run the game.
+8. Report every generated PNG, including dimensions and file paths.
+9. Do not modify unrelated files.
+10. Commit only after everything is verified and working.
