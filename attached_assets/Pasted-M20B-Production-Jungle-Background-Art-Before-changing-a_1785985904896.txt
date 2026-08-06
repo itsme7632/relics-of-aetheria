@@ -1,0 +1,95 @@
+M20B — Production Jungle Background Art
+
+Before changing anything, read the entire repository, especially:
+
+- docs/ProductionArtPipeline.md
+- docs/TilesetPipeline.md
+- ProductionArtRegistry
+- BackgroundImporter
+- AssetKeys
+- AssetManifest
+- AssetCatalog
+- ParallaxLayer
+- BootScene
+- GameScene
+
+Understand the complete production art pipeline before making any changes.
+
+Goal
+
+Replace the current procedural jungle parallax with production-quality pixel art backgrounds.
+
+Requirements
+
+Create the following PNG files:
+
+assets/worlds/world01_jungle/backgrounds/
+
+bg_sky.png
+bg_clouds.png
+bg_mountains.png
+bg_far_jungle.png
+bg_mid_jungle.png
+bg_foreground.png
+bg_fog.png
+bg_waterfall.png
+
+Art style
+
+• Professional pixel art
+• Bright colorful jungle
+• Inspired by Zelda Minish Cap, Owlboy, Celeste and Eastward
+• No AI-looking artifacts
+• Clean outlines
+• Soft lighting
+• Rich color palette
+• Seamless horizontal tiling
+• Transparent backgrounds where appropriate
+• Camera-friendly
+• Consistent with the existing jungle tileset
+
+Each background should scroll seamlessly.
+
+Implementation
+
+Use the existing production art pipeline.
+
+BackgroundImporter should load every new PNG.
+
+ProductionArtRegistry must register every background.
+
+ParallaxLayer should automatically use production textures when available and gracefully fall back to procedural backgrounds if any asset is missing.
+
+Do not remove the fallback system.
+
+Do not break World 1.
+
+Do not modify gameplay.
+
+Do not modify collisions.
+
+Do not modify camera behavior.
+
+Only replace the visuals.
+
+Verification
+
+After implementation:
+
+• Run TypeScript (zero errors)
+• Launch the game
+• Verify production backgrounds are rendering
+• Verify fallback still works if textures are removed
+• Verify 60 FPS
+• Verify Android controls still work
+• Verify no console errors except optional missing assets
+
+Finally provide:
+
+1. Every created file
+2. Every modified file
+3. Verification checklist
+4. Runtime screenshots
+5. Recommendations for the next milestone (M20C – Kai Production Sprite Sheet)
+
+Do not stop until everything is implemented and verified.

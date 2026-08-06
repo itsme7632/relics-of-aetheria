@@ -333,15 +333,16 @@ export const ASSET_MANIFEST: AssetEntry[] = [
     optional:    true,
   },
 
-  // ── M20A: Background layers — assets/worlds/world01_jungle/backgrounds/ ───────
-  { key: BG_WORLD01_SKY,       type: 'image', path: WORLD01_BG_PATHS.sky,       optional: true },
-  { key: BG_WORLD01_CLOUDS,    type: 'image', path: WORLD01_BG_PATHS.clouds,    optional: true },
-  { key: BG_WORLD01_MOUNTAINS, type: 'image', path: WORLD01_BG_PATHS.mountains, optional: true },
-  { key: BG_WORLD01_JUNGLE,    type: 'image', path: WORLD01_BG_PATHS.jungle,    optional: true },
-  { key: BG_WORLD01_TREES,     type: 'image', path: WORLD01_BG_PATHS.trees,     optional: true },
-  { key: BG_WORLD01_VINES,     type: 'image', path: WORLD01_BG_PATHS.vines,     optional: true },
-  { key: BG_WORLD01_MIST,      type: 'image', path: WORLD01_BG_PATHS.mist,      optional: true },
-  { key: BG_WORLD01_SUNRAYS,   type: 'image', path: WORLD01_BG_PATHS.sunrays,   optional: true },
+  // ── M20B: Background layers — assets/worlds/world01_jungle/backgrounds/ ───────
+  // optional: true removed — production PNGs delivered
+  { key: BG_WORLD01_SKY,       type: 'image', path: WORLD01_BG_PATHS.sky       },
+  { key: BG_WORLD01_CLOUDS,    type: 'image', path: WORLD01_BG_PATHS.clouds    },
+  { key: BG_WORLD01_MOUNTAINS, type: 'image', path: WORLD01_BG_PATHS.mountains },
+  { key: BG_WORLD01_JUNGLE,    type: 'image', path: WORLD01_BG_PATHS.jungle    },
+  { key: BG_WORLD01_TREES,     type: 'image', path: WORLD01_BG_PATHS.trees     },
+  { key: BG_WORLD01_VINES,     type: 'image', path: WORLD01_BG_PATHS.vines     },
+  { key: BG_WORLD01_MIST,      type: 'image', path: WORLD01_BG_PATHS.mist      },
+  { key: BG_WORLD01_SUNRAYS,   type: 'image', path: WORLD01_BG_PATHS.sunrays   },
 
   // ── M20A: HUD extras — assets/ui/ ────────────────────────────────────────────
   { key: UI_HEART_EMPTY, type: 'image', path: 'assets/ui/heart_empty.png', optional: true },
