@@ -1,0 +1,76 @@
+M20D — Production Snake Enemy Sprite Sheet
+
+Read the entire production art pipeline before modifying anything. Explore the repository in parallel and understand the existing enemy rendering pipeline, SnakeEnemy, SnakeSpriteImporter, AnimationFactory, AssetManifest, AssetKeys, ProductionArtRegistry, and BootScene before writing any code.
+
+Goal:
+Replace the placeholder snake with a production-quality animated pixel-art snake that plugs into the existing pipeline with minimal code changes.
+
+Requirements:
+
+• Generate a production sprite sheet:
+  assets/enemies/snake/snake.png
+
+• Sprite sheet layout:
+  - 32×32 pixels per frame
+  - Horizontal strip
+  - 18 frames total
+  - Final PNG size: 576×32 px
+
+Animation layout:
+
+Frames 0–3:
+Idle breathing
+
+Frames 4–9:
+Slither movement
+
+Frames 10–13:
+Attack / bite
+
+Frames 14–17:
+Death animation
+
+Art direction:
+
+• Cute but dangerous jungle snake
+• Green jungle palette
+• Dark outline
+• Bright belly
+• Red tongue
+• Yellow eyes
+• Smooth pixel shading
+• High-quality pixel art
+• No AI-looking artifacts
+• Transparent background
+• Matches the Kai and World 1 jungle style
+
+Implementation requirements:
+
+• Use the existing SnakeSpriteImporter pipeline.
+• Register all animations automatically.
+• Do not break procedural fallback.
+• If snake.png is missing, continue using the procedural snake.
+• Once snake.png exists, production graphics must automatically replace the placeholder.
+
+Manifest:
+
+If the snake asset is still marked optional, promote it to a required production asset so it loads automatically.
+
+Validation:
+
+• Zero TypeScript errors.
+• Zero new console errors.
+• Snake animations play correctly.
+• Patrol, attack, and death all animate correctly.
+• 60 FPS maintained.
+• Android controls unchanged.
+• Physics and collisions untouched.
+
+After implementation provide:
+
+1. Every file created.
+2. Every file modified.
+3. Validation report.
+4. ProductionArtRegistry status.
+5. Screenshot proving the production snake is visible in-game.
+6. Recommendations for M20E (Crystal + Checkpoint + HUD production art).

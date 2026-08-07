@@ -319,7 +319,7 @@ export const ASSET_MANIFEST: AssetEntry[] = [
     optional: true,
   },
 
-  // ── M20A: Snake enemy spritesheet — assets/enemies/snake/ ────────────────────
+  // ── M20D: Snake enemy spritesheet — assets/enemies/snake/ ────────────────────
   // 32×32 px frames, 18 total — see SnakeSpriteImporter.SNAKE_SPRITE_SPEC
   {
     key:         ENEMY_SNAKE,
@@ -328,7 +328,6 @@ export const ASSET_MANIFEST: AssetEntry[] = [
     frameWidth:  32,
     frameHeight: 32,
     frameCount:  18,
-    optional:    true,
   },
 
   // ── M20B: Background layers — assets/worlds/world01_jungle/backgrounds/ ───────
