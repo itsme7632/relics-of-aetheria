@@ -136,7 +136,6 @@ export const ASSET_MANIFEST: AssetEntry[] = [
 
   // ── Player (Kai) — assets/characters/ ──────────────────────────────────────
   // 32×48 px frames — horizontal strip, 22 frames total (see AnimationRegistry)
-  // Remove `optional: true` once kai.png is placed at the path below.
   {
     key:         PLAYER,
     type:        'spritesheet',
@@ -144,7 +143,6 @@ export const ASSET_MANIFEST: AssetEntry[] = [
     frameWidth:  32,
     frameHeight: 48,
     frameCount:  22,
-    optional:    true,   // artwork not yet delivered
   },
 
   // ── Collectibles — assets/objects/ ───────────────────────────────────────────

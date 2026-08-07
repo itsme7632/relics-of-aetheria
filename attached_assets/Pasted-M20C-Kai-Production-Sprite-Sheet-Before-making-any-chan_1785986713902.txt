@@ -1,0 +1,165 @@
+M20C — Kai Production Sprite Sheet
+
+Before making any changes, read the entire production art pipeline and understand how character sprites are loaded.
+
+Read:
+
+- docs/ProductionArtPipeline.md
+- PlayerSpriteImporter.ts
+- AnimationFactory.ts
+- AssetKeys.ts
+- AssetManifest.ts
+- AssetCatalog.ts
+- ProductionArtRegistry.ts
+- BootScene.ts
+- GameScene.ts
+
+Understand the complete production character pipeline before modifying anything.
+
+===========================================================
+GOAL
+===========================================================
+
+Replace the placeholder Kai with a professional production-quality pixel art character while keeping every gameplay mechanic unchanged.
+
+Do NOT modify movement.
+
+Do NOT modify physics.
+
+Do NOT modify collisions.
+
+Do NOT modify gameplay.
+
+Only replace the graphics and animations.
+
+===========================================================
+CREATE
+===========================================================
+
+Create:
+
+assets/characters/kai/kai.png
+
+Use the exact dimensions expected by the engine.
+
+Follow the pipeline specification already documented in the repository.
+
+Animation strip must contain every required frame in the correct order.
+
+===========================================================
+ANIMATIONS
+===========================================================
+
+Create production-quality frames for:
+
+Idle
+Run
+Jump
+Fall
+Land
+Push
+Climb
+Hurt
+Celebrate
+
+Keep the existing animation frame ordering so no code changes are required.
+
+===========================================================
+ART STYLE
+===========================================================
+
+Professional pixel art.
+
+Inspired by:
+
+• Zelda: The Minish Cap
+• Owlboy
+• Celeste
+• Eastward
+
+Requirements:
+
+• Clean silhouette
+• Warm jungle color palette
+• Brown hair
+• Green explorer outfit
+• Small backpack
+• Boots
+• Gloves
+• High readability at gameplay zoom
+• Soft shading
+• Crisp outlines
+• No AI-looking artifacts
+• Consistent with the World 1 jungle tileset
+• Transparent background
+• Commercial-quality pixel art
+
+===========================================================
+PIPELINE
+===========================================================
+
+Use the existing production pipeline.
+
+PlayerSpriteImporter must automatically detect the sprite sheet.
+
+ProductionArtRegistry must report Kai as loaded.
+
+AnimationFactory must use the production sprite automatically.
+
+Do not break the procedural fallback.
+
+===========================================================
+VERIFICATION
+===========================================================
+
+After implementation:
+
+• Run TypeScript (0 errors)
+
+• Launch the game
+
+• Verify Kai uses production graphics
+
+• Verify every animation works
+
+Idle
+
+Run
+
+Jump
+
+Fall
+
+Land
+
+Hurt
+
+Celebrate
+
+• Verify Android controls
+
+• Verify Desktop controls
+
+• Verify collisions unchanged
+
+• Verify 60 FPS
+
+• Verify no new console errors
+
+===========================================================
+DELIVERABLES
+===========================================================
+
+Provide:
+
+1. Created files
+
+2. Modified files
+
+3. Runtime screenshots
+
+4. Verification checklist
+
+5. Recommendations for M20D (Snake Production Sprite Sheet)
+
+Do not stop until Kai is fully implemented and verified in-game.
