@@ -152,7 +152,6 @@ export const ASSET_MANIFEST: AssetEntry[] = [
     path:        'assets/objects/crystal.png',
     frameWidth:  32,
     frameHeight: 32,
-    optional:    true,
   },
 
   // ── Enemies — assets/enemies/ ────────────────────────────────────────────────
@@ -188,7 +187,6 @@ export const ASSET_MANIFEST: AssetEntry[] = [
     path:        'assets/effects/dust_puff.png',
     frameWidth:  32,
     frameHeight: 32,
-    optional:    true,
   },
   {
     key:         EFFECT_SPARKLE,
@@ -196,7 +194,6 @@ export const ASSET_MANIFEST: AssetEntry[] = [
     path:        'assets/effects/sparkle.png',
     frameWidth:  32,
     frameHeight: 32,
-    optional:    true,
   },
   {
     key:         EFFECT_COLLECT_BURST,
@@ -204,7 +201,6 @@ export const ASSET_MANIFEST: AssetEntry[] = [
     path:        'assets/effects/collect_burst.png',
     frameWidth:  32,
     frameHeight: 32,
-    optional:    true,
   },
 
   // ── UI — assets/ui/ ───────────────────────────────────────────────────────────
@@ -212,13 +208,11 @@ export const ASSET_MANIFEST: AssetEntry[] = [
     key:      UI_HEART,
     type:     'image',
     path:     'assets/ui/heart.png',
-    optional: true,
   },
   {
     key:      UI_CRYSTAL_ICON,
     type:     'image',
     path:     'assets/ui/crystal_icon.png',
-    optional: true,
   },
   {
     key:      UI_PANEL,
@@ -341,17 +335,17 @@ export const ASSET_MANIFEST: AssetEntry[] = [
   { key: BG_WORLD01_MIST,      type: 'image', path: WORLD01_BG_PATHS.mist      },
   { key: BG_WORLD01_SUNRAYS,   type: 'image', path: WORLD01_BG_PATHS.sunrays   },
 
-  // ── M20A: HUD extras — assets/ui/ ────────────────────────────────────────────
-  { key: UI_HEART_EMPTY, type: 'image', path: 'assets/ui/heart_empty.png', optional: true },
+  // ── M20E: HUD extras — assets/ui/ ────────────────────────────────────────────
+  { key: UI_HEART_EMPTY, type: 'image', path: 'assets/ui/heart_empty.png' },
 
-  // ── M20A: Particle sprites — assets/effects/particles/ ───────────────────────
+  // ── M20E: Particle sprites — assets/effects/particles/ ───────────────────────
   // All 16×16 px horizontal strips; frame counts in ParticleArtImporter.PARTICLE_ANIM_DEFS
-  { key: PARTICLE_DUST,       type: 'spritesheet', path: 'assets/effects/particles/dust.png',       frameWidth: 16, frameHeight: 16, frameCount: 4, optional: true },
-  { key: PARTICLE_LEAF,       type: 'spritesheet', path: 'assets/effects/particles/leaf.png',       frameWidth: 16, frameHeight: 16, frameCount: 4, optional: true },
-  { key: PARTICLE_SPARK,      type: 'spritesheet', path: 'assets/effects/particles/spark.png',      frameWidth: 16, frameHeight: 16, frameCount: 3, optional: true },
-  { key: PARTICLE_CRYSTAL,    type: 'spritesheet', path: 'assets/effects/particles/crystal.png',    frameWidth: 16, frameHeight: 16, frameCount: 4, optional: true },
-  { key: PARTICLE_CHECKPOINT, type: 'spritesheet', path: 'assets/effects/particles/checkpoint.png', frameWidth: 16, frameHeight: 16, frameCount: 4, optional: true },
-  { key: PARTICLE_DAMAGE,     type: 'spritesheet', path: 'assets/effects/particles/damage.png',     frameWidth: 16, frameHeight: 16, frameCount: 4, optional: true },
+  { key: PARTICLE_DUST,       type: 'spritesheet', path: 'assets/effects/particles/dust.png',       frameWidth: 16, frameHeight: 16, frameCount: 4 },
+  { key: PARTICLE_LEAF,       type: 'spritesheet', path: 'assets/effects/particles/leaf.png',       frameWidth: 16, frameHeight: 16, frameCount: 4 },
+  { key: PARTICLE_SPARK,      type: 'spritesheet', path: 'assets/effects/particles/spark.png',      frameWidth: 16, frameHeight: 16, frameCount: 3 },
+  { key: PARTICLE_CRYSTAL,    type: 'spritesheet', path: 'assets/effects/particles/crystal.png',    frameWidth: 16, frameHeight: 16, frameCount: 4 },
+  { key: PARTICLE_CHECKPOINT, type: 'spritesheet', path: 'assets/effects/particles/checkpoint.png', frameWidth: 16, frameHeight: 16, frameCount: 4 },
+  { key: PARTICLE_DAMAGE,     type: 'spritesheet', path: 'assets/effects/particles/damage.png',     frameWidth: 16, frameHeight: 16, frameCount: 4 },
 ];
 
 /** Total number of entries in the manifest (convenience for debug display). */
