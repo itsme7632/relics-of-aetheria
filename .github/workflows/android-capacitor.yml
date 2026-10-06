@@ -48,7 +48,7 @@ jobs:
           cp -r assets/* dist/public/assets/
           echo "PNG assets: $(find dist/public/assets -name '*.png' | wc -l)"
           test -f dist/public/assets/objects/crystal.png
-          test -f dist/public/assets/worlds/world01_jungle/level1.json
+          test -f dist/public/assets/maps/level1.json
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
