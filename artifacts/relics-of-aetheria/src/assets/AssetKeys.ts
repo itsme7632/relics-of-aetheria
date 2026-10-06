@@ -77,6 +77,11 @@ export const EFFECT_DUST_PUFF     = 'effect_dust_puff'     as const;
 export const EFFECT_SPARKLE       = 'effect_sparkle'       as const;
 export const EFFECT_COLLECT_BURST = 'effect_collect_burst' as const;
 
+// ── Interactable objects (Phase 3A) ──────────────────────────────────────────
+
+export const OBJECT_CHECKPOINT = 'object_checkpoint' as const;
+export const OBJECT_LEVEL_EXIT = 'object_level_exit' as const;
+
 // ── UI ────────────────────────────────────────────────────────────────────────
 
 export const UI_HEART          = 'ui_heart'          as const;
@@ -183,6 +188,10 @@ export const AssetKeys = {
   EFFECT_DUST_PUFF,
   EFFECT_SPARKLE,
   EFFECT_COLLECT_BURST,
+
+  // Interactable objects (Phase 3A)
+  OBJECT_CHECKPOINT,
+  OBJECT_LEVEL_EXIT,
 
   // UI
   UI_HEART,

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { Interactable } from './Interactable';
 import { InteractionEvents } from '../../events/InteractionEvents';
+import { AssetKeys } from '../../assets/AssetKeys';
 
 /**
  * LevelExit
@@ -23,8 +24,13 @@ export class LevelExit extends Interactable {
   /** Running time for pulse animation (ms). Pre-allocated, zero-alloc update. */
   private _pulseTime = 0;
 
+  /** Phase 3A: Production sprite (null when using procedural fallback). */
+  private _sprite: Phaser.GameObjects.Image | null = null;
+
   constructor(scene: Phaser.Scene, w = 32, h = 64) {
-    super(scene, Math.max(w, h) * 0.75 + 24, false);
+    // Phase 3A: autoActivate=true → level completes automatically on overlap,
+    // no E press required. Player walks into the Temple Gate to finish.
+    super(scene, Math.max(w, h) * 0.75 + 24, true);
     this._w = w;
     this._h = h;
   }
@@ -36,8 +42,15 @@ export class LevelExit extends Interactable {
     const cy = y + this._h / 2;
     this._setPos(cx, cy);
 
-    this.gfx = this.scene.add.graphics();
-    this.gfx.setDepth(5);
+    // Phase 3A: Use production sprite when available, else procedural fallback
+    if (this.scene.textures.exists(AssetKeys.OBJECT_LEVEL_EXIT)) {
+      this._sprite = this.scene.add
+        .image(cx, cy, AssetKeys.OBJECT_LEVEL_EXIT, 0)
+        .setDepth(5);
+    } else {
+      this.gfx = this.scene.add.graphics();
+      this.gfx.setDepth(5);
+    }
     this._drawVisual(1.0);
 
     // Zone kept for potential future overlap queries
@@ -60,20 +73,32 @@ export class LevelExit extends Interactable {
   destroy(): void {
     this._active = false;
     this.gfx?.destroy();
+    this._sprite?.destroy();
     this.zone?.destroy();
     this.gfx  = null;
+    this._sprite = null;
     this.zone = null;
   }
 
   // ── Interaction API ────────────────────────────────────────────────────────
 
-  interact(): void {
+  /**
+   * Phase 3A: Auto-fires on player overlap (autoActivate=true).
+   * Guards against double-activation via _active flag.
+   * Emits LEVEL_COMPLETE on both entity and scene buses.
+   */
+  activate(): void {
+    if (!this._active) return;
     console.log('[LevelExit] Level complete!');
     this.emit(InteractionEvents.LEVEL_COMPLETE, this);
     this.scene.events.emit(InteractionEvents.LEVEL_COMPLETE, this);
+    // Prevent re-triggering: deactivate after first activation
+    this._active = false;
   }
 
-  activate(): void {}   // E-press type — no auto-activation
+  /** Not used — exit auto-activates on overlap (Phase 3A). */
+  interact(): void {}
+
   deactivate(): void {}
 
   protected override _onFocusChanged(focused: boolean): void {
@@ -85,6 +110,14 @@ export class LevelExit extends Interactable {
   // ── Private ────────────────────────────────────────────────────────────────
 
   private _drawVisual(alpha: number): void {
+    // Phase 3A: Use production sprite (frame 0=base, frame 1=pulse) when available
+    // Pulse animation: alternate frames based on alpha threshold
+    if (this._sprite) {
+      this._sprite.setFrame(alpha > 0.7 ? 1 : 0);
+      this._sprite.setAlpha(alpha);
+      return;
+    }
+    // Procedural fallback
     const g = this.gfx;
     if (!g) return;
     g.clear();

@@ -32,6 +32,8 @@ import {
   EFFECT_DUST_PUFF,
   EFFECT_SPARKLE,
   EFFECT_COLLECT_BURST,
+  OBJECT_CHECKPOINT,
+  OBJECT_LEVEL_EXIT,
   UI_HEART,
   UI_HEART_EMPTY,
   UI_CRYSTAL_ICON,
@@ -203,6 +205,22 @@ export const ASSET_MANIFEST: AssetEntry[] = [
     frameHeight: 32,
   },
 
+  // ── Interactable objects (Phase 3A) ─────────────────────────────────────────
+  {
+    key:         OBJECT_CHECKPOINT,
+    type:        'spritesheet',
+    path:        'assets/objects/checkpoint.png',
+    frameWidth:  32,
+    frameHeight: 64,
+  },
+  {
+    key:         OBJECT_LEVEL_EXIT,
+    type:        'spritesheet',
+    path:        'assets/objects/level_exit.png',
+    frameWidth:  32,
+    frameHeight: 64,
+  },
+
   // ── UI — assets/ui/ ───────────────────────────────────────────────────────────
   {
     key:      UI_HEART,
@@ -218,19 +236,16 @@ export const ASSET_MANIFEST: AssetEntry[] = [
     key:      UI_PANEL,
     type:     'image',
     path:     'assets/ui/panel.png',
-    optional: true,
   },
   {
     key:      UI_BUTTON_NORMAL,
     type:     'image',
     path:     'assets/ui/button_normal.png',
-    optional: true,
   },
   {
     key:      UI_BUTTON_HOVER,
     type:     'image',
     path:     'assets/ui/button_hover.png',
-    optional: true,
   },
 
   // ── Audio — background music — assets/audio/music/ ───────────────────────────

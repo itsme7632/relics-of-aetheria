@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { Interactable } from './Interactable';
 import { InteractionEvents } from '../../events/InteractionEvents';
+import { AssetKeys } from '../../assets/AssetKeys';
 
 /**
  * Checkpoint
@@ -22,6 +23,9 @@ export class Checkpoint extends Interactable {
   private readonly _w: number;
   private readonly _h: number;
 
+  /** Phase 3A: Production sprite image (null when using procedural fallback). */
+  private _sprite: Phaser.GameObjects.Image | null = null;
+
   constructor(scene: Phaser.Scene, w = 32, h = 64) {
     // autoActivate = true → fires activate() on overlap, not E press
     super(scene, Math.max(w, h) * 0.6 + 16, true);
@@ -37,8 +41,16 @@ export class Checkpoint extends Interactable {
     this._setPos(cx, cy);
 
     // ── Visual ──────────────────────────────────────────────────────────────
-    this.gfx = this.scene.add.graphics();
-    this.gfx.setDepth(5);
+    // Phase 3A: Use production sprite when available, else procedural fallback
+    if (this.scene.textures.exists(AssetKeys.OBJECT_CHECKPOINT)) {
+      this._sprite = this.scene.add
+        .image(cx, cy, AssetKeys.OBJECT_CHECKPOINT, 0)
+        .setDepth(5);
+      // Production art is 64x64 (2 frames of 32x64), centered
+    } else {
+      this.gfx = this.scene.add.graphics();
+      this.gfx.setDepth(5);
+    }
     this._drawVisual();
 
     // ── Physics zone ────────────────────────────────────────────────────────
@@ -54,8 +66,10 @@ export class Checkpoint extends Interactable {
   destroy(): void {
     this._active = false;
     this.gfx?.destroy();
+    this._sprite?.destroy();
     this.zone?.destroy();
     this.gfx  = null;
+    this._sprite = null;
     this.zone = null;
   }
 
@@ -97,6 +111,12 @@ export class Checkpoint extends Interactable {
   // ── Private ────────────────────────────────────────────────────────────────
 
   private _drawVisual(): void {
+    // Phase 3A: Use production sprite frame (0=inactive, 1=active) when available
+    if (this._sprite) {
+      this._sprite.setFrame(this._activated ? 1 : 0);
+      return;
+    }
+    // Procedural fallback
     const g = this.gfx;
     if (!g) return;
     g.clear();

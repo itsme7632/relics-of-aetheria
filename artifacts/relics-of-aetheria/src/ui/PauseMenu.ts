@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { AssetKeys } from '../assets/AssetKeys';
+import { MenuArtImporter } from '../assets/MenuArtImporter';
 
 /**
  * PauseMenu
@@ -76,6 +78,15 @@ export class PauseMenu {
         .setScrollFactor(0).setDepth(DEPTH),
     );
 
+    // Phase 2H: Ancient stone panel behind menu content
+    if (MenuArtImporter.isPanelLoaded(this.scene)) {
+      // 9-slice panel: 320x360 centered
+      const panel = this.scene.add
+        .nineslice(cx, cy + 15, AssetKeys.UI_PANEL, undefined, 320, 360, 16, 16, 16, 16)
+        .setScrollFactor(0).setDepth(DEPTH);
+      this._objs.push(panel);
+    }
+
     // Title
     this._objs.push(
       this.scene.add
@@ -109,24 +120,49 @@ export class PauseMenu {
 
   private _addButton(x: number, y: number, label: string, w: number, onClick: () => void): void {
     const h = 44;
-    const bg = this.scene.add.graphics().setScrollFactor(0).setDepth(DEPTH + 1);
-    this._drawBtnBg(bg, x, y, w, h, false);
-    this._objs.push(bg);
+    // Phase 2H: Use production button art when available, fallback to procedural
+    if (MenuArtImporter.isButtonLoaded(this.scene)) {
+      // 9-slice button: stretch to required width
+      const btn = this.scene.add
+        .nineslice(x, y, AssetKeys.UI_BUTTON_NORMAL, undefined, w, h, 12, 12, 0, 0)
+        .setScrollFactor(0).setDepth(DEPTH + 1);
+      this._objs.push(btn);
 
-    this._objs.push(
-      this.scene.add
-        .text(x, y, label, { fontSize: '16px', fontFamily: FONT, color: '#ffffff' })
-        .setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH + 2),
-    );
+      this._objs.push(
+        this.scene.add
+          .text(x, y, label, { fontSize: '16px', fontFamily: FONT, color: '#ffffff' })
+          .setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH + 2),
+      );
 
-    const zone = this.scene.add
-      .zone(x, y, w, h)
-      .setScrollFactor(0).setDepth(DEPTH + 3)
-      .setInteractive({ useHandCursor: true });
-    zone.on('pointerdown', onClick);
-    zone.on('pointerover', () => { bg.clear(); this._drawBtnBg(bg, x, y, w, h, true);  });
-    zone.on('pointerout',  () => { bg.clear(); this._drawBtnBg(bg, x, y, w, h, false); });
-    this._objs.push(zone);
+      const zone = this.scene.add
+        .zone(x, y, w, h)
+        .setScrollFactor(0).setDepth(DEPTH + 3)
+        .setInteractive({ useHandCursor: true });
+      zone.on('pointerdown', onClick);
+      zone.on('pointerover', () => { btn.setTexture(AssetKeys.UI_BUTTON_HOVER); });
+      zone.on('pointerout',  () => { btn.setTexture(AssetKeys.UI_BUTTON_NORMAL); });
+      this._objs.push(zone);
+    } else {
+      // Procedural fallback (original code)
+      const bg = this.scene.add.graphics().setScrollFactor(0).setDepth(DEPTH + 1);
+      this._drawBtnBg(bg, x, y, w, h, false);
+      this._objs.push(bg);
+
+      this._objs.push(
+        this.scene.add
+          .text(x, y, label, { fontSize: '16px', fontFamily: FONT, color: '#ffffff' })
+          .setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH + 2),
+      );
+
+      const zone = this.scene.add
+        .zone(x, y, w, h)
+        .setScrollFactor(0).setDepth(DEPTH + 3)
+        .setInteractive({ useHandCursor: true });
+      zone.on('pointerdown', onClick);
+      zone.on('pointerover', () => { bg.clear(); this._drawBtnBg(bg, x, y, w, h, true);  });
+      zone.on('pointerout',  () => { bg.clear(); this._drawBtnBg(bg, x, y, w, h, false); });
+      this._objs.push(zone);
+    }
   }
 
   private _drawBtnBg(

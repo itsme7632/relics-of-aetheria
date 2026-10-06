@@ -282,6 +282,14 @@ export class GameScene extends Phaser.Scene {
     );
     this.hudDisplay.setHp(Player.MAX_HP, Player.MAX_HP);
 
+    // Phase 3A: Show level objective briefly at start
+    // "Find the Temple Gate." — unobtrusive, auto-dismisses
+    this.time.delayedCall(800, () => {
+      if (this._flowState === 'playing') {
+        this.hudDisplay.showNotification('Find the Temple Gate.', 0xffcc44);
+      }
+    });
+
     // ── M18: Screen flash ──────────────────────────────────────────────────────
     this.screenFlash = new ScreenFlash(this);
 
