@@ -28,7 +28,7 @@ jobs:
           version: 9
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: Typecheck
         run: pnpm typecheck
@@ -55,7 +55,7 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Install Capacitor
-        run: pnpm add -D @capacitor/core @capacitor/cli @capacitor/android
+        run: pnpm add -D @capacitor/core @capacitor/cli @capacitor/android --no-frozen-lockfile
 
       - name: Add Android platform
         run: npx cap add android
