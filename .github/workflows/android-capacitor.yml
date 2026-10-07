@@ -6,7 +6,7 @@ on:
       ref:
         description: 'Git ref to build (commit SHA, branch, or tag)'
         required: false
-        default: '65f44e2ce45f566baa2f1017c53a73433de2532b'
+        default: 'main'
 
 jobs:
   build:
@@ -15,7 +15,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.ref || '65f44e2ce45f566baa2f1017c53a73433de2532b' }}
+          ref: ${{ github.event.inputs.ref || 'main' }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -63,11 +63,24 @@ jobs:
 
       - name: Install Capacitor
         working-directory: artifacts/relics-of-aetheria
-        run: pnpm add -D @capacitor/core @capacitor/cli @capacitor/android --no-frozen-lockfile
+        run: pnpm add -D @capacitor/core@^7 @capacitor/cli@^7 @capacitor/android@^7
 
       - name: Add Android platform
         working-directory: artifacts/relics-of-aetheria
         run: npx cap add android
+
+      - name: Force landscape orientation
+        working-directory: artifacts/relics-of-aetheria
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('android/app/src/main/AndroidManifest.xml')
+          s = p.read_text()
+          if 'android:screenOrientation=' not in s:
+              s = s.replace('<activity ', '<activity android:screenOrientation="landscape" ', 1)
+          p.write_text(s)
+          print('Landscape orientation configured.')
+          PY
 
       - name: Sync Capacitor
         working-directory: artifacts/relics-of-aetheria
