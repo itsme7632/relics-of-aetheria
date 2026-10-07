@@ -7,10 +7,6 @@ import type { TouchDebugInfo } from '../input/TouchManager';
 import type { KaiDebugInfo } from '../entities/player/Kai';
 import type { EnemyDebugInfo } from '../entities/enemy/SnakeEnemy';
 
-/**
- * DebugOverlay is retained for development diagnostics, but is hidden in the
- * normal player build so debug telemetry never covers the game viewport.
- */
 export interface AssetDebugInfo {
   loadedCount: number;
   missingRequired: string[];
@@ -62,6 +58,7 @@ export interface ProductionArtDebugInfo {
   categoryLines: string[];
 }
 
+/** Developer diagnostics. Hidden by default in the player build. */
 export class DebugOverlay extends Phaser.GameObjects.Text {
   constructor(scene: Phaser.Scene) {
     super(scene, 12, 12, '', {
@@ -71,12 +68,9 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
       backgroundColor: 'rgba(0,0,0,0.55)',
       padding: { x: 10, y: 8 },
     });
-
     scene.add.existing(this);
     this.setScrollFactor(0);
     this.setDepth(1000);
-    // Production gameplay must remain clean. Developers can still enable
-    // diagnostics from code during local debugging when needed.
     this.setVisible(false);
   }
 
@@ -100,45 +94,16 @@ export class DebugOverlay extends Phaser.GameObjects.Text {
       `X      ${Math.round(playerX)}`,
       `Y      ${Math.round(playerY)}`,
     ];
-    if (debug) {
-      lines.push(
-        `State  ${debug.state}`,
-        `Gnd    ${debug.grounded ? 'yes' : 'no'}`,
-        `VelX   ${debug.velocityX.toFixed(1)}`,
-        `VelY   ${debug.velocityY.toFixed(1)}`,
-        `Coyote ${Math.ceil(debug.coyoteTimer)}ms`,
-        `JmpBuf ${Math.ceil(debug.jumpBufferTimer)}ms`,
-        `Invul  ${debug.isInvulnerable ? 'yes' : 'no'}`,
-      );
-    }
-    if (entityDebug) {
-      lines.push(`Entities ${entityDebug.entityCount}`, `Active   ${entityDebug.activeCount}`, `Crystals ${entityDebug.collectedCrystals}`);
-    }
-    if (enemyDebug) {
-      lines.push(`Enemies ${enemyDebug.totalCount}`, `Active   ${enemyDebug.activeCount}`, `Sleeping ${enemyDebug.sleepingCount}`, `Defeated ${enemyDebug.defeatedCount}`);
-    }
-    if (cameraDebug) {
-      lines.push(`CamX ${cameraDebug.scrollX}`, `CamY ${cameraDebug.scrollY}`, `Zoom ${cameraDebug.zoom.toFixed(2)}`);
-    }
-    if (interactionDebug) {
-      const cp = interactionDebug.activeCheckpointPos;
-      lines.push(`Interactables ${interactionDebug.interactableCount}`, `Focus ${interactionDebug.focusedType ?? 'none'}`, `Checkpoint ${cp ? `${cp.x},${cp.y}` : '—'}`);
-    }
-    if (assetDebug) {
-      lines.push(`Assets ${assetDebug.loadedCount}/${assetDebug.totalCatalogAssets}`, `Failed ${assetDebug.failedCatalogAssets}`, `World ${assetDebug.worldPreset}`, `Level ${assetDebug.levelDisplayName}`, `Tileset ${assetDebug.tilesetSource}`, `Background ${assetDebug.backgroundTheme}`);
-    }
-    if (touchDebug) {
-      lines.push(`Touch ${touchDebug.touchCount}`, `MoveX ${touchDebug.moveX.toFixed(2)}`, `Jump ${touchDebug.jumpDown ? 'held' : 'up'}`, `Interact ${touchDebug.interactDown ? 'held' : 'up'}`);
-    }
-    if (kaiDebug) {
-      lines.push(`Kai ${kaiDebug.animationKey ?? '—'}`, `Frame ${kaiDebug.frameIndex}`, `Facing ${kaiDebug.facing}`);
-    }
-    if (gameFlowDebug) {
-      lines.push(`Flow ${gameFlowDebug.flowState}`, `HP ${gameFlowDebug.hp}/${gameFlowDebug.maxHp}`, `Crystals ${gameFlowDebug.crystalsCollected}/${gameFlowDebug.totalCrystals}`, `Deaths ${gameFlowDebug.deathCount}`);
-    }
-    if (prodArtDebug) {
-      lines.push(`Art ${prodArtDebug.loadedCategories}/${prodArtDebug.totalCategories}`, ...prodArtDebug.categoryLines);
-    }
+    if (debug) lines.push(`State  ${debug.state}`, `Gnd    ${debug.grounded ? 'yes' : 'no'}`, `VelX   ${debug.velocityX.toFixed(1)}`, `VelY   ${debug.velocityY.toFixed(1)}`);
+    if (entityDebug) lines.push(`Entities ${entityDebug.entityCount}`, `Active   ${entityDebug.activeCount}`, `Crystals ${entityDebug.collectedCrystals}`);
+    if (enemyDebug) lines.push(`Enemies ${enemyDebug.totalCount}`, `Active ${enemyDebug.activeCount}`, `Defeated ${enemyDebug.defeatedCount}`);
+    if (cameraDebug) lines.push(`CamX ${cameraDebug.scrollX}`, `CamY ${cameraDebug.scrollY}`, `Zoom ${cameraDebug.zoom.toFixed(2)}`);
+    if (interactionDebug) lines.push(`Interactables ${interactionDebug.interactableCount}`, `Focus ${interactionDebug.focusedType ?? 'none'}`);
+    if (assetDebug) lines.push(`Assets ${assetDebug.loadedCount}/${assetDebug.totalCatalogAssets}`, `Failed ${assetDebug.failedCatalogAssets}`, `World ${assetDebug.worldPreset}`, `Level ${assetDebug.levelDisplayName}`, `Tileset ${assetDebug.tilesetSource}`);
+    if (touchDebug) lines.push(`Touch ${touchDebug.touchCount}`, `MoveX ${touchDebug.moveX.toFixed(2)}`, `Jump ${touchDebug.jumpDown ? 'held' : 'up'}`);
+    if (kaiDebug) lines.push(`Kai ${kaiDebug.animKey}`, `Frame ${kaiDebug.frameIndex}`, `Facing ${kaiDebug.facing}`);
+    if (gameFlowDebug) lines.push(`Flow ${gameFlowDebug.flowState}`, `HP ${gameFlowDebug.hp}/${gameFlowDebug.maxHp}`, `Crystals ${gameFlowDebug.crystalsCollected}/${gameFlowDebug.totalCrystals}`, `Deaths ${gameFlowDebug.deathCount}`);
+    if (prodArtDebug) lines.push(`Art ${prodArtDebug.loadedCategories}/${prodArtDebug.totalCategories}`, ...prodArtDebug.categoryLines);
     this.setText(lines);
   }
 }
