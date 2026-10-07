@@ -69,6 +69,10 @@ jobs:
         working-directory: artifacts/relics-of-aetheria
         run: npx cap add android
 
+      - name: Sync Capacitor
+        working-directory: artifacts/relics-of-aetheria
+        run: npx cap sync android
+
       - name: Configure Android landscape and immersive fullscreen
         working-directory: artifacts/relics-of-aetheria
         run: |
@@ -83,8 +87,7 @@ jobs:
           if not match:
               raise SystemExit('MainActivity activity not found in AndroidManifest.xml')
           attrs = match.group(1)
-          if 'android:screenOrientation=' in attrs:
-              attrs = re.sub(r'\s+android:screenOrientation="[^"]*"', '', attrs)
+          attrs = re.sub(r'\s+android:screenOrientation="[^"]*"', '', attrs)
           attrs += ' android:screenOrientation="landscape"'
           text = text[:match.start(1)] + attrs + text[match.end(1):]
           manifest.write_text(text)
@@ -105,10 +108,6 @@ jobs:
               activity.write_text(s)
           print(f'Immersive fullscreen configured in {activity}.')
           PY
-
-      - name: Sync Capacitor
-        working-directory: artifacts/relics-of-aetheria
-        run: npx cap sync android
 
       - name: Build Debug APK
         working-directory: artifacts/relics-of-aetheria/android
