@@ -69,17 +69,41 @@ jobs:
         working-directory: artifacts/relics-of-aetheria
         run: npx cap add android
 
-      - name: Force landscape orientation
+      - name: Configure Android landscape and immersive fullscreen
         working-directory: artifacts/relics-of-aetheria
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          p = Path('android/app/src/main/AndroidManifest.xml')
-          s = p.read_text()
-          if 'android:screenOrientation=' not in s:
-              s = s.replace('<activity ', '<activity android:screenOrientation="landscape" ', 1)
-          p.write_text(s)
-          print('Landscape orientation configured.')
+          import re
+
+          manifest = Path('android/app/src/main/AndroidManifest.xml')
+          text = manifest.read_text()
+          activity_re = re.compile(r'<activity\b([^>]*android:name="[^"]*MainActivity"[^>]*)>')
+          match = activity_re.search(text)
+          if not match:
+              raise SystemExit('MainActivity activity not found in AndroidManifest.xml')
+          attrs = match.group(1)
+          if 'android:screenOrientation=' in attrs:
+              attrs = re.sub(r'\s+android:screenOrientation="[^"]*"', '', attrs)
+          attrs += ' android:screenOrientation="landscape"'
+          text = text[:match.start(1)] + attrs + text[match.end(1):]
+          manifest.write_text(text)
+          print('MainActivity locked to landscape.')
+
+          java_files = list(Path('android/app/src/main/java').rglob('MainActivity.java'))
+          if not java_files:
+              raise SystemExit('MainActivity.java not found')
+          activity = java_files[0]
+          s = activity.read_text()
+          if 'hideSystemBars()' not in s:
+              s = s.replace('import android.os.Bundle;\n', 'import android.os.Bundle;\nimport android.view.View;\n')
+              method = '''\n    @Override\n    public void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        hideSystemBars();\n    }\n\n    @Override\n    public void onWindowFocusChanged(boolean hasFocus) {\n        super.onWindowFocusChanged(hasFocus);\n        if (hasFocus) {\n            hideSystemBars();\n        }\n    }\n\n    private void hideSystemBars() {\n        getWindow().getDecorView().setSystemUiVisibility(\n            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY\n                | View.SYSTEM_UI_FLAG_FULLSCREEN\n                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION\n                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN\n                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION\n                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE\n        );\n    }\n'''
+              idx = s.rfind('}')
+              if idx < 0:
+                  raise SystemExit('Could not locate MainActivity class closing brace')
+              s = s[:idx] + method + s[idx:]
+              activity.write_text(s)
+          print(f'Immersive fullscreen configured in {activity}.')
           PY
 
       - name: Sync Capacitor
