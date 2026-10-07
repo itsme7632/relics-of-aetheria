@@ -10,6 +10,11 @@ export const TILE_SIZE = 64;
 export const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   backgroundColor: '#0d0d1a',
+  render: {
+    antialias: false,
+    pixelArt: true,
+    roundPixels: true,
+  },
   physics: {
     default: 'arcade',
     arcade: {
@@ -19,6 +24,8 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
   },
   scene: [BootScene, GameScene],
   scale: {
+    // Keep the existing responsive canvas, but the native APK now forces
+    // landscape so the game always receives a wide gameplay viewport.
     mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH,
     width: '100%',
@@ -27,9 +34,7 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
   input: {
     keyboard: true,
     // activePointers sets how many simultaneous touch slots Phaser allocates.
-    // Default is 1 (pointer1 only). With 1 slot the joystick claims pointer1
-    // and any second finger (Jump / Interact button) is silently dropped.
-    // 3 covers: joystick + Jump + Interact all held at the same time.
+    // 3 covers joystick + Jump + Interact held at the same time.
     activePointers: 3,
   },
 };
